@@ -41,13 +41,11 @@ class Example(QWidget):
         text = ''
         while text == '':
             text, okPressed = QInputDialog.getText(self, "Введите название", "Название папки:", QLineEdit.Normal, "")
-        self.pbar = QProgressBar(self)
-        self.pbar.setGeometry(200, 10, 200, 20)
+
         self.pbar.setValue(0)
         self.pbar.show()
 
         for i in range(n):
-            # print(comps[i].text())
             comp = comps[i].text().strip()
             os.system('mkdir -p "/home/teacher/Рабочий стол/Работы/"' + date + '/' + text + '/' + comp)
 
@@ -61,11 +59,27 @@ class Example(QWidget):
             subprocess.Popen(['scp', '-r', f"root@{comps[i].text().strip()}:\'/home/student/Рабочий стол/Сдать работы/*\'", '"/home/teacher/Рабочий стол/Работы/"' + date + '/' + text + '/' + comps[i].text().strip()])
             """
             self.pbar.setValue((i + 1) * 100 // n)
-            self.infoLabel.setText('Собираем у ' + comps[i].text().strip())
+            self.infoLabel.setText(f'Собираем у {comp}')
         self.infoLabel.setText('Сбор работ завершён.')
 
     def cleanWorks(self):
-        pass
+        comps = self.hosts.selectedItems()
+        n = len(comps)
+        if n == 0:
+            dlg = QMessageBox(self)
+            dlg.setWindowTitle("Ошибка")
+            dlg.setText("Выберите хотя бы один компьютер из списка")
+            button = dlg.exec()
+
+            if button == QMessageBox.Ok:
+                return
+        self.pbar.setValue(0)
+        for i in range(n):
+            comp = comps[i].text().strip()
+            os.system(f'ssh root@{comp} \'rm -rf /home/student/Рабочий\ стол/Сдать\ работы/*\'')
+            self.pbar.setValue((i + 1) * 100 // n)
+            self.infoLabel.setText(f'Очищаем {comp}')
+        self.infoLabel.setText('Очистка завершена.')
 
     def backupStudent(self):
         pass
@@ -95,6 +109,9 @@ class Example(QWidget):
         self.infoLabel = QLabel('')
         self.infoLabel.setAlignment(Qt.AlignCenter)
         grid.addWidget(self.infoLabel, 0, 1)
+
+        self.pbar = QProgressBar(self)
+        self.pbar.setGeometry(200, 10, 200, 20)
 
         names = ['Собрать работы', 'Очистить работы', 'Восстановить', 'Открыть Veyon', 'Открыть sftp', 'Команда']
         functions = [self.getWorks, self.cleanWorks, self.backupStudent, self.openVeyon, self.openSftp, self.runCommand]
