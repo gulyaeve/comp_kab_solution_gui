@@ -63,7 +63,6 @@ class Example(QWidget):
             self.pbar.setValue((i + 1) * 100 // n)
             self.infoLabel.setText('Собираем у ' + comps[i].text().strip())
         self.infoLabel.setText('Сбор работ завершён.')
-        return
 
     def cleanWorks(self):
         pass
