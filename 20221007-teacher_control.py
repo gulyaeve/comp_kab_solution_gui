@@ -82,7 +82,21 @@ class Example(QWidget):
         self.infoLabel.setText('Очистка завершена.')
 
     def backupStudent(self):
-        pass
+        comps = self.hosts.selectedItems()
+        n = len(comps)
+        if n == 0:
+            dlg = QMessageBox(self)
+            dlg.setWindowTitle("Ошибка")
+            dlg.setText("Выберите хотя бы один компьютер из списка")
+            button = dlg.exec()
+
+            if button == QMessageBox.Ok:
+                return
+        self.pbar.setValue(100)
+        for i in range(n):
+            comp = comps[i].text().strip()
+            os.system(f'ssh root@{comp} \"pkill -u student; cd /home && if [[ ! -f /home/student.tar.gz ]]; then kdialog --msgbox \"На {comp} нет архива student!\"; else echo \'sleep 5 && rm -rf student && tar xfz student.tar.gz && mkdir -p /home/student/Рабочий\ стол/Сдать\ работы && chmod 777 /home/student/Рабочий\ стол/Сдать\ работы && reboot\' | at now; fi\"')
+        self.infoLabel.setText('Команда восстановления отправлена на выбранные компьютеры.')
 
     def openVeyon(self):
         pass
@@ -108,7 +122,7 @@ class Example(QWidget):
 
         self.infoLabel = QLabel('')
         self.infoLabel.setAlignment(Qt.AlignCenter)
-        grid.addWidget(self.infoLabel, 0, 1)
+        grid.addWidget(self.infoLabel, 0, 0, 1, 3)
 
         self.pbar = QProgressBar(self)
         self.pbar.setGeometry(200, 10, 200, 20)
@@ -131,6 +145,7 @@ class Example(QWidget):
         self.hosts = QListWidget()
         self.hosts.setSelectionMode(QAbstractItemView.ExtendedSelection)
         hosts_from_file = open('/home/teacher/teacher_control/hosts.txt', 'r').readlines()
+        # hosts_from_file = ['1', '2']
         self.hosts.addItems(hosts_from_file)
         self.n = len(self.hosts)
         grid.addWidget(self.hosts, 2, 1, 5, 2)
