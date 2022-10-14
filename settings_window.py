@@ -9,6 +9,8 @@ class SettingsWindow(QWidget):
         grid = QGridLayout()
         self.setLayout(grid)
         self.setWindowTitle('Настройки компьютерного класса')
+        self.setFixedWidth(300)
+        self.setFixedHeight(150)
         # self.show()
 
 

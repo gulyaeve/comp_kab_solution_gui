@@ -114,7 +114,20 @@ class Example(QWidget):
         pass
 
     def runCommand(self):
-        pass
+        comps = self.hosts.selectedItems()
+        n = len(comps)
+        if n == 0:
+            dlg = QMessageBox(self)
+            dlg.setWindowTitle("Ошибка")
+            dlg.setText("Выберите хотя бы один компьютер из списка")
+            button = dlg.exec()
+
+            if button == QMessageBox.Ok:
+                return
+        dialog, pressed = QInputDialog.getText(self, 'Команда', 'Введите команду для выполнения на компьютерах учеников', QLineEdit.Normal)
+        for i in range(n):
+            comp = comps[i].text().strip()
+            os.system(f'ssh root@{comp} "{dialog}"')
 
     # def settings(self):
     #     print('Settings')
@@ -166,7 +179,7 @@ class Example(QWidget):
         self.hosts = QListWidget()
         self.hosts.setSelectionMode(QAbstractItemView.ExtendedSelection)
         # hosts_from_file = open('/home/teacher/teacher_control/hosts.txt', 'r').readlines()
-        hosts_from_file = ['1', '2']
+        hosts_from_file = ['sm2222-3-313-2.local', 'sm2222-3-313-3.local']
         self.hosts.addItems(hosts_from_file)
         self.n = len(self.hosts)
         grid.addWidget(self.hosts, 2, 1, 5, 2)
