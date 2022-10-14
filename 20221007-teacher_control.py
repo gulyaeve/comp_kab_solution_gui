@@ -7,6 +7,7 @@ from PyQt5.QtWidgets import (QWidget, QGridLayout,
                              QListWidget, QAbstractItemView, QMenu, QMenuBar, \
                              QToolBar, QMainWindow, QInputDialog, QProgressBar, QLabel, QMessageBox)
 from PyQt5.QtCore import Qt
+from settings_window import *
 
 
 class Example(QWidget):
@@ -107,12 +108,17 @@ class Example(QWidget):
     def runCommand(self):
         pass
 
+    # def settings(self):
+    #     print('Settings')
+
+
     def initUI(self):
 
         menu_bar = QMenuBar()
         menu_file = menu_bar.addMenu('Меню')
         action_set = menu_file.addAction('Настройка...')
         action_exit = menu_file.addAction('Выход')
+        action_set.triggered.connect(settings)
         action_exit.triggered.connect(self.close)
 
         grid = QGridLayout()
@@ -144,8 +150,8 @@ class Example(QWidget):
 
         self.hosts = QListWidget()
         self.hosts.setSelectionMode(QAbstractItemView.ExtendedSelection)
-        hosts_from_file = open('/home/teacher/teacher_control/hosts.txt', 'r').readlines()
-        # hosts_from_file = ['1', '2']
+        # hosts_from_file = open('/home/teacher/teacher_control/hosts.txt', 'r').readlines()
+        hosts_from_file = ['1', '2']
         self.hosts.addItems(hosts_from_file)
         self.n = len(self.hosts)
         grid.addWidget(self.hosts, 2, 1, 5, 2)
