@@ -1,20 +1,23 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-import sys, os, datetime, subprocess
-from PyQt5.QtWidgets import (QWidget, QGridLayout,
-                             QPushButton, QApplication, QTextEdit, QLineEdit, \
-                             QListWidget, QAbstractItemView, QMenu, QMenuBar, \
-                             QToolBar, QMainWindow, QInputDialog, QProgressBar, QLabel, QMessageBox)
+import datetime
+import os
+import sys
+
 from PyQt5.QtCore import Qt
-from settings_window import *
+from PyQt5.QtWidgets import (QPushButton, QApplication, QLineEdit, \
+                             QListWidget, QAbstractItemView, QMenuBar, \
+                             QInputDialog, QProgressBar, QLabel, QMessageBox, QWidget, QGridLayout, QMainWindow)
+
+from settings_window import SettingsWindow
 
 
 class Example(QWidget):
 
     def __init__(self):
         super().__init__()
-
+        self.windows = []
         self.initUI()
 
     def selectAll(self):
@@ -116,6 +119,12 @@ class Example(QWidget):
     # def settings(self):
     #     print('Settings')
 
+    def settings(self):
+        print('Settings')
+        new_window = SettingsWindow()
+        self.windows.append(new_window)
+        new_window.show()
+
 
     def initUI(self):
 
@@ -123,7 +132,8 @@ class Example(QWidget):
         menu_file = menu_bar.addMenu('Меню')
         action_set = menu_file.addAction('Настройка...')
         action_exit = menu_file.addAction('Выход')
-        action_set.triggered.connect(settings)
+
+        action_set.triggered.connect(self.settings)
         action_exit.triggered.connect(self.close)
 
         grid = QGridLayout()
