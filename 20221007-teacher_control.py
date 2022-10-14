@@ -96,8 +96,13 @@ class Example(QWidget):
         self.pbar.setValue(100)
         for i in range(n):
             comp = comps[i].text().strip()
-            os.system(f'ssh root@{comp} \"pkill -u student; cd /home && if [[ ! -f /home/student.tar.gz ]]; then kdialog --msgbox \"На {comp} нет архива student!\"; else echo \'sleep 5 && rm -rf student && tar xfz student.tar.gz && mkdir -p /home/student/Рабочий\ стол/Сдать\ работы && chmod 777 /home/student/Рабочий\ стол/Сдать\ работы && reboot\' | at now; fi\"')
-        self.infoLabel.setText('Команда восстановления отправлена на выбранные компьютеры.')
+            try:
+                os.system(f'ssh root@{comp} "pkill -u student"')
+                self.infoLabel.setText(f'Восстанавливаем {comp}...')
+                os.system(f'rsync -avz --delete /home/teacher/ root@{comp}:/home/student/')
+            except:
+                self.infoLabel.setText(f'Не удалось подключиться к {comp}.')
+        self.infoLabel.setText('Команда восстановления выполнена на выбранных компьютерах.')
 
     def openVeyon(self):
         pass
