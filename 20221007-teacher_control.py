@@ -96,12 +96,13 @@ class Example(QWidget):
 
             if button == QMessageBox.Ok:
                 return
-        self.pbar.setValue(100)
+        self.pbar.setValue(0)
         for i in range(n):
             comp = comps[i].text().strip()
             try:
                 os.system(f'ssh root@{comp} "pkill -u student"')
                 self.infoLabel.setText(f'Восстанавливаем {comp}...')
+                self.pbar.setValue((i + 1) * 100 // n)
                 os.system(f'rsync -avz --delete /home/teacher/ root@{comp}:/home/student/')
             except:
                 self.infoLabel.setText(f'Не удалось подключиться к {comp}.')
@@ -111,7 +112,26 @@ class Example(QWidget):
         pass
 
     def openSftp(self):
-        pass
+        comps = self.hosts.selectedItems()
+        n = len(comps)
+        if n == 0:
+            dlg = QMessageBox(self)
+            dlg.setWindowTitle("Ошибка")
+            dlg.setText("Выберите хотя бы один компьютер из списка")
+            button = dlg.exec()
+
+            if button == QMessageBox.Ok:
+                return
+        self.pbar.setValue(0)
+        for i in range(n):
+            comp = comps[i].text().strip()
+            try:
+                os.system(f'dolphin sftp://student@{comp}')
+                self.infoLabel.setText(f'Открываем {comp}...')
+                self.pbar.setValue((i + 1) * 100 // n)
+            except:
+                self.infoLabel.setText(f'Не удалось подключиться к {comp}.')
+        self.infoLabel.setText('Открыт Dolphin для всех доступных компьютеров.')
 
     def runCommand(self):
         comps = self.hosts.selectedItems()
