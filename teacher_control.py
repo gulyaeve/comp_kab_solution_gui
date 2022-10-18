@@ -2,19 +2,17 @@
 # -*- coding: utf-8 -*-
 
 import datetime
-import os
-import sys
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import (QPushButton, QApplication, QLineEdit, \
+from PyQt5.QtWidgets import (QPushButton, QLineEdit, \
                              QListWidget, QAbstractItemView, QMenuBar, \
-                             QInputDialog, QProgressBar, QLabel, QMessageBox, QWidget, QGridLayout, QMainWindow)
+                             QInputDialog, QProgressBar, QLabel, QMessageBox, QWidget, QGridLayout)
 
+from system import run_command
 from settings_window import SettingsWindow
 
 
-class Example(QWidget):
-
+class TeacherWindow(QWidget):
     def __init__(self):
         super().__init__()
         self.windows = []
@@ -51,9 +49,9 @@ class Example(QWidget):
 
         for i in range(n):
             comp = comps[i].text().strip()
-            os.system('mkdir -p "/home/teacher/Рабочий стол/Работы/"' + date + '/' + text + '/' + comp)
+            run_command('mkdir -p "/home/teacher/Рабочий стол/Работы/"' + date + '/' + text + '/' + comp)
 
-            os.system(f'ssh root@{comp} \'mkdir -p \"/home/student/Рабочий стол/Сдать работы\" && \
+            run_command(f'ssh root@{comp} \'mkdir -p \"/home/student/Рабочий стол/Сдать работы\" && \
                       chmod 777 \"/home/student/Рабочий стол/Сдать работы\"\' && \
                       scp -r root@{comp}:\'/home/student/Рабочий\ стол/Сдать\ работы/*\' \
                       \"/home/teacher/Рабочий стол/Работы/\"{date}/{text}/{comp}')
@@ -80,7 +78,7 @@ class Example(QWidget):
         self.pbar.setValue(0)
         for i in range(n):
             comp = comps[i].text().strip()
-            os.system(f'ssh root@{comp} \'rm -rf /home/student/Рабочий\ стол/Сдать\ работы/*\'')
+            run_command(f'ssh root@{comp} \'rm -rf /home/student/Рабочий\ стол/Сдать\ работы/*\'')
             self.pbar.setValue((i + 1) * 100 // n)
             self.infoLabel.setText(f'Очищаем {comp}')
         self.infoLabel.setText('Очистка завершена.')
@@ -100,10 +98,10 @@ class Example(QWidget):
         for i in range(n):
             comp = comps[i].text().strip()
             try:
-                os.system(f'ssh root@{comp} "pkill -u student"')
+                run_command(f'ssh root@{comp} "pkill -u student"')
                 self.infoLabel.setText(f'Восстанавливаем {comp}...')
                 self.pbar.setValue((i + 1) * 100 // n)
-                os.system(f'rsync -avz --delete /home/teacher/ root@{comp}:/home/student/')
+                run_command(f'rsync -avz --delete /home/teacher/ root@{comp}:/home/student/')
             except:
                 self.infoLabel.setText(f'Не удалось подключиться к {comp}.')
         self.infoLabel.setText('Команда восстановления выполнена на выбранных компьютерах.')
@@ -126,7 +124,7 @@ class Example(QWidget):
         for i in range(n):
             comp = comps[i].text().strip()
             try:
-                os.system(f'dolphin sftp://student@{comp}')
+                run_command(f'dolphin sftp://student@{comp}')
                 self.infoLabel.setText(f'Открываем {comp}...')
                 self.pbar.setValue((i + 1) * 100 // n)
             except:
@@ -144,10 +142,12 @@ class Example(QWidget):
 
             if button == QMessageBox.Ok:
                 return
-        dialog, pressed = QInputDialog.getText(self, 'Команда', 'Введите команду для выполнения на компьютерах учеников', QLineEdit.Normal)
+        dialog, pressed = QInputDialog.getText(self, 'Команда',
+                                               'Введите команду для выполнения на компьютерах учеников',
+                                               QLineEdit.Normal)
         for i in range(n):
             comp = comps[i].text().strip()
-            os.system(f'ssh root@{comp} "{dialog}"')
+            run_command(f'ssh root@{comp} "{dialog}"')
 
     # def settings(self):
     #     print('Settings')
@@ -157,7 +157,6 @@ class Example(QWidget):
         new_window = SettingsWindow()
         self.windows.append(new_window)
         new_window.show()
-
 
     def initUI(self):
 
@@ -198,7 +197,7 @@ class Example(QWidget):
 
         self.hosts = QListWidget()
         self.hosts.setSelectionMode(QAbstractItemView.ExtendedSelection)
-        # hosts_from_file = open('/home/teacher/teacher_control/hosts.txt', 'r').readlines()
+        # hosts_from_file = open('~/.teacher_control/hosts.txt', 'r').readlines()
         hosts_from_file = ['sm2222-3-313-2.local', 'sm2222-3-313-3.local']
         self.hosts.addItems(hosts_from_file)
         self.n = len(self.hosts)
@@ -208,9 +207,3 @@ class Example(QWidget):
         self.setWindowTitle('Teacher Control ver. 1.0')
         self.setFixedWidth(600)
         self.show()
-
-
-if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    ex = Example()
-    sys.exit(app.exec_())
