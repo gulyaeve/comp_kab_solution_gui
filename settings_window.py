@@ -6,10 +6,10 @@ from _socket import timeout
 from getpass import getpass
 
 import paramiko
-from PyQt5.QtWidgets import QWidget, QGridLayout, QPushButton, QPlainTextEdit
+from PyQt5.QtWidgets import QWidget, QGridLayout, QPushButton, QPlainTextEdit, QLabel
 from paramiko.channel import Channel
 from paramiko.ssh_exception import AuthenticationException, SSHException
-
+from PyQt5.QtCore import Qt
 from desktop_entrys import ssh_add_link, veyon_link, teacher_sh_link, network_share, network_share_for_teacher
 from system import exit_app, run_command, this_host, user
 
@@ -25,11 +25,12 @@ class WrongRootPass(Exception):
 class SettingsWindow(QWidget):
     def __init__(self):
         super().__init__()
+
         grid = QGridLayout()
         self.setLayout(grid)
         self.setWindowTitle('Настройки компьютерного класса')
-        self.setFixedWidth(500)
-        self.setFixedHeight(400)
+        self.setFixedWidth(700)
+        # self.setFixedHeight(400)
 
         button = QPushButton('Настроить доступ по ssh')
         button.clicked.connect(self.setupssh)
@@ -49,7 +50,25 @@ class SettingsWindow(QWidget):
 
         self.textfield = QPlainTextEdit()
         self.textfield.setPlainText('lalala')
-        grid.addWidget(self.textfield)
+        grid.addWidget(self.textfield, 4, 0, 4, 1)
+
+        hostslabel = QLabel('Список хостов:')
+        hostslabel.setAlignment(Qt.AlignCenter)
+        grid.addWidget(hostslabel, 0, 1)
+
+        self.hostsfield = QPlainTextEdit()
+        if 'hosts.txt' in os.listdir(f'/home/{user}/.teacher_control'):
+            self.hostsfield.setPlainText(''.join(open(f'/home/{user}/.teacher_control/hosts.txt', 'r').readlines()))
+        else:
+            with open(f'/home/{user}/.teacher_control/hosts.txt', 'w'):
+                pass
+            self.hostsfield.setPlainText('Введите сюда имена хостов')
+        grid.addWidget(self.hostsfield, 1, 1, 6, 1)
+
+        button = QPushButton('Сохранить список хостов')
+        button.clicked.connect(self.saveHosts)
+        grid.addWidget(button, 7, 1)
+
         if user == 'root':
             logging.info("Попытка запустить от рута")
             print("Данный скрипт не следует запускать от имени суперпользователя")
@@ -65,28 +84,30 @@ class SettingsWindow(QWidget):
             print("Данный скрипт возможно запустить только под teacher, ознакомьтесь с инструкцией\n")
             self.textfield.appendPlainText("Данный скрипт возможно запустить только под teacher, ознакомьтесь с инструкцией\n")
             # exit_app()
-        logging.info(f"Попытка создать папку ~/{user}/.teacher_control")
-        self.textfield.appendPlainText(run_command(f'mkdir -p ~/{user}/.teacher_control'))
-        logging.info(f"Успешно создана папка ~/{user}/.teacher_control")
-        try:
-            with open(f"~/{user}/.teacher_control'/hosts.txt", "r") as hosts:
-                hosts.close()
-            self.textfield.appendPlainText(run_command(f'ln -s ~/{user}/.teacher_control/hosts.txt hosts.txt'))
-            logging.info("файл host найден и открыт")
-        except (IOError, FileNotFoundError):
-            with open(f"~/{user}/.teacher_control/hosts.txt", "w") as hosts:
-                hosts.close()
-            self.textfield.appendPlainText(run_command(f'ln -s ~/{user}/.teacher_control/hosts.txt hosts.txt'))
-            print(
-                'Сгенерирован файл hosts.txt, перечислите в нём имена компьютеров построчно и запустите скрипт '
-                'повторно.\n\n '
-                '    ВАЖНО!\n\nДля М ОС имя компьютера должно оканчиваться на .local, пример: m4444-5-kab1-1.local')
-            logging.info("файл hosts не был найден, создан")
-            exit_app()
+        logging.info(f"Попытка создать папку ~/.teacher_control")
+        # self.textfield.appendPlainText(run_command(f'ls'))
+        self.textfield.appendPlainText(run_command(f'mkdir -p ~/.teacher_control'))
+        self.textfield.appendPlainText(run_command(f'touch ~/.teacher_control/hosts.txt'))
+        logging.info(f"Успешно создана папка ~/.teacher_control")
+        # try:
+        #     with open(f"~/.teacher_control/hosts.txt", "r") as hosts:
+        #         hosts.close()
+        #     # self.textfield.appendPlainText(run_command(f'ln -s ~/.teacher_control/hosts.txt hosts.txt'))
+        #     logging.info("файл host найден и открыт")
+        # except (IOError, FileNotFoundError):
+        #     with open(f"~/.teacher_control/hosts.txt", "w") as hosts:
+        #         hosts.close()
+        #     self.textfield.appendPlainText(run_command(f'ln -s ~/.teacher_control/hosts.txt hosts.txt'))
+        #     print(
+        #         'Сгенерирован файл hosts.txt, перечислите в нём имена компьютеров построчно и запустите скрипт '
+        #         'повторно.\n\n '
+        #         '    ВАЖНО!\n\nДля М ОС имя компьютера должно оканчиваться на .local, пример: m4444-5-kab1-1.local')
+        #     logging.info("файл hosts не был найден, создан")
+        #     exit_app()
 
     def setupssh(self):
-        print('Setup ssh...')
-        self.textfield.setPlainText('Setup ssh...')
+        print('Setup ssh...') # это выводится
+        self.textfield.setPlainText('Setup ssh...') # а вот это почему-то не работает. А в других функциях работает
         self.setup_ssh()
 
     def createShare(self):
@@ -217,14 +238,14 @@ class SettingsWindow(QWidget):
         run_command("ssh-keygen -t ed25519 -q -P '' -f /home/teacher/.ssh/id_ed25519")
         logging.info(f"Ключ создан")
         time.sleep(1)
-        run_command(f'mkdir -p ~/{user}/.config/autostart')
-        with open(f'~/{user}/.config/autostart/ssh-add.desktop', 'w') as file_link:
+        run_command(f'mkdir -p ~/.config/autostart')
+        with open(f'~/.config/autostart/ssh-add.desktop', 'w') as file_link:
             file_link.write(ssh_add_link)
         logging.info(f"Ярлык в автозапуск ss-add создан")
         logging.info(f"Начало копирования ключей")
         print('\nКопирую ключ на все компьютеры из списка hosts.txt:')
-        run_command(f"ssh-add; for i in $(cat ~/{user}/.teacher_control/hosts.txt); do ssh-copy-id -f -i "
-                    f"~/{user}/.ssh/id_ed25519.pub teacher@$i -o IdentitiesOnly=yes; done")
+        run_command(f"ssh-add; for i in $(cat ~/.teacher_control/hosts.txt); do ssh-copy-id -f -i "
+                    f"~/.ssh/id_ed25519.pub teacher@$i -o IdentitiesOnly=yes; done")
         logging.info(f"Ключи скопированы")
         print("Теперь я настрою ssh для суперпользователя на всех устройствах")
         print("Введите пароль учётной записи суперпользователя root (для устройств учеников): ")
@@ -347,6 +368,10 @@ class SettingsWindow(QWidget):
 
         print('Сетевая папка создана')
         logging.info('Сетевая папка создана')
+
+    def saveHosts(self):
+        with open(f'/home/{user}/.teacher_control/hosts.txt', 'w') as out:
+            print(self.hostsfield.toPlainText(), file=out)
 
     # def main(self):
     #     """
