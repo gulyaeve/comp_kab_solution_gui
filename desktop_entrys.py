@@ -7,6 +7,7 @@ Name=Задания
 Type=Application
 Exec=dolphin sftp://student@{teacher_host}.local/home/share
 """
+
 network_share_for_teacher = """[Desktop Entry]
 Icon=folder-remote
 Name=Задания
