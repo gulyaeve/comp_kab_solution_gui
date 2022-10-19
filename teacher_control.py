@@ -37,7 +37,7 @@ class TeacherWindow(QWidget):
         self.pbar.setGeometry(200, 10, 200, 20)
 
         names = ['Собрать работы', 'Очистить работы', 'Восстановить', 'Открыть Veyon', 'Открыть sftp', 'Команда']
-        functions = [self.getWorks, self.cleanWorks, self.backupStudent, self.openVeyon, self.openSftp, self.runCommand]
+        functions = [self.get_works, self.clean_works, self.backup_student, self.open_veyon, self.open_sftp, self.run_command]
 
         for i in range(len(names)):
             button = QPushButton(names[i])
@@ -45,10 +45,10 @@ class TeacherWindow(QWidget):
             grid.addWidget(button, i + 1, 0)
 
         button = QPushButton('Выбрать всё')
-        button.clicked.connect(self.selectAll)
+        button.clicked.connect(self.select_all)
         grid.addWidget(button, 1, 1)
         button = QPushButton('Очистить выбор')
-        button.clicked.connect(self.selectNone)
+        button.clicked.connect(self.select_none)
         grid.addWidget(button, 1, 2)
 
         self.hosts = QListWidget()
