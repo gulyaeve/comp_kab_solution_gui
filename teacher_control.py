@@ -16,150 +16,6 @@ class TeacherWindow(QWidget):
     def __init__(self):
         super().__init__()
         self.windows = []
-        self.initUI()
-
-    def selectAll(self):
-        for i in range(self.n):
-            self.hosts.item(i).setSelected(True)
-        return
-
-    def selectNone(self):
-        for i in range(self.n):
-            self.hosts.item(i).setSelected(False)
-        return
-
-    def getWorks(self):
-        comps = self.hosts.selectedItems()
-        n = len(comps)
-        if n == 0:
-            dlg = QMessageBox(self)
-            dlg.setWindowTitle("Ошибка")
-            dlg.setText("Выберите хотя бы один компьютер из списка")
-            button = dlg.exec()
-
-            if button == QMessageBox.Ok:
-                return
-        date = str(datetime.datetime.now().date())
-        text = ''
-        while text == '':
-            text, okPressed = QInputDialog.getText(self, "Введите название", "Название папки:", QLineEdit.Normal, "")
-
-        self.pbar.setValue(0)
-        self.pbar.show()
-
-        for i in range(n):
-            comp = comps[i].text().strip()
-            run_command('mkdir -p "/home/teacher/Рабочий стол/Работы/"' + date + '/' + text + '/' + comp)
-
-            run_command(f'ssh root@{comp} \'mkdir -p \"/home/student/Рабочий стол/Сдать работы\" && \
-                      chmod 777 \"/home/student/Рабочий стол/Сдать работы\"\' && \
-                      scp -r root@{comp}:\'/home/student/Рабочий\ стол/Сдать\ работы/*\' \
-                      \"/home/teacher/Рабочий стол/Работы/\"{date}/{text}/{comp}')
-
-            """
-            subprocess.Popen(['ssh', f'root@{comps[i].text().strip()}', 'mkdir -p \"/home/student/Рабочий стол/Сдать работы\" && chmod 777 \"/home/student/Рабочий стол/Сдать работы\"'])
-            subprocess.Popen(['scp', '-r', f"root@{comps[i].text().strip()}:\'/home/student/Рабочий стол/Сдать работы/*\'", '"/home/teacher/Рабочий стол/Работы/"' + date + '/' + text + '/' + comps[i].text().strip()])
-            """
-            self.pbar.setValue((i + 1) * 100 // n)
-            self.infoLabel.setText(f'Собираем у {comp}')
-        self.infoLabel.setText('Сбор работ завершён.')
-
-    def cleanWorks(self):
-        comps = self.hosts.selectedItems()
-        n = len(comps)
-        if n == 0:
-            dlg = QMessageBox(self)
-            dlg.setWindowTitle("Ошибка")
-            dlg.setText("Выберите хотя бы один компьютер из списка")
-            button = dlg.exec()
-
-            if button == QMessageBox.Ok:
-                return
-        self.pbar.setValue(0)
-        for i in range(n):
-            comp = comps[i].text().strip()
-            run_command(f'ssh root@{comp} \'rm -rf /home/student/Рабочий\ стол/Сдать\ работы/*\'')
-            self.pbar.setValue((i + 1) * 100 // n)
-            self.infoLabel.setText(f'Очищаем {comp}')
-        self.infoLabel.setText('Очистка завершена.')
-
-    def backupStudent(self):
-        comps = self.hosts.selectedItems()
-        n = len(comps)
-        if n == 0:
-            dlg = QMessageBox(self)
-            dlg.setWindowTitle("Ошибка")
-            dlg.setText("Выберите хотя бы один компьютер из списка")
-            button = dlg.exec()
-
-            if button == QMessageBox.Ok:
-                return
-        self.pbar.setValue(0)
-        for i in range(n):
-            comp = comps[i].text().strip()
-            try:
-                run_command(f'ssh root@{comp} "pkill -u student"')
-                self.infoLabel.setText(f'Восстанавливаем {comp}...')
-                self.pbar.setValue((i + 1) * 100 // n)
-                run_command(f'rsync -avz --delete /home/teacher/ root@{comp}:/home/student/')
-            except:
-                self.infoLabel.setText(f'Не удалось подключиться к {comp}.')
-        self.infoLabel.setText('Команда восстановления выполнена на выбранных компьютерах.')
-
-    def openVeyon(self):
-        pass
-
-    def openSftp(self):
-        comps = self.hosts.selectedItems()
-        n = len(comps)
-        if n == 0:
-            dlg = QMessageBox(self)
-            dlg.setWindowTitle("Ошибка")
-            dlg.setText("Выберите хотя бы один компьютер из списка")
-            button = dlg.exec()
-
-            if button == QMessageBox.Ok:
-                return
-        self.pbar.setValue(0)
-        for i in range(n):
-            comp = comps[i].text().strip()
-            try:
-                run_command(f'dolphin sftp://student@{comp}')
-                self.infoLabel.setText(f'Открываем {comp}...')
-                self.pbar.setValue((i + 1) * 100 // n)
-            except:
-                self.infoLabel.setText(f'Не удалось подключиться к {comp}.')
-        self.infoLabel.setText('Открыт Dolphin для всех доступных компьютеров.')
-
-    def runCommand(self):
-        comps = self.hosts.selectedItems()
-        n = len(comps)
-        if n == 0:
-            dlg = QMessageBox(self)
-            dlg.setWindowTitle("Ошибка")
-            dlg.setText("Выберите хотя бы один компьютер из списка")
-            button = dlg.exec()
-
-            if button == QMessageBox.Ok:
-                return
-        dialog, pressed = QInputDialog.getText(self, 'Команда',
-                                               'Введите команду для выполнения на компьютерах учеников',
-                                               QLineEdit.Normal)
-        for i in range(n):
-            comp = comps[i].text().strip()
-            run_command(f'ssh root@{comp} "{dialog}"')
-
-    # def settings(self):
-    #     print('Settings')
-
-    def settings(self):
-        print('Settings')
-        new_window = SettingsWindow()
-        self.windows.append(new_window)
-        new_window.show()
-
-    def initUI(self):
-
         menu_bar = QMenuBar()
         menu_file = menu_bar.addMenu('Меню')
         action_set = menu_file.addAction('Настройка...')
@@ -207,3 +63,140 @@ class TeacherWindow(QWidget):
         self.setWindowTitle('Teacher Control ver. 1.0')
         self.setFixedWidth(600)
         self.show()
+
+    def select_all(self):
+        for i in range(self.n):
+            self.hosts.item(i).setSelected(True)
+        return
+
+    def select_none(self):
+        for i in range(self.n):
+            self.hosts.item(i).setSelected(False)
+        return
+
+    def get_works(self):
+        comps = self.hosts.selectedItems()
+        n = len(comps)
+        if n == 0:
+            dlg = QMessageBox(self)
+            dlg.setWindowTitle("Ошибка")
+            dlg.setText("Выберите хотя бы один компьютер из списка")
+            button = dlg.exec()
+
+            if button == QMessageBox.Ok:
+                return
+        date = str(datetime.datetime.now().date())
+        text = ''
+        while text == '':
+            text, okPressed = QInputDialog.getText(self, "Введите название", "Название папки:", QLineEdit.Normal, "")
+
+        self.pbar.setValue(0)
+        self.pbar.show()
+
+        for i in range(n):
+            comp = comps[i].text().strip()
+            run_command('mkdir -p "/home/teacher/Рабочий стол/Работы/"' + date + '/' + text + '/' + comp)
+
+            run_command(f'ssh root@{comp} \'mkdir -p \"/home/student/Рабочий стол/Сдать работы\" && \
+                      chmod 777 \"/home/student/Рабочий стол/Сдать работы\"\' && \
+                      scp -r root@{comp}:\'/home/student/Рабочий\ стол/Сдать\ работы/*\' \
+                      \"/home/teacher/Рабочий стол/Работы/\"{date}/{text}/{comp}')
+
+            """
+            subprocess.Popen(['ssh', f'root@{comps[i].text().strip()}', 'mkdir -p \"/home/student/Рабочий стол/Сдать работы\" && chmod 777 \"/home/student/Рабочий стол/Сдать работы\"'])
+            subprocess.Popen(['scp', '-r', f"root@{comps[i].text().strip()}:\'/home/student/Рабочий стол/Сдать работы/*\'", '"/home/teacher/Рабочий стол/Работы/"' + date + '/' + text + '/' + comps[i].text().strip()])
+            """
+            self.pbar.setValue((i + 1) * 100 // n)
+            self.infoLabel.setText(f'Собираем у {comp}')
+        self.infoLabel.setText('Сбор работ завершён.')
+
+    def clean_works(self):
+        comps = self.hosts.selectedItems()
+        n = len(comps)
+        if n == 0:
+            dlg = QMessageBox(self)
+            dlg.setWindowTitle("Ошибка")
+            dlg.setText("Выберите хотя бы один компьютер из списка")
+            button = dlg.exec()
+
+            if button == QMessageBox.Ok:
+                return
+        self.pbar.setValue(0)
+        for i in range(n):
+            comp = comps[i].text().strip()
+            run_command(f'ssh root@{comp} \'rm -rf /home/student/Рабочий\ стол/Сдать\ работы/*\'')
+            self.pbar.setValue((i + 1) * 100 // n)
+            self.infoLabel.setText(f'Очищаем {comp}')
+        self.infoLabel.setText('Очистка завершена.')
+
+    def backup_student(self):
+        comps = self.hosts.selectedItems()
+        n = len(comps)
+        if n == 0:
+            dlg = QMessageBox(self)
+            dlg.setWindowTitle("Ошибка")
+            dlg.setText("Выберите хотя бы один компьютер из списка")
+            button = dlg.exec()
+
+            if button == QMessageBox.Ok:
+                return
+        self.pbar.setValue(0)
+        for i in range(n):
+            comp = comps[i].text().strip()
+            try:
+                run_command(f'ssh root@{comp} "pkill -u student"')
+                self.infoLabel.setText(f'Восстанавливаем {comp}...')
+                self.pbar.setValue((i + 1) * 100 // n)
+                run_command(f'rsync -avz --delete /home/teacher/ root@{comp}:/home/student/')
+            except:
+                self.infoLabel.setText(f'Не удалось подключиться к {comp}.')
+        self.infoLabel.setText('Команда восстановления выполнена на выбранных компьютерах.')
+
+    def open_veyon(self):
+        pass
+
+    def open_sftp(self):
+        comps = self.hosts.selectedItems()
+        n = len(comps)
+        if n == 0:
+            dlg = QMessageBox(self)
+            dlg.setWindowTitle("Ошибка")
+            dlg.setText("Выберите хотя бы один компьютер из списка")
+            button = dlg.exec()
+
+            if button == QMessageBox.Ok:
+                return
+        self.pbar.setValue(0)
+        for i in range(n):
+            comp = comps[i].text().strip()
+            try:
+                run_command(f'dolphin sftp://student@{comp}')
+                self.infoLabel.setText(f'Открываем {comp}...')
+                self.pbar.setValue((i + 1) * 100 // n)
+            except:
+                self.infoLabel.setText(f'Не удалось подключиться к {comp}.')
+        self.infoLabel.setText('Открыт Dolphin для всех доступных компьютеров.')
+
+    def run_command(self):
+        comps = self.hosts.selectedItems()
+        n = len(comps)
+        if n == 0:
+            dlg = QMessageBox(self)
+            dlg.setWindowTitle("Ошибка")
+            dlg.setText("Выберите хотя бы один компьютер из списка")
+            button = dlg.exec()
+
+            if button == QMessageBox.Ok:
+                return
+        dialog, pressed = QInputDialog.getText(self, 'Команда',
+                                               'Введите команду для выполнения на компьютерах учеников',
+                                               QLineEdit.Normal)
+        for i in range(n):
+            comp = comps[i].text().strip()
+            run_command(f'ssh root@{comp} "{dialog}"')
+
+    def settings(self):
+        print('Settings')
+        new_window = SettingsWindow()
+        self.windows.append(new_window)
+        new_window.show()
