@@ -348,27 +348,6 @@ class SettingsWindow(QWidget):
         print('Veyon установлен')
         logging.info('Veyon установлен')
 
-    # TODO: Эта функция не нужна наверно уже | Я не помню, зачем она была нужна. Не нужна - удаляй)
-    # def teacher_control_store(self):
-    #     """
-    #     Копирование программы для сбора работ и создание ярлыка
-    #     """
-    #     if '.teacher_control' not in os.listdir(f'/home/{user}'):
-    #         run_command(f'mkdir -p /home/{user}/.teacher_control')
-    #
-    #     if 'teacher_control.sh' in os.listdir('/home/teacher/teacher_control'):
-    #         run_command("rm -f /home/teacher/teacher_control/teacher_control.sh && cp teacher_control.sh "
-    #                     "/home/teacher/teacher_control")
-    #         print('Старая версия teacher_control заменена')
-    #     else:
-    #         run_command("cp teacher_control.sh /home/teacher/teacher_control")
-    #         print('Скрипт teacher_control сохранён')
-    #
-    #     with open('/home/teacher/Рабочий стол/Teacher Control.desktop', 'w') as file_link_2:
-    #         file_link_2.write(teacher_sh_link)
-    #         print('Успешно создан ярлык для teacher_control')
-    #     logging.info('Успешно создан ярлык для teacher_control')
-
     def student_archive(self):
         """
         Подключение по ssh к хостам и создание архива /home/student
@@ -430,7 +409,6 @@ class SettingsWindow(QWidget):
         return macAddress
 
     def openFileDialog(self):
-
         fileName = QFileDialog.getOpenFileName(self, f"/home/{user}", '', '*.txt')
         with open(fileName[0], 'r') as inp:
             lines = inp.readlines()
@@ -438,67 +416,3 @@ class SettingsWindow(QWidget):
                 QMessageBox('Слишком большой файл!').show()
             else:
                 self.hostsfield.setPlainText(''.join(lines))
-
-    # def main(self):
-    #     """
-    #     Главное меню
-    #     """
-    #     print('\n\n    ВНИМАНИЕ!\n\n'
-    #           'Перед началом работы ознакомьтесь с инструкцией\n')
-    #     if user == 'root':
-    #         logging.info("Попытка запустить от рута")
-    #         print("Данный скрипт не следует запускать от имени суперпользователя")
-    #         exit_app()
-    #     if user == 'student':
-    #         logging.info("Попытка запустить от студента")
-    #         print("Данный скрипт не следует запускать от имени ученика")
-    #         exit_app()
-    #     if user != 'teacher':
-    #         logging.info("Попытка запустить от другого пользователя")
-    #         print("Данный скрипт возможно запустить только под teacher, ознакомьтесь с инструкцией\n")
-    #         exit_app()
-    #     logging.info("Попытка создать папку /home/teacher/teacher_control")
-    #     run_command('mkdir -p /home/teacher/teacher_control')
-    #     logging.info("Успешно создана папка /home/teacher/teacher_control")
-    #     try:
-    #         with open("/home/teacher/teacher_control/hosts.txt", "r") as hosts:
-    #             hosts.close()
-    #         run_command('ln -s /home/teacher/teacher_control/hosts.txt hosts.txt')
-    #         logging.info("файл host найден и открыт")
-    #     except IOError:
-    #         with open("/home/teacher/teacher_control/hosts.txt", "w") as hosts:
-    #             hosts.close()
-    #         run_command('ln -s /home/teacher/teacher_control/hosts.txt hosts.txt')
-    #         print(
-    #             'Сгенерирован файл hosts.txt, перечислите в нём имена компьютеров построчно и запустите скрипт '
-    #             'повторно.\n\n '
-    #             '    ВАЖНО!\n\nДля М ОС имя компьютера должно оканчиваться на .local, пример: m4444-5-kab1-1.local')
-    #         logging.info("файл hosts не был найден, создан")
-    #         exit_app()
-    #
-    #     while True:
-    #         print('\nВыберите действие:\n\n'
-    #               '[1] - настроить доступ по ssh для всех компьютеров из вашего файла hosts.txt\n'
-    #               '[2] - создать сетевую папку share и копировать её ярлык на устройства учеников (требуется настроенный '
-    #               'ssh)\n '
-    #               '[3] - установить veyon на всех компьютерах в кабинете (требуется настроенный ssh)\n'
-    #               '[4] - установить teacher_control и создать архив с папкой /home/student каждого устройства из файла '
-    #               'hosts.txt (требуется настроенный ssh) '
-    #               '\n\n[0] - выход')
-    #         print("Введите номер действия и нажмите Enter:")
-    #         logging.info("Открыто главное меню")
-    #         answer = int(input())
-    #         logging.info(f"Введено {answer}")
-    #         if answer == 1:
-    #             setup_ssh()
-    #         if answer == 2:
-    #             test_ssh()
-    #             network_folders()
-    #         if answer == 3:
-    #             test_ssh()
-    #             install_veyon()
-    #         if answer == 4:
-    #             test_ssh()
-    #             student_archive()
-    #         if answer == 0:
-    #             exit_app()

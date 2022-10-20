@@ -6,10 +6,9 @@ from PyQt5.QtWidgets import QApplication
 from system import this_host, user, run_command
 from teacher_control import TeacherWindow
 
-
 # Создание папки с конфигом
 run_command(f'mkdir -p /home/{user}/.teacher_control')
-run_command(f'touch /home/{user}/.teacher_control/hosts.txt')
+run_command(f'touch /home/{user}/.teacher_control/hosts.json')
 
 # Настройка логирования
 logging.basicConfig(filename=f'/home/{user}/.teacher_control/log.txt',
