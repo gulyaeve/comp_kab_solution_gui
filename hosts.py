@@ -43,7 +43,10 @@ class Hosts:
         return self
 
     def to_list(self):
-        return self.hosts
+        result = []
+        for host in self.hosts:
+            result.append(host['hostname'])
+        return result
 
     def read(self):
         try:

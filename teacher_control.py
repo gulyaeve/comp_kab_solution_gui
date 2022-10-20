@@ -57,7 +57,6 @@ class TeacherWindow(QWidget):
         self.hosts = QListWidget()
         self.hosts.setSelectionMode(QAbstractItemView.ExtendedSelection)
         # hosts_from_file = open('~/.teacher_control/hosts.txt', 'r').readlines()
-        # hosts_from_file = ['sm2222-3-313-2.local', 'sm2222-3-313-3.local']
         hosts_from_file = Hosts().to_list()
         self.hosts.addItems(hosts_from_file)
         self.n = len(self.hosts)
