@@ -2,7 +2,7 @@ import logging
 import subprocess
 import time
 from _socket import timeout
-from getpass import getpass
+# from getpass import getpass
 
 import paramiko
 from PyQt5.QtWidgets import QWidget, QGridLayout, QPushButton, QPlainTextEdit, QLabel, QLineEdit, QInputDialog, \
@@ -10,7 +10,9 @@ from PyQt5.QtWidgets import QWidget, QGridLayout, QPushButton, QPlainTextEdit, Q
 from paramiko.channel import Channel
 from paramiko.ssh_exception import AuthenticationException, SSHException
 from PyQt5.QtCore import Qt
-from desktop_entrys import ssh_add_link, veyon_link, teacher_sh_link, network_share, network_share_for_teacher
+
+from config import config_path
+from desktop_entrys import ssh_add_link, veyon_link, network_share, network_share_for_teacher
 from hosts import Hosts
 from system import exit_app, run_command, this_host, user
 
@@ -45,7 +47,8 @@ class SettingsWindow(QWidget):
         button.clicked.connect(self.installVeyon)
         grid.addWidget(button, 2, 0)
 
-        button = QPushButton('Установить Teacher Control и создать архивы домашних папок')
+        # TODO: Предполагаем что это заменим на rsync и "типовую" папку студента
+        button = QPushButton('Создать архивы домашних папок')
         button.clicked.connect(self.installTeacherControl)
         grid.addWidget(button, 3, 0)
 
@@ -149,7 +152,7 @@ class SettingsWindow(QWidget):
 
     def ping(self):
         """
-        Подключение к хостам из hosts.txt и проверка ping
+        Подключение к хостам и проверка ping
         :return: список хостов в случае успеха
         """
         list_of_hosts = self.hosts.to_list()
@@ -180,9 +183,9 @@ class SettingsWindow(QWidget):
                     errors += 1
             if errors > 0:
                 print("Некоторые компьютеры найти не удалось, "
-                      "проверьте правильность имён или адресов в hosts.txt и повторите попытку.")
+                      "проверьте правильность имён или адресов и повторите попытку.")
                 self.textfield.appendPlainText("Некоторые компьютеры найти не удалось, "
-                                               "проверьте правильность имён или адресов в hosts.txt и повторите попытку.")
+                                               "проверьте правильность имён или адресов и повторите попытку.")
                 exit_app()
             return list_of_hosts
 
@@ -190,8 +193,8 @@ class SettingsWindow(QWidget):
         """
         Проверка подключения к хостам пользователем root
         """
-        print("\nПроверяю доступ по ssh к компьютерам из hosts.txt:")
-        self.textfield.appendPlainText("\nПроверяю доступ по ssh к компьютерам из hosts.txt:")
+        print("\nПроверяю доступ по ssh к компьютерам")
+        self.textfield.appendPlainText("\nПроверяю доступ по ssh к компьютерам")
         list_of_hosts = self.ping()
         for host in list_of_hosts:
             host = host.split('\n')[0]
@@ -225,9 +228,9 @@ class SettingsWindow(QWidget):
             file_link.write(ssh_add_link)
         logging.info(f"Ярлык в автозапуск ssh-add создан")
         logging.info(f"Начало копирования ключей")
-        print('\nКопирую ключ на все компьютеры из списка hosts.txt:')
-        self.textfield.appendPlainText('\nКопирую ключ на все компьютеры из списка hosts.txt:')
-        run_command(f"ssh-add; for i in $(cat /home/{user}/.teacher_control/hosts.txt); do ssh-copy-id -f -i "
+        print('\nКопирую ключ на все компьютеры')
+        self.textfield.appendPlainText('\nКопирую ключ на все компьютеры:')
+        run_command(f"ssh-add; for i in $({str(self.hosts)}); do ssh-copy-id -f -i "
                     f"/home/{user}/.ssh/id_ed25519.pub teacher@$i -o IdentitiesOnly=yes; done")
         logging.info(f"Ключи скопированы")
         print("Теперь я настрою ssh для суперпользователя на всех устройствах")
@@ -286,12 +289,12 @@ class SettingsWindow(QWidget):
             "veyon-cli authkeys delete teacher/public; "
             "veyon-cli authkeys create teacher; "
             "veyon-cli authkeys setaccessgroup teacher/private teacher; "
-            "veyon-cli authkeys export teacher/public /home/{user}/.teacher_control/teacher_public_key.pem; "
+            "veyon-cli authkeys export teacher/public {config_path}/teacher_public_key.pem; "
             "veyon-cli networkobjects add location {kab}; "
-            "for i in $(cat /home/{user}/.teacher_control/hosts.txt); "
+            "for i in $({hosts}); "
             "do veyon-cli networkobjects add computer $i $i \"\" {kab}; done; "
-            "veyon-cli config export /home/{user}/.teacher_control/myconfig.json; "
-            "veyon-cli service start'".format(user=user, kab=kab)
+            "veyon-cli config export {config_path}/myconfig.json; "
+            "veyon-cli service start'".format(config_path=config_path, kab=kab, hosts=str(self.hosts))
         )
         logging.info(f'Установка вейон на комьютере учителя УСПЕШНО')
 
@@ -299,9 +302,9 @@ class SettingsWindow(QWidget):
         logging.info(f'Установка вейон на комьютере учеников')
         run_command(
             f'ssh-add; '
-            f'for i in $(cat /home/{user}/.teacher_control/hosts.txt); do '
-            f'scp /home/{user}/.teacher_control/teacher_public_key.pem root@$i:/tmp/ && '
-            f'scp /home/{user}/.teacher_control/myconfig.json root@$i:/tmp/ && '
+            f'for i in $({str(self.hosts)}); do '
+            f'scp {config_path}/teacher_public_key.pem root@$i:/tmp/ && '
+            f'scp {config_path}/myconfig.json root@$i:/tmp/ && '
             f'ssh root@$i "apt-get update && '
             f'apt-get -y install veyon && '
             f'veyon-cli authkeys delete teacher/public; '
@@ -326,7 +329,7 @@ class SettingsWindow(QWidget):
         logging.info("Начинаю сохранение папки student на всех устройствах в архив")
         run_command(
             f"ssh-add; "
-            f"for i in $(cat /home/{user}/.teacher_control/hosts.txt); "
+            f"for i in $({str(self.hosts)}); "
             "do ssh root@$i 'mkdir -p /home/student/Рабочий\ стол/Сдать\ работы && "
             "chmod 777 /home/student/Рабочий\ стол/Сдать\ работы && "
             "cd /home && "
@@ -346,14 +349,14 @@ class SettingsWindow(QWidget):
             'этом компьютере: ')
         # TODO: Не очень правильно создавать папку в хоум, нужно подумать куда перенести
         run_command("su - root -c 'mkdir /home/share && chmod 755 /home/share && chown teacher /home/share'")
-        with open(f'/home/{user}/.teacher_control/share.desktop', 'w') as file_link:
+        with open(f'{config_path}/share.desktop', 'w') as file_link:
             file_link.write(network_share.format(teacher_host=this_host))
             file_link.close()
 
         run_command(
             'ssh-add; '
-            f'for i in $(cat /home/{user}/.teacher_control/hosts.txt); '
-            f'do scp /home/{user}/.teacher_control/share.desktop root@$i:"/home/student/Рабочий\\ стол"; '
+            f'for i in $({str(self.hosts)}); '
+            f'do scp {config_path}/share.desktop root@$i:"/home/student/Рабочий\\ стол"; '
             f'done')
         with open(f'/home/{user}/Рабочий стол/share.desktop', 'w') as file_link_2:
             file_link_2.write(network_share_for_teacher)
@@ -362,8 +365,9 @@ class SettingsWindow(QWidget):
         logging.info('Сетевая папка создана')
 
     def saveHosts(self):
-        with open(f'/home/{user}/.teacher_control/hosts.txt', 'w') as out:
-            print(self.hostsfield.toPlainText(), file=out)
+        self.hosts.update(self.hostsfield.toPlainText())
+        # with open(f'{config_path}/hosts.txt', 'w') as out:
+        #     print(self.hostsfield.toPlainText(), file=out)
 
     def getMacAddress(self, hostname): # TODO нужно тестировать
         ip_address = subprocess.check_output(['ping', hostname, '-c', '1']).decode('utf-8').split('(')[1].split(')')[0]

@@ -3,15 +3,16 @@ import sys
 
 from PyQt5.QtWidgets import QApplication
 
+from config import hosts_file_path, config_path
 from system import this_host, user, run_command
 from teacher_control import TeacherWindow
 
 # Создание папки с конфигом
-run_command(f'mkdir -p /home/{user}/.teacher_control')
-run_command(f'touch /home/{user}/.teacher_control/hosts.json')
+run_command(f'mkdir -p {config_path}')
+run_command(f'touch {hosts_file_path}')
 
 # Настройка логирования
-logging.basicConfig(filename=f'/home/{user}/.teacher_control/log.txt',
+logging.basicConfig(filename=f'{config_path}/log.txt',
                     format=u'%(asctime)s %(filename)s [LINE:%(lineno)d] [%(funcName)s()] #%(levelname)-15s %(message)s',
                     level=logging.INFO,
                     )

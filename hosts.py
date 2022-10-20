@@ -1,10 +1,8 @@
 import logging
 from dataclasses import dataclass
 from json import loads, dumps
-from system import user
 
-
-filename = f'/home/{user}/.teacher_control/hosts.json'
+from config import hosts_file_path
 
 
 @dataclass
@@ -18,7 +16,7 @@ class Host:
 
 class Hosts:
     def __init__(self):
-        self.filename = filename
+        self.filename = hosts_file_path
         with open(self.filename, 'r', encoding='utf-8') as file:
             if not file.read():
                 self.clean()

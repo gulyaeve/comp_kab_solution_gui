@@ -25,5 +25,5 @@ def run_command(command: str) -> str:
 
 
 # Получение имени компьютера и текущего пользователя
-this_host = subprocess.run(['hostname'], stdout=subprocess.PIPE).stdout.decode('utf-8').split('\n')[0]
-user = subprocess.run(['whoami'], stdout=subprocess.PIPE).stdout.decode('utf-8').split('\n')[0]
+this_host = run_command('hostname').strip()
+user = run_command('whoami').strip()
