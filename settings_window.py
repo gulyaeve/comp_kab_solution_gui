@@ -410,6 +410,21 @@ class SettingsWindow(QWidget):
         with open(f'/home/{user}/.teacher_control/hosts.txt', 'w') as out:
             print(self.hostsfield.toPlainText(), file=out)
 
+
+    def getMacAddress(self, hostname):
+        ip_address = subprocess.check_output(['ping', hostname, '-c', '1']).decode('utf-8').split('(')[1].split(')')[0]
+        ifconfig_output = run_command(f'ssh root@{hostname} "ifconfig"')
+        macAddress = f'Компьютер {hostname} не подключён к проводной сети'
+        for s in ifconfig_output:
+            if s.startswith('e'):
+                macAddress = s.split('HWaddr ')[1].rstrip()
+            if s.strip() == '':
+                macAddress = f'Компьютер {hostname} не подключён к проводной сети'
+            if ip_address in s:
+                return macAddress
+        return macAddress
+
+
     # def main(self):
     #     """
     #     Главное меню
