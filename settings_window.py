@@ -1,5 +1,4 @@
 import logging
-import os
 import subprocess
 import time
 from _socket import timeout
@@ -84,21 +83,6 @@ class SettingsWindow(QWidget):
             print("Данный скрипт не следует запускать от имени ученика")
             self.textfield.appendPlainText("Данный скрипт не следует запускать от имени ученика")
             exit_app()
-        # try:
-        #     with open(f"~/.teacher_control/hosts.txt", "r") as hosts:
-        #         hosts.close()
-        #     # self.textfield.appendPlainText(run_command(f'ln -s ~/.teacher_control/hosts.txt hosts.txt'))
-        #     logging.info("файл host найден и открыт")
-        # except (IOError, FileNotFoundError):
-        #     with open(f"~/.teacher_control/hosts.txt", "w") as hosts:
-        #         hosts.close()
-        #     self.textfield.appendPlainText(run_command(f'ln -s ~/.teacher_control/hosts.txt hosts.txt'))
-        #     print(
-        #         'Сгенерирован файл hosts.txt, перечислите в нём имена компьютеров построчно и запустите скрипт '
-        #         'повторно.\n\n '
-        #         '    ВАЖНО!\n\nДля М ОС имя компьютера должно оканчиваться на .local, пример: m4444-5-kab1-1.local')
-        #     logging.info("файл hosts не был найден, создан")
-        #     exit_app()
 
     def setupssh(self):
         print('Setup ssh...')  # это выводится
@@ -131,9 +115,6 @@ class SettingsWindow(QWidget):
             ssh.connect(hostname=host, port=22, timeout=5, username='teacher')
             logging.info(f"Подключено по ssh@teacher без пароля к {host}")
         except AuthenticationException:
-            # TODO: должно появляться окно с полем ввода: v
-            # print(f"Введите пароль учётной записи teacher на {host}: ")
-            # teacher_pass = str(input())
             teacher_pass, okPressed = QInputDialog.getText(self, "Введите пароль",
                                                            f"Введите пароль учётной записи teacher на {host}: ",
                                                            QLineEdit.Password, "")
@@ -171,19 +152,13 @@ class SettingsWindow(QWidget):
         Подключение к хостам из hosts.txt и проверка ping
         :return: список хостов в случае успеха
         """
-        with open(f"/home/{user}/.teacher_control/hosts.txt", "r") as hosts:
-            list_of_hosts = hosts.readlines()
-        # except IOError:
-        #     print(f'\nСоздайте файл /home/{user}/.teacher_control/hosts.txt, '
-        #           f'перечислите в нём имена компьютеров построчно и запустите скрипт повторно')
-        #     # exit_app()
+        list_of_hosts = self.hosts.to_list()
         if len(list_of_hosts) == 0 or list_of_hosts[0] == '':
             self.textfield.appendPlainText(
                 'Заполните список устройств: перечислите в нём имена компьютеров построчно и запустите скрипт повторно.\n\n'
                 '    ВАЖНО!\n\nДля М ОС имя компьютера должно оканчиваться на .local. '
                 'Если по имени компьютеры не находятся, '
                 'то используйте ip-адреса, но так делать не рекомендуется из-за смены адресов по DHCP.')
-            # exit_app()
         else:
             print("\nСписок устройств найден, выполняю ping всех устройств:")
             self.textfield.appendPlainText("\nСписок устройств найден, выполняю ping всех устройств:")
@@ -257,9 +232,6 @@ class SettingsWindow(QWidget):
         logging.info(f"Ключи скопированы")
         print("Теперь я настрою ssh для суперпользователя на всех устройствах")
         self.textfield.appendPlainText("Теперь я настрою ssh для суперпользователя на всех устройствах")
-        # TODO: нужно окно ввода пароля v
-        # print("Введите пароль учётной записи суперпользователя root (для устройств учеников): ")
-        # root_pass = str(getpass("root password:"))
         root_pass, okPressed = QInputDialog.getText(self, "Введите пароль",
                                                     f"Введите пароль учётной записи суперпользователя root (для устройств учеников): ",
                                                     QLineEdit.Password, "")
@@ -300,8 +272,6 @@ class SettingsWindow(QWidget):
         хостах
         """
         print("Введите номер этого кабинета:")
-        # TODO: должно появляться окно с полем ввода кабинета: v
-        # kab = input()
         kab, okPressed = QInputDialog.getText(self, "Номер кабинета",
                                               f"Введите номер этого кабинета:",
                                               QLineEdit.Normal, "")
