@@ -12,6 +12,7 @@ from paramiko.channel import Channel
 from paramiko.ssh_exception import AuthenticationException, SSHException
 from PyQt5.QtCore import Qt
 from desktop_entrys import ssh_add_link, veyon_link, teacher_sh_link, network_share, network_share_for_teacher
+from hosts import Hosts
 from system import exit_app, run_command, this_host, user
 
 
@@ -62,12 +63,11 @@ class SettingsWindow(QWidget):
         grid.addWidget(openFilebtn, 0, 2)
 
         self.hostsfield = QPlainTextEdit()
-        if 'hosts.txt' in os.listdir(f'/home/{user}/.teacher_control'):
-            self.hostsfield.setPlainText(''.join(open(f'/home/{user}/.teacher_control/hosts.txt', 'r').readlines()))
-        else:
-            with open(f'/home/{user}/.teacher_control/hosts.txt', 'w'):
-                pass
+        self.hosts = Hosts()
+        if not self.hosts:
             self.hostsfield.setPlainText('Введите сюда имена хостов')
+        else:
+            self.hostsfield.setPlainText(str(self.hosts))
         grid.addWidget(self.hostsfield, 1, 1, 6, 2)
 
         button = QPushButton('Сохранить список хостов')
