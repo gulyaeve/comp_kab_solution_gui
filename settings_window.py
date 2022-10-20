@@ -6,13 +6,13 @@ from _socket import timeout
 from getpass import getpass
 
 import paramiko
-from PyQt5.QtWidgets import QWidget, QGridLayout, QPushButton, QPlainTextEdit, QLabel, QLineEdit, QInputDialog
+from PyQt5.QtWidgets import QWidget, QGridLayout, QPushButton, QPlainTextEdit, QLabel, QLineEdit, QInputDialog, \
+    QFileDialog, QMessageBox
 from paramiko.channel import Channel
 from paramiko.ssh_exception import AuthenticationException, SSHException
 from PyQt5.QtCore import Qt
 from desktop_entrys import ssh_add_link, veyon_link, teacher_sh_link, network_share, network_share_for_teacher
 from system import exit_app, run_command, this_host, user
-
 
 
 class SSHTimeoutError(Exception):
@@ -57,6 +57,10 @@ class SettingsWindow(QWidget):
         hostslabel.setAlignment(Qt.AlignCenter)
         grid.addWidget(hostslabel, 0, 1)
 
+        openFilebtn = QPushButton('Открыть файл...')
+        openFilebtn.clicked.connect(self.openFileDialog)
+        grid.addWidget(openFilebtn, 0, 2)
+
         self.hostsfield = QPlainTextEdit()
         if 'hosts.txt' in os.listdir(f'/home/{user}/.teacher_control'):
             self.hostsfield.setPlainText(''.join(open(f'/home/{user}/.teacher_control/hosts.txt', 'r').readlines()))
@@ -64,11 +68,11 @@ class SettingsWindow(QWidget):
             with open(f'/home/{user}/.teacher_control/hosts.txt', 'w'):
                 pass
             self.hostsfield.setPlainText('Введите сюда имена хостов')
-        grid.addWidget(self.hostsfield, 1, 1, 6, 1)
+        grid.addWidget(self.hostsfield, 1, 1, 6, 2)
 
         button = QPushButton('Сохранить список хостов')
         button.clicked.connect(self.saveHosts)
-        grid.addWidget(button, 7, 1)
+        grid.addWidget(button, 7, 1, 1, 2)
 
         if user == 'root':
             logging.info("Попытка запустить от рута")
@@ -97,7 +101,7 @@ class SettingsWindow(QWidget):
         #     exit_app()
 
     def setupssh(self):
-        print('Setup ssh...') # это выводится
+        print('Setup ssh...')  # это выводится
         self.textfield.setPlainText('Setup ssh...')
         self.setup_ssh()
 
@@ -130,7 +134,9 @@ class SettingsWindow(QWidget):
             # TODO: должно появляться окно с полем ввода: v
             # print(f"Введите пароль учётной записи teacher на {host}: ")
             # teacher_pass = str(input())
-            teacher_pass, okPressed = QInputDialog.getText(self, "Введите пароль", f"Введите пароль учётной записи teacher на {host}: ", QLineEdit.Password, "")
+            teacher_pass, okPressed = QInputDialog.getText(self, "Введите пароль",
+                                                           f"Введите пароль учётной записи teacher на {host}: ",
+                                                           QLineEdit.Password, "")
             ssh.connect(hostname=host, port=22, timeout=5, username='teacher', password=teacher_pass)
             logging.info(f"Подключено по ssh@teacher С ПАРОЛЕМ к {host}")
         except timeout:
@@ -201,7 +207,7 @@ class SettingsWindow(QWidget):
                 print("Некоторые компьютеры найти не удалось, "
                       "проверьте правильность имён или адресов в hosts.txt и повторите попытку.")
                 self.textfield.appendPlainText("Некоторые компьютеры найти не удалось, "
-                      "проверьте правильность имён или адресов в hosts.txt и повторите попытку.")
+                                               "проверьте правильность имён или адресов в hosts.txt и повторите попытку.")
                 exit_app()
             return list_of_hosts
 
@@ -255,8 +261,8 @@ class SettingsWindow(QWidget):
         # print("Введите пароль учётной записи суперпользователя root (для устройств учеников): ")
         # root_pass = str(getpass("root password:"))
         root_pass, okPressed = QInputDialog.getText(self, "Введите пароль",
-                                                       f"Введите пароль учётной записи суперпользователя root (для устройств учеников): ",
-                                                       QLineEdit.Password, "")
+                                                    f"Введите пароль учётной записи суперпользователя root (для устройств учеников): ",
+                                                    QLineEdit.Password, "")
 
         for host in list_of_hosts:
             host = host.split('\n')[0]
@@ -273,8 +279,8 @@ class SettingsWindow(QWidget):
                     # TODO: нужно окно ввода пароля v
                     # root_pass2 = str(str(getpass(f"root@{host} password:")))
                     root_pass2, okPressed = QInputDialog.getText(self, "Введите пароль",
-                                                                f"root@{host} password:",
-                                                                QLineEdit.Password, "")
+                                                                 f"root@{host} password:",
+                                                                 QLineEdit.Password, "")
                     result2 = self.ssh_copy_to_root(host, root_pass2)
                     if "[root@" not in result2:
                         logging.info(f'Пароль root на {host} не подошёл 2 попытка')
@@ -297,8 +303,8 @@ class SettingsWindow(QWidget):
         # TODO: должно появляться окно с полем ввода кабинета: v
         # kab = input()
         kab, okPressed = QInputDialog.getText(self, "Номер кабинета",
-                                                     f"Введите номер этого кабинета:",
-                                                     QLineEdit.Normal, "")
+                                              f"Введите номер этого кабинета:",
+                                              QLineEdit.Normal, "")
         print('Сначала установим на этом компьютере, введите пароль от root и ждите окончания установки: ')
         # TODO: нужно понять как вводить пароль root (может тоже появляться окно, но тут может не сработать)
         logging.info(f'Установка вейон на комьютере учителя')
@@ -410,8 +416,7 @@ class SettingsWindow(QWidget):
         with open(f'/home/{user}/.teacher_control/hosts.txt', 'w') as out:
             print(self.hostsfield.toPlainText(), file=out)
 
-
-    def getMacAddress(self, hostname):
+    def getMacAddress(self, hostname): # TODO нужно тестировать
         ip_address = subprocess.check_output(['ping', hostname, '-c', '1']).decode('utf-8').split('(')[1].split(')')[0]
         ifconfig_output = run_command(f'ssh root@{hostname} "ifconfig"')
         macAddress = f'Компьютер {hostname} не подключён к проводной сети'
@@ -424,6 +429,15 @@ class SettingsWindow(QWidget):
                 return macAddress
         return macAddress
 
+    def openFileDialog(self):
+
+        fileName = QFileDialog.getOpenFileName(self, f"/home/{user}", '', '*.txt')
+        with open(fileName[0], 'r') as inp:
+            lines = inp.readlines()
+            if len(lines) > 1000:
+                QMessageBox('Слишком большой файл!').show()
+            else:
+                self.hostsfield.setPlainText(''.join(lines))
 
     # def main(self):
     #     """
