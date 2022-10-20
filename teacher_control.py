@@ -9,6 +9,7 @@ from PyQt5.QtWidgets import (QPushButton, QLineEdit, \
                              QListWidget, QAbstractItemView, QMenuBar, \
                              QInputDialog, QProgressBar, QLabel, QMessageBox, QWidget, QGridLayout)
 
+from hosts import Hosts
 from system import run_command
 from settings_window import SettingsWindow
 
@@ -56,7 +57,8 @@ class TeacherWindow(QWidget):
         self.hosts = QListWidget()
         self.hosts.setSelectionMode(QAbstractItemView.ExtendedSelection)
         # hosts_from_file = open('~/.teacher_control/hosts.txt', 'r').readlines()
-        hosts_from_file = ['sm2222-3-313-2.local', 'sm2222-3-313-3.local']
+        # hosts_from_file = ['sm2222-3-313-2.local', 'sm2222-3-313-3.local']
+        hosts_from_file = Hosts().to_list()
         self.hosts.addItems(hosts_from_file)
         self.n = len(self.hosts)
         grid.addWidget(self.hosts, 2, 1, 5, 2)

@@ -42,6 +42,9 @@ class Hosts:
         self.write(self.hosts)
         return self
 
+    def to_list(self):
+        return self.hosts
+
     def read(self):
         try:
             with open(self.filename, 'r', encoding='utf-8') as file:
