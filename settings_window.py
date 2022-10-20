@@ -6,12 +6,13 @@ from _socket import timeout
 from getpass import getpass
 
 import paramiko
-from PyQt5.QtWidgets import QWidget, QGridLayout, QPushButton, QPlainTextEdit, QLabel
+from PyQt5.QtWidgets import QWidget, QGridLayout, QPushButton, QPlainTextEdit, QLabel, QLineEdit, QInputDialog
 from paramiko.channel import Channel
 from paramiko.ssh_exception import AuthenticationException, SSHException
 from PyQt5.QtCore import Qt
 from desktop_entrys import ssh_add_link, veyon_link, teacher_sh_link, network_share, network_share_for_teacher
 from system import exit_app, run_command, this_host, user
+
 
 
 class SSHTimeoutError(Exception):
@@ -126,9 +127,10 @@ class SettingsWindow(QWidget):
             ssh.connect(hostname=host, port=22, timeout=5, username='teacher')
             logging.info(f"Подключено по ssh@teacher без пароля к {host}")
         except AuthenticationException:
-            # TODO: должно появляться окно с полем ввода:
-            print(f"Введите пароль учётной записи teacher на {host}: ")
-            teacher_pass = str(input())
+            # TODO: должно появляться окно с полем ввода: v
+            # print(f"Введите пароль учётной записи teacher на {host}: ")
+            # teacher_pass = str(input())
+            teacher_pass, okPressed = QInputDialog.getText(self, "Введите пароль", f"Введите пароль учётной записи teacher на {host}: ", QLineEdit.Password, "")
             ssh.connect(hostname=host, port=22, timeout=5, username='teacher', password=teacher_pass)
             logging.info(f"Подключено по ssh@teacher С ПАРОЛЕМ к {host}")
         except timeout:
@@ -249,9 +251,13 @@ class SettingsWindow(QWidget):
         logging.info(f"Ключи скопированы")
         print("Теперь я настрою ssh для суперпользователя на всех устройствах")
         self.textfield.appendPlainText("Теперь я настрою ssh для суперпользователя на всех устройствах")
-        # TODO: нужно окно ввода пароля
-        print("Введите пароль учётной записи суперпользователя root (для устройств учеников): ")
-        root_pass = str(getpass("root password:"))
+        # TODO: нужно окно ввода пароля v
+        # print("Введите пароль учётной записи суперпользователя root (для устройств учеников): ")
+        # root_pass = str(getpass("root password:"))
+        root_pass, okPressed = QInputDialog.getText(self, "Введите пароль",
+                                                       f"Введите пароль учётной записи суперпользователя root (для устройств учеников): ",
+                                                       QLineEdit.Password, "")
+
         for host in list_of_hosts:
             host = host.split('\n')[0]
             print(f"Пробую подключиться к {host}")
@@ -261,11 +267,14 @@ class SettingsWindow(QWidget):
                 result = self.ssh_copy_to_root(host, root_pass)
                 if "[root@" not in result:
                     print(f'Пароль root на {host} не подошёл, введите ещё раз: ')
-                    # TODO: нужно окно ввода пароля
+                    # TODO: нужно окно ввода пароля (где??)
                     self.textfield.appendPlainText(f'Пароль root на {host} не подошёл, введите ещё раз: ')
                     logging.info(f'Пароль root на {host} не подошёл 1 попытка')
-                    # TODO: нужно окно ввода пароля
-                    root_pass2 = str(str(getpass(f"root@{host} password:")))
+                    # TODO: нужно окно ввода пароля v
+                    # root_pass2 = str(str(getpass(f"root@{host} password:")))
+                    root_pass2, okPressed = QInputDialog.getText(self, "Введите пароль",
+                                                                f"root@{host} password:",
+                                                                QLineEdit.Password, "")
                     result2 = self.ssh_copy_to_root(host, root_pass2)
                     if "[root@" not in result2:
                         logging.info(f'Пароль root на {host} не подошёл 2 попытка')
@@ -285,8 +294,11 @@ class SettingsWindow(QWidget):
         хостах
         """
         print("Введите номер этого кабинета:")
-        # TODO: должно появляться окно с полем ввода кабинета:
-        kab = input()
+        # TODO: должно появляться окно с полем ввода кабинета: v
+        # kab = input()
+        kab, okPressed = QInputDialog.getText(self, "Номер кабинета",
+                                                     f"Введите номер этого кабинета:",
+                                                     QLineEdit.Normal, "")
         print('Сначала установим на этом компьютере, введите пароль от root и ждите окончания установки: ')
         # TODO: нужно понять как вводить пароль root (может тоже появляться окно, но тут может не сработать)
         logging.info(f'Установка вейон на комьютере учителя')
@@ -330,7 +342,7 @@ class SettingsWindow(QWidget):
         print('Veyon установлен')
         logging.info('Veyon установлен')
 
-    # TODO: Эта функция не нужна наверно уже
+    # TODO: Эта функция не нужна наверно уже | Я не помню, зачем она была нужна. Не нужна - удаляй)
     # def teacher_control_store(self):
     #     """
     #     Копирование программы для сбора работ и создание ярлыка

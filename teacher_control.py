@@ -3,6 +3,7 @@
 
 import datetime
 
+from PyQt5 import QtGui
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (QPushButton, QLineEdit, \
                              QListWidget, QAbstractItemView, QMenuBar, \
@@ -37,7 +38,8 @@ class TeacherWindow(QWidget):
         self.pbar.setGeometry(200, 10, 200, 20)
 
         names = ['Собрать работы', 'Очистить работы', 'Восстановить', 'Открыть Veyon', 'Открыть sftp', 'Команда']
-        functions = [self.get_works, self.clean_works, self.backup_student, self.open_veyon, self.open_sftp, self.run_command]
+        functions = [self.get_works, self.clean_works, self.backup_student, self.open_veyon, self.open_sftp,
+                     self.run_command]
 
         for i in range(len(names)):
             button = QPushButton(names[i])
