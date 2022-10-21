@@ -9,6 +9,7 @@ from PyQt5.QtWidgets import (QPushButton, QLineEdit, \
                              QListWidget, QAbstractItemView, QMenuBar, \
                              QInputDialog, QProgressBar, QLabel, QMessageBox, QWidget, QGridLayout)
 
+from config import config_path
 from hosts import Hosts
 from system import run_command, user
 from settings_window import SettingsWindow
@@ -147,14 +148,14 @@ class TeacherWindow(QWidget):
                 return
         self.pbar.setValue(0)
         # TODO: эти методы нужно тестировать в реальных условиях
-        run_command(f'tar -xf student.tar.gz -C /home/{user}/Документы')
+        run_command(f'tar -xf student.tar.gz -C {config_path}/')
         for i in range(n):
             comp = comps[i].text().strip()
             try:
                 # run_command(f'ssh root@{comp} "pkill -u student"')
                 # self.infoLabel.setText(f'Восстанавливаем {comp}...')
                 # self.pbar.setValue((i + 1) * 100 // n)
-                run_command(f'rsync -avz --delete /home/{user}/Документы/student root@{comp}:/home/student/')
+                run_command(f'rsync -avz --delete {config_path}/student root@{comp}:/home/student/')
             except:
                 self.infoLabel.setText(f'Не удалось подключиться к {comp}.')
         self.infoLabel.setText('Команда восстановления выполнена на выбранных компьютерах.')
