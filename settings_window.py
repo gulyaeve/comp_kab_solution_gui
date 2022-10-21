@@ -63,24 +63,35 @@ class SettingsWindow(QWidget):
 
         hostslabel = QLabel('Список хостов:')
         hostslabel.setAlignment(Qt.AlignCenter)
-        grid.addWidget(hostslabel, 0, 1)
+        grid.addWidget(hostslabel, 0, 1, 1, 2)
 
         openFilebtn = QPushButton('Открыть файл...')
         openFilebtn.clicked.connect(self.openFileDialog)
-        grid.addWidget(openFilebtn, 0, 2)
+        grid.addWidget(openFilebtn, 0, 3)
 
         self.hostsfield = QTableView()
         self.hostsfield.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         # self.hosts = hosts
+
         if not self.hosts:
             self.hostsfield.setModel(TableModel([['Введите сюда имена хостов']]))
         else:
             self.hostsfield.setModel(TableModel(self.hosts.to_list()))
-        grid.addWidget(self.hostsfield, 1, 1, 6, 2)
+        grid.addWidget(self.hostsfield, 1, 1, 6, 3)
+
+        button = QPushButton('+')
+        # button.clicked.connect(self.saveHosts)
+        grid.addWidget(button, 7, 1)
+
+        button = QPushButton('-')
+        # button.clicked.connect(self.saveHosts)
+        grid.addWidget(button, 7, 2)
 
         button = QPushButton('Сохранить список хостов')
         button.clicked.connect(self.saveHosts)
-        grid.addWidget(button, 7, 1, 1, 2)
+        grid.addWidget(button, 7, 3)
+
+
 
         if user == 'root':
             logging.info("Попытка запустить от рута")
