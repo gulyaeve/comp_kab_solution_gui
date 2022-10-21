@@ -1,4 +1,5 @@
 import logging
+import os
 import subprocess
 import time
 from _socket import timeout
@@ -6,12 +7,14 @@ from _socket import timeout
 
 import paramiko
 import shutil
+
+from PIL.ImageFont import truetype
 from PyQt5.QtWidgets import QWidget, QGridLayout, QPushButton, QPlainTextEdit, QLabel, QLineEdit, QInputDialog, \
     QFileDialog, QMessageBox, QTableView, QHeaderView
 from paramiko.channel import Channel
 from paramiko.ssh_exception import AuthenticationException, SSHException
 from PyQt5.QtCore import Qt
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFont
 
 from classes import TableModel
 from config import config_path
@@ -407,14 +410,35 @@ class SettingsWindow(QWidget):
                     line = i
                     break
         fname = line.split('//')[1].rstrip()
-        shutil.copyfile(fname, fname + '.old')
-        img = Image.open(fname)
+        os.system(f'mkdir -p /home/{user}/.desktop_wallpapers')
+        shutil.copyfile(fname, f"/home/{user}/.desktop_wallpapers/{fname.split('/')[-1]}")
+        fname = f"/home/{user}/.desktop_wallpapers/{fname.split('/')[-1]}"
+        pos = fname.rindex('.')
+        fname2 = fname[:pos] + '_with_host' + fname[pos:]
+        shutil.copyfile(fname, fname2)
+        img = Image.open(fname2)
         draw = ImageDraw.Draw(img)
         width, height = img.size
         text = subprocess.check_output('hostname').decode('utf-8').strip()
-        textwidth, textheight = draw.textsize(text)
-        margin = 10
-        x = width - textwidth - margin
-        y = height - textheight - margin
-        draw.text((x, y), text, (0, 0, 0))
-        img.save(fname)
+        fontsize = 10
+        font = truetype('/usr/share/fonts/ttf/gnu-free/FreeMono.ttf', fontsize)
+        while draw.textlength(text, font) < width // 3:
+            fontsize += 1
+            font = ImageFont.truetype('/usr/share/fonts/ttf/gnu-free/FreeMono.ttf', fontsize)
+        textwidth = draw.textlength(text, font)
+        margin = width // 10
+        x = width // 2 - textwidth // 2 - margin
+        y = height - textwidth // 5 - margin
+        draw.text((x, y), text, (0, 0, 0), font=font)
+        img.save(fname2)
+
+        settingsfilename = f'/home/{user}/.config/plasma-org.kde.plasma.desktop-appletsrc'
+        shutil.copyfile(settingsfilename, settingsfilename + '.bak')
+        with open(settingsfilename, 'r') as inp:
+            lines = inp.readlines()
+        for i in range(len(lines)):
+            if lines[i] == line:
+                lines[i] = line.split('//')[0] + '//' + fname2
+                break
+        with open(settingsfilename, 'w') as out:
+            print(*lines, sep='', file=out)
