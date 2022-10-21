@@ -16,6 +16,7 @@ logging.basicConfig(
 )
 
 
+
 # Создание папки с конфигом
 run_command(f'mkdir -p {config_path}')
 run_command(f'touch {hosts_file_path}')
