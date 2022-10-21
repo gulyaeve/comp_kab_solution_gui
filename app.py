@@ -12,7 +12,7 @@ run_command(f'mkdir -p {config_path}')
 run_command(f'touch {hosts_file_path}')
 
 # Настройка логирования
-logging.basicConfig(filename=f'{config_path}/log.txt',
+logging.basicConfig(filename=f'log.txt',
                     format=u'%(asctime)s %(filename)s [LINE:%(lineno)d] [%(funcName)s()] #%(levelname)-15s %(message)s',
                     level=logging.INFO,
                     )
