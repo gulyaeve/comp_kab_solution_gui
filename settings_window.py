@@ -70,8 +70,6 @@ class SettingsWindow(QWidget):
         grid.addWidget(openFilebtn, 0, 2)
 
         self.hostsfield = QTableView()
-        # self.hostsfieldvalues = TableModel(['1654651', '23651', '35213'])
-        # self.hostsfield.setModel(self.hostsfieldvalues)
         self.hostsfield.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         # self.hosts = hosts
         if not self.hosts:

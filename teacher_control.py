@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import datetime
+import subprocess
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (QPushButton, QLineEdit, \
@@ -145,13 +146,15 @@ class TeacherWindow(QWidget):
             if button == QMessageBox.Ok:
                 return
         self.pbar.setValue(0)
+        # TODO: эти методы нужно тестировать в реальных условиях
+        run_command(f'tar -xf student.tar.gz -C /home/teacher/Документы')
         for i in range(n):
             comp = comps[i].text().strip()
             try:
-                run_command(f'ssh root@{comp} "pkill -u student"')
-                self.infoLabel.setText(f'Восстанавливаем {comp}...')
-                self.pbar.setValue((i + 1) * 100 // n)
-                run_command(f'rsync -avz --delete /home/teacher/ root@{comp}:/home/student/')
+                # run_command(f'ssh root@{comp} "pkill -u student"')
+                # self.infoLabel.setText(f'Восстанавливаем {comp}...')
+                # self.pbar.setValue((i + 1) * 100 // n)
+                run_command(f'rsync -avz --delete /home/teacher/Документы/student root@{comp}:/home/student/')
             except:
                 self.infoLabel.setText(f'Не удалось подключиться к {comp}.')
         self.infoLabel.setText('Команда восстановления выполнена на выбранных компьютерах.')
@@ -201,6 +204,7 @@ class TeacherWindow(QWidget):
 
     def settings(self):
         print('Settings')
+        # print(subprocess.check_output('ls'))
         new_window = SettingsWindow()
         self.windows.append(new_window)
         new_window.show()
