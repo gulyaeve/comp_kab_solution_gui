@@ -332,23 +332,6 @@ class SettingsWindow(QWidget):
             self.textfield.appendPlainText(
                 '\nДля настройки veyon необходимо сначала настроить ssh')
 
-    # ПОКА НЕ УДАЛЯЕМ
-    # def student_archive(self):
-    #     """
-    #     Подключение по ssh к хостам и создание архива /home/student
-    #     """
-    #     print("Начинаю сохранение папки student на всех устройствах в архив:")
-    #     logging.info("Начинаю сохранение папки student на всех устройствах в архив")
-    #     run_command(
-    #         f"ssh-add; "
-    #         f"for i in $({str(self.hosts)}); "
-    #         "do ssh root@$i 'mkdir -p /home/student/Рабочий\ стол/Сдать\ работы && "
-    #         "chmod 777 /home/student/Рабочий\ стол/Сдать\ работы && "
-    #         "cd /home && "
-    #         "pkill -u student ; "
-    #         "echo \"sleep 5 && tar cfz student.tar.gz student && reboot\" | at now'; done")
-    #     print('Архивы созданы\nВведите пароль root на этом компьютере: ')
-
     def network_folders(self):
         """
         Создание сетевой папки и копирование ярлыка по ssh на хосты

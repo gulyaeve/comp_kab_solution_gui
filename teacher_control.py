@@ -152,12 +152,13 @@ class TeacherWindow(QWidget):
             comp = comps[i].text().strip()
             try:
                 self.infoLabel.setText(f'Восстанавливаем {comp}...')
-                run_command(f'ssh root@{comp} "pkill -u student"')
                 # self.pbar.setValue((i + 1) * 100 // n)
-                run_command(f'rsync -avz --delete {config_path}/student root@{comp}:/home/student/ && '
+                run_command(f'ssh root@{comp} "pkill -u student" && '
+                            f'rsync -avz --delete {config_path}/student root@{comp}:/home/student/ && '
                             f'do ssh root@{comp} "mkdir -p /home/student/Рабочий\ стол/Сдать\ работы && '
                             f'chmod 777 /home/student/Рабочий\ стол/Сдать\ работы && '
-                            f'do scp {config_path}/share.desktop root@{comp}:"/home/student/Рабочий\\ стол"')
+                            f'do scp {config_path}/share.desktop root@{comp}:"/home/student/Рабочий\\ стол" && '
+                            f'reboot')
             except:
                 self.infoLabel.setText(f'Не удалось подключиться к {comp}.')
         self.infoLabel.setText('Команда восстановления выполнена на выбранных компьютерах.')
