@@ -22,3 +22,21 @@ class TableModel(QtCore.QAbstractTableModel):
         # The following takes the first sub-list, and returns
         # the length (only works if all rows are an equal length)
         return len(self._data[0])
+
+    def flags(self, index):
+        fl = super(self.__class__, self).flags(index)
+        fl |= Qt.ItemIsEditable
+        fl |= Qt.ItemIsSelectable
+        fl |= Qt.ItemIsEnabled
+        fl |= Qt.ItemIsDragEnabled
+        fl |= Qt.ItemIsDropEnabled
+        return fl
+
+    def setData(self, index, value, role=Qt.EditRole):
+        if index.isValid():
+            row = index.row()
+            col = index.column()
+            self._data[row][col] = value
+            self.dataChanged.emit(index, index, (Qt.DisplayRole,))
+            return True
+        return False
