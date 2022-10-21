@@ -5,13 +5,13 @@ from _socket import timeout
 # from getpass import getpass
 
 import paramiko
-import shutil
+# import shutil
 from PyQt5.QtWidgets import QWidget, QGridLayout, QPushButton, QPlainTextEdit, QLabel, QLineEdit, QInputDialog, \
     QFileDialog, QMessageBox, QTableView, QHeaderView
 from paramiko.channel import Channel
 from paramiko.ssh_exception import AuthenticationException, SSHException
 from PyQt5.QtCore import Qt
-from PIL import Image, ImageDraw
+# from PIL import Image, ImageDraw
 
 from classes import TableModel
 from config import config_path
@@ -400,21 +400,21 @@ class SettingsWindow(QWidget):
         except FileNotFoundError:
             pass
 
-    def writeHostNameOnDesktop(self):
-        with open(f'/home/{user}/.config/plasma-org.kde.plasma.desktop-appletsrc', 'r') as inp:
-            for i in inp.readlines():
-                if i.startswith('Image'):
-                    line = i
-                    break
-        fname = line.split('//')[1].rstrip()
-        shutil.copyfile(fname, fname + '.old')
-        img = Image.open(fname)
-        draw = ImageDraw.Draw(img)
-        width, height = img.size
-        text = subprocess.check_output('hostname').decode('utf-8').strip()
-        textwidth, textheight = draw.textsize(text)
-        margin = 10
-        x = width - textwidth - margin
-        y = height - textheight - margin
-        draw.text((x, y), text, (0, 0, 0))
-        img.save(fname)
+    # def writeHostNameOnDesktop(self):
+    #     with open(f'/home/{user}/.config/plasma-org.kde.plasma.desktop-appletsrc', 'r') as inp:
+    #         for i in inp.readlines():
+    #             if i.startswith('Image'):
+    #                 line = i
+    #                 break
+    #     fname = line.split('//')[1].rstrip()
+    #     shutil.copyfile(fname, fname + '.old')
+    #     img = Image.open(fname)
+    #     draw = ImageDraw.Draw(img)
+    #     width, height = img.size
+    #     text = subprocess.check_output('hostname').decode('utf-8').strip()
+    #     textwidth, textheight = draw.textsize(text)
+    #     margin = 10
+    #     x = width - textwidth - margin
+    #     y = height - textheight - margin
+    #     draw.text((x, y), text, (0, 0, 0))
+    #     img.save(fname)
