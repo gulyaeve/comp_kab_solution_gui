@@ -6,11 +6,12 @@ from _socket import timeout
 
 import paramiko
 from PyQt5.QtWidgets import QWidget, QGridLayout, QPushButton, QPlainTextEdit, QLabel, QLineEdit, QInputDialog, \
-    QFileDialog, QMessageBox
+    QFileDialog, QMessageBox, QTableView, QHeaderView
 from paramiko.channel import Channel
 from paramiko.ssh_exception import AuthenticationException, SSHException
 from PyQt5.QtCore import Qt
 
+from classes import TableModel
 from config import config_path
 from desktop_entrys import ssh_add_link, veyon_link, network_share, network_share_for_teacher
 from hosts import Hosts
@@ -64,12 +65,15 @@ class SettingsWindow(QWidget):
         openFilebtn.clicked.connect(self.openFileDialog)
         grid.addWidget(openFilebtn, 0, 2)
 
-        self.hostsfield = QPlainTextEdit()
+        self.hostsfield = QTableView()
+        self.hostsfieldvalues = TableModel(['1654651', '23651', '35213'])
+        self.hostsfield.setModel(self.hostsfieldvalues)
+        self.hostsfield.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.hosts = Hosts()
         if not self.hosts:
-            self.hostsfield.setPlainText('Введите сюда имена хостов')
+            self.hostsfield.setModel(TableModel([['Введите сюда имена хостов']]))
         else:
-            self.hostsfield.setPlainText(str(self.hosts))
+            self.hostsfield.setModel(TableModel(self.hosts))
         grid.addWidget(self.hostsfield, 1, 1, 6, 2)
 
         button = QPushButton('Сохранить список хостов')
@@ -383,10 +387,13 @@ class SettingsWindow(QWidget):
         return macAddress
 
     def openFileDialog(self):
-        fileName = QFileDialog.getOpenFileName(self, f"/home/{user}", '', '*.txt')
-        with open(fileName[0], 'r') as inp:
-            lines = inp.readlines()
-            if len(lines) > 1000:
-                QMessageBox('Слишком большой файл!').show()
-            else:
-                self.hostsfield.setPlainText(''.join(lines))
+        fileName = QFileDialog.getOpenFileName(self, f"/home/{user}", '', '.txt')
+        try:
+            with open(fileName[0], 'r') as inp:
+                lines = inp.readlines()
+                if len(lines) > 1000:
+                    QMessageBox('Слишком большой файл!').show()
+                else:
+                    self.hostsfield.setModel(TableModel([[i] for i in lines]))
+        except FileNotFoundError:
+            pass
