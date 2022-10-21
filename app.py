@@ -9,8 +9,11 @@ from teacher_control import TeacherWindow
 
 
 # Настройка логирования
+for handler in logging.root.handlers[:]:
+    logging.root.removeHandler(handler)
 logging.basicConfig(
-    handlers=(logging.FileHandler('log.txt'), logging.NullHandler()),
+    # filename=f"{config_path}/log.txt",
+    filename="log.txt",
     format=u'%(asctime)s %(filename)s [LINE:%(lineno)d] [%(funcName)s()] #%(levelname)-15s %(message)s',
     level=logging.INFO,
 )

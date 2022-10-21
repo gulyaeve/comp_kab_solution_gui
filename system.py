@@ -20,7 +20,7 @@ def run_command(command: str) -> str:
     """
     ret = subprocess.run(command, capture_output=True, shell=True)
     print(ret.stdout.decode())
-    logging.info(f"[{command}] {ret.stdout.decode()}")
+    logging.info(f"[{command}]>{ret.stdout.decode()}")
     return ret.stdout.decode()
 
 

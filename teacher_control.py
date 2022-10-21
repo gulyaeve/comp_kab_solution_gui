@@ -10,7 +10,7 @@ from PyQt5.QtWidgets import (QPushButton, QLineEdit, \
                              QInputDialog, QProgressBar, QLabel, QMessageBox, QWidget, QGridLayout)
 
 from hosts import Hosts
-from system import run_command
+from system import run_command, user
 from settings_window import SettingsWindow
 
 
@@ -100,12 +100,12 @@ class TeacherWindow(QWidget):
 
         for i in range(n):
             comp = comps[i].text().strip()
-            run_command('mkdir -p "/home/teacher/Рабочий стол/Работы/"' + date + '/' + text + '/' + comp)
+            run_command(f'mkdir -p "/home/{user}/Рабочий стол/Работы/"' + date + '/' + text + '/' + comp)
 
             run_command(f'ssh root@{comp} \'mkdir -p \"/home/student/Рабочий стол/Сдать работы\" && \
                       chmod 777 \"/home/student/Рабочий стол/Сдать работы\"\' && \
                       scp -r root@{comp}:\'/home/student/Рабочий\ стол/Сдать\ работы/*\' \
-                      \"/home/teacher/Рабочий стол/Работы/\"{date}/{text}/{comp}')
+                      \"/home/{user}/Рабочий стол/Работы/\"{date}/{text}/{comp}')
 
             """
             subprocess.Popen(['ssh', f'root@{comps[i].text().strip()}', 'mkdir -p \"/home/student/Рабочий стол/Сдать работы\" && chmod 777 \"/home/student/Рабочий стол/Сдать работы\"'])
@@ -147,14 +147,14 @@ class TeacherWindow(QWidget):
                 return
         self.pbar.setValue(0)
         # TODO: эти методы нужно тестировать в реальных условиях
-        run_command(f'tar -xf student.tar.gz -C /home/teacher/Документы')
+        run_command(f'tar -xf student.tar.gz -C /home/{user}/Документы')
         for i in range(n):
             comp = comps[i].text().strip()
             try:
                 # run_command(f'ssh root@{comp} "pkill -u student"')
                 # self.infoLabel.setText(f'Восстанавливаем {comp}...')
                 # self.pbar.setValue((i + 1) * 100 // n)
-                run_command(f'rsync -avz --delete /home/teacher/Документы/student root@{comp}:/home/student/')
+                run_command(f'rsync -avz --delete /home/{user}/Документы/student root@{comp}:/home/student/')
             except:
                 self.infoLabel.setText(f'Не удалось подключиться к {comp}.')
         self.infoLabel.setText('Команда восстановления выполнена на выбранных компьютерах.')
@@ -177,7 +177,8 @@ class TeacherWindow(QWidget):
         for i in range(n):
             comp = comps[i].text().strip()
             try:
-                run_command(f'dolphin sftp://student@{comp}')
+                # TODO: необходимо заходить под root
+                # run_command(f'dolphin sftp://root@{comp}/home/student')
                 self.infoLabel.setText(f'Открываем {comp}...')
                 self.pbar.setValue((i + 1) * 100 // n)
             except:
