@@ -55,13 +55,13 @@ class TeacherWindow(QWidget):
         button.clicked.connect(self.select_none)
         grid.addWidget(button, 1, 2)
 
-        self.hosts = QListWidget()
-        self.hosts.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        self.hosts_items = QListWidget()
+        self.hosts_items.setSelectionMode(QAbstractItemView.ExtendedSelection)
         # hosts_from_file = open('~/.teacher_control/hosts.txt', 'r').readlines()
         hosts_from_file = self.hosts.to_list()
-        self.hosts.addItems(hosts_from_file)
-        self.n = len(self.hosts)
-        grid.addWidget(self.hosts, 2, 1, 5, 2)
+        self.hosts_items.addItems(hosts_from_file)
+        self.n = len(self.hosts_items)
+        grid.addWidget(self.hosts_items, 2, 1, 5, 2)
 
         self.move(300, 150)
         self.setWindowTitle('Teacher Control ver. 1.0')
@@ -70,16 +70,16 @@ class TeacherWindow(QWidget):
 
     def select_all(self):
         for i in range(self.n):
-            self.hosts.item(i).setSelected(True)
+            self.hosts_items.item(i).setSelected(True)
         return
 
     def select_none(self):
         for i in range(self.n):
-            self.hosts.item(i).setSelected(False)
+            self.hosts_items.item(i).setSelected(False)
         return
 
     def get_works(self):
-        comps = self.hosts.selectedItems()
+        comps = self.hosts_items.selectedItems()
         n = len(comps)
         if n == 0:
             dlg = QMessageBox(self)
@@ -115,7 +115,7 @@ class TeacherWindow(QWidget):
         self.infoLabel.setText('Сбор работ завершён.')
 
     def clean_works(self):
-        comps = self.hosts.selectedItems()
+        comps = self.hosts_items.selectedItems()
         n = len(comps)
         if n == 0:
             dlg = QMessageBox(self)
@@ -134,7 +134,7 @@ class TeacherWindow(QWidget):
         self.infoLabel.setText('Очистка завершена.')
 
     def backup_student(self):
-        comps = self.hosts.selectedItems()
+        comps = self.hosts_items.selectedItems()
         n = len(comps)
         if n == 0:
             dlg = QMessageBox(self)
@@ -160,7 +160,7 @@ class TeacherWindow(QWidget):
         pass
 
     def open_sftp(self):
-        comps = self.hosts.selectedItems()
+        comps = self.hosts_items.selectedItems()
         n = len(comps)
         if n == 0:
             dlg = QMessageBox(self)
@@ -182,7 +182,7 @@ class TeacherWindow(QWidget):
         self.infoLabel.setText('Открыт Dolphin для всех доступных компьютеров.')
 
     def run_command(self):
-        comps = self.hosts.selectedItems()
+        comps = self.hosts_items.selectedItems()
         n = len(comps)
         if n == 0:
             dlg = QMessageBox(self)
