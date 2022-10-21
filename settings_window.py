@@ -54,7 +54,7 @@ class SettingsWindow(QWidget):
         if not self.hosts:
             self.hostsfield.setModel(TableModel([['Введите сюда имена хостов']]))
         else:
-            self.hostsfield.setModel(TableModel(self.hosts.to_list()))
+            self.hostsfield.setModel(TableModel([[i] for i in self.hosts.to_list()]))
         grid.addWidget(self.hostsfield, 1, 1, 6, 3)
 
         button = QPushButton('+')
