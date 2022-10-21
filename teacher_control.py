@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import (QPushButton, QLineEdit, \
                              QListWidget, QAbstractItemView, QMenuBar, \
                              QInputDialog, QProgressBar, QLabel, QMessageBox, QWidget, QGridLayout)
 
-from config import config_path
+from config import config_path, version
 from hosts import Hosts
 from system import run_command, user
 from settings_window import SettingsWindow
@@ -66,7 +66,7 @@ class TeacherWindow(QWidget):
         grid.addWidget(self.hosts_items, 2, 1, 5, 2)
 
         self.move(300, 150)
-        self.setWindowTitle('Teacher Control ver. 1.0')
+        self.setWindowTitle(f'Teacher Control ver. {version}')
         self.setFixedWidth(600)
         self.show()
 
