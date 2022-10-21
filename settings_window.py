@@ -45,7 +45,7 @@ class SettingsWindow(QWidget):
         grid.addWidget(hostslabel, 0, 1, 1, 2)
 
         openFilebtn = QPushButton('Открыть файл...')
-        openFilebtn.clicked.connect(self.openFileDialog)
+        openFilebtn.clicked.connect(self.open_file_dialog)
         grid.addWidget(openFilebtn, 0, 3)
 
         self.hostsfield = QTableView()
@@ -66,7 +66,7 @@ class SettingsWindow(QWidget):
         grid.addWidget(button, 7, 2)
 
         button = QPushButton('Сохранить список хостов')
-        button.clicked.connect(self.saveHosts)
+        button.clicked.connect(self.save_hosts)
         grid.addWidget(button, 7, 3)
 
         if user == 'root':
@@ -173,7 +173,8 @@ class SettingsWindow(QWidget):
             return list_of_hosts
         else:
             self.textfield.appendPlainText(
-                'Заполните список устройств: перечислите в нём имена компьютеров построчно и запустите скрипт повторно.\n\n'
+                'Заполните список устройств: '
+                'перечислите в нём имена компьютеров построчно и запустите скрипт повторно.\n\n'
                 '    ВАЖНО!\n\nДля М ОС имя компьютера должно оканчиваться на .local\n'
                 'Если по имени компьютеры не находятся, '
                 'то используйте ip-адреса, но так делать не рекомендуется из-за смены адресов по DHCP.')
@@ -240,9 +241,10 @@ class SettingsWindow(QWidget):
             logging.info(f"Ключи скопированы")
             print("Теперь я настрою ssh для суперпользователя на всех устройствах")
             self.textfield.appendPlainText("Теперь я настрою ssh для суперпользователя на всех устройствах")
-            root_pass, okPressed = QInputDialog.getText(self, "Введите пароль",
-                                                        f"Введите пароль учётной записи суперпользователя root (для устройств учеников): ",
-                                                        QLineEdit.Password, "")
+            root_pass, okPressed = QInputDialog.getText(
+                self, "Введите пароль",
+                f"Введите пароль учётной записи суперпользователя root (для устройств учеников): ",
+                QLineEdit.Password, "")
             for host in list_of_hosts:
                 host = host.split('\n')[0]
                 print(f"Пробую подключиться к {host}")
@@ -381,13 +383,13 @@ class SettingsWindow(QWidget):
                 "\nДля настройки сетевой папка необходимо сначала настроить ssh"
             )
 
-    def saveHosts(self):
+    def save_hosts(self):
         # TODO: Добавить получение имён из таблицы
         self.hosts.update(self.hostsfield.toPlainText())
         # with open(f'{config_path}/hosts.txt', 'w') as out:
         #     print(self.hostsfield.toPlainText(), file=out)
 
-    def getMacAddress(self, hostname): # TODO нужно тестировать
+    def get_mac_address(self, hostname): # TODO нужно тестировать
         ip_address = subprocess.check_output(['ping', hostname, '-c', '1']).decode('utf-8').split('(')[1].split(')')[0]
         ifconfig_output = run_command(f'ssh root@{hostname} "ifconfig"')
         macAddress = f'Компьютер {hostname} не подключён к проводной сети'
@@ -401,7 +403,7 @@ class SettingsWindow(QWidget):
         return macAddress
 
     # TODO: Добавить валидацию имён
-    def openFileDialog(self):
+    def open_file_dialog(self):
         fileName = QFileDialog.getOpenFileName(self, f"/home/{user}", '', '.txt')
         try:
             with open(fileName[0], 'r') as inp:
