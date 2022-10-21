@@ -17,6 +17,8 @@ class TeacherWindow(QWidget):
     def __init__(self):
         super().__init__()
         self.windows = []
+        self.hosts = Hosts()
+
         menu_bar = QMenuBar()
         menu_file = menu_bar.addMenu('Меню')
         action_set = menu_file.addAction('Настройка...')
@@ -37,9 +39,9 @@ class TeacherWindow(QWidget):
         self.pbar = QProgressBar(self)
         self.pbar.setGeometry(200, 10, 200, 20)
 
-        names = ['Собрать работы', 'Очистить работы', 'Восстановить', 'Открыть Veyon', 'Открыть sftp', 'Команда', 'Хост на Desktop']
+        names = ['Собрать работы', 'Очистить работы', 'Восстановить', 'Открыть Veyon', 'Открыть sftp', 'Команда']
         functions = [self.get_works, self.clean_works, self.backup_student, self.open_veyon, self.open_sftp,
-                     self.run_command, self.host_to_desktop]
+                     self.run_command]
 
         for i in range(len(names)):
             button = QPushButton(names[i])
@@ -56,10 +58,10 @@ class TeacherWindow(QWidget):
         self.hosts = QListWidget()
         self.hosts.setSelectionMode(QAbstractItemView.ExtendedSelection)
         # hosts_from_file = open('~/.teacher_control/hosts.txt', 'r').readlines()
-        hosts_from_file = Hosts().to_list()
+        hosts_from_file = self.hosts.to_list()
         self.hosts.addItems(hosts_from_file)
         self.n = len(self.hosts)
-        grid.addWidget(self.hosts, 2, 1, 6, 2)
+        grid.addWidget(self.hosts, 2, 1, 5, 2)
 
         self.move(300, 150)
         self.setWindowTitle('Teacher Control ver. 1.0')
@@ -196,22 +198,6 @@ class TeacherWindow(QWidget):
         for i in range(n):
             comp = comps[i].text().strip()
             run_command(f'ssh root@{comp} "{dialog}"')
-
-    def host_to_desktop(self):
-        comps = self.hosts.selectedItems()
-        n = len(comps)
-        if n == 0:
-            dlg = QMessageBox(self)
-            dlg.setWindowTitle("Ошибка")
-            dlg.setText("Выберите хотя бы один компьютер из списка")
-            button = dlg.exec()
-
-            if button == QMessageBox.Ok:
-                return
-        for i in range(n):
-            comp = comps[i].text().strip()
-            run_command(f'scp -r writehostnameondesktop.py root@{comp}:/home/student/writehostnameondesktop.py')
-            run_command(f'ssh student@{comp} python3 /home/student/writehostnameondesktop.py')
 
     def settings(self):
         print('Settings')

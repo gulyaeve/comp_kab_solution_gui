@@ -1,20 +1,17 @@
 import logging
-import os
 import subprocess
 import time
 from _socket import timeout
 # from getpass import getpass
 
-import paramiko
-import shutil
 
-from PIL.ImageFont import truetype
+import paramiko
+# import shutil
 from PyQt5.QtWidgets import QWidget, QGridLayout, QPushButton, QPlainTextEdit, QLabel, QLineEdit, QInputDialog, \
     QFileDialog, QMessageBox, QTableView, QHeaderView
 from paramiko.channel import Channel
 from paramiko.ssh_exception import AuthenticationException, SSHException
 from PyQt5.QtCore import Qt
-from PIL import Image, ImageDraw, ImageFont
 
 from classes import TableModel
 from config import config_path
@@ -34,6 +31,8 @@ class WrongRootPass(Exception):
 class SettingsWindow(QWidget):
     def __init__(self):
         super().__init__()
+
+        self.hosts = Hosts()
 
         grid = QGridLayout()
         self.setLayout(grid)
@@ -71,14 +70,14 @@ class SettingsWindow(QWidget):
         grid.addWidget(openFilebtn, 0, 2)
 
         self.hostsfield = QTableView()
-        self.hostsfieldvalues = TableModel(['1654651', '23651', '35213'])
-        self.hostsfield.setModel(self.hostsfieldvalues)
+        # self.hostsfieldvalues = TableModel(['1654651', '23651', '35213'])
+        # self.hostsfield.setModel(self.hostsfieldvalues)
         self.hostsfield.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-        self.hosts = Hosts()
+        # self.hosts = hosts
         if not self.hosts:
             self.hostsfield.setModel(TableModel([['Введите сюда имена хостов']]))
         else:
-            self.hostsfield.setModel(TableModel(self.hosts))
+            self.hostsfield.setModel(TableModel(self.hosts.to_list()))
         grid.addWidget(self.hostsfield, 1, 1, 6, 2)
 
         button = QPushButton('Сохранить список хостов')
@@ -403,3 +402,21 @@ class SettingsWindow(QWidget):
         except FileNotFoundError:
             pass
 
+    # def writeHostNameOnDesktop(self):
+    #     with open(f'/home/{user}/.config/plasma-org.kde.plasma.desktop-appletsrc', 'r') as inp:
+    #         for i in inp.readlines():
+    #             if i.startswith('Image'):
+    #                 line = i
+    #                 break
+    #     fname = line.split('//')[1].rstrip()
+    #     shutil.copyfile(fname, fname + '.old')
+    #     img = Image.open(fname)
+    #     draw = ImageDraw.Draw(img)
+    #     width, height = img.size
+    #     text = subprocess.check_output('hostname').decode('utf-8').strip()
+    #     textwidth, textheight = draw.textsize(text)
+    #     margin = 10
+    #     x = width - textwidth - margin
+    #     y = height - textheight - margin
+    #     draw.text((x, y), text, (0, 0, 0))
+    #     img.save(fname)
