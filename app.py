@@ -10,10 +10,11 @@ from teacher_control import TeacherWindow
 
 # Настройка логирования
 logging.basicConfig(
-    filename='log.txt',
+    handlers=(logging.FileHandler('log.txt'), logging.NullHandler()),
     format=u'%(asctime)s %(filename)s [LINE:%(lineno)d] [%(funcName)s()] #%(levelname)-15s %(message)s',
     level=logging.INFO,
 )
+
 
 
 # Создание папки с конфигом
