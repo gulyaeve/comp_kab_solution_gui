@@ -108,10 +108,10 @@ class TeacherWindow(QWidget):
                       scp -r root@{comp}:\'/home/student/Рабочий\ стол/Сдать\ работы/*\' \
                       \"/home/{user}/Рабочий стол/Работы/\"{date}/{text}/{comp}')
 
-            """
-            subprocess.Popen(['ssh', f'root@{comps[i].text().strip()}', 'mkdir -p \"/home/student/Рабочий стол/Сдать работы\" && chmod 777 \"/home/student/Рабочий стол/Сдать работы\"'])
-            subprocess.Popen(['scp', '-r', f"root@{comps[i].text().strip()}:\'/home/student/Рабочий стол/Сдать работы/*\'", '"/home/teacher/Рабочий стол/Работы/"' + date + '/' + text + '/' + comps[i].text().strip()])
-            """
+            # """
+            # subprocess.Popen(['ssh', f'root@{comps[i].text().strip()}', 'mkdir -p \"/home/student/Рабочий стол/Сдать работы\" && chmod 777 \"/home/student/Рабочий стол/Сдать работы\"'])
+            # subprocess.Popen(['scp', '-r', f"root@{comps[i].text().strip()}:\'/home/student/Рабочий стол/Сдать работы/*\'", '"/home/teacher/Рабочий стол/Работы/"' + date + '/' + text + '/' + comps[i].text().strip()])
+            # """
             self.pbar.setValue((i + 1) * 100 // n)
             self.infoLabel.setText(f'Собираем у {comp}')
         self.infoLabel.setText('Сбор работ завершён.')
@@ -143,7 +143,6 @@ class TeacherWindow(QWidget):
             dlg.setWindowTitle("Ошибка")
             dlg.setText("Выберите хотя бы один компьютер из списка")
             button = dlg.exec()
-
             if button == QMessageBox.Ok:
                 return
         self.pbar.setValue(0)
@@ -152,10 +151,13 @@ class TeacherWindow(QWidget):
         for i in range(n):
             comp = comps[i].text().strip()
             try:
-                # run_command(f'ssh root@{comp} "pkill -u student"')
-                # self.infoLabel.setText(f'Восстанавливаем {comp}...')
+                self.infoLabel.setText(f'Восстанавливаем {comp}...')
+                run_command(f'ssh root@{comp} "pkill -u student"')
                 # self.pbar.setValue((i + 1) * 100 // n)
-                run_command(f'rsync -avz --delete {config_path}/student root@{comp}:/home/student/')
+                run_command(f'rsync -avz --delete {config_path}/student root@{comp}:/home/student/ && '
+                            f'do ssh root@{comp} "mkdir -p /home/student/Рабочий\ стол/Сдать\ работы && '
+                            f'chmod 777 /home/student/Рабочий\ стол/Сдать\ работы && '
+                            f'do scp {config_path}/share.desktop root@{comp}:"/home/student/Рабочий\\ стол"')
             except:
                 self.infoLabel.setText(f'Не удалось подключиться к {comp}.')
         self.infoLabel.setText('Команда восстановления выполнена на выбранных компьютерах.')
@@ -206,7 +208,6 @@ class TeacherWindow(QWidget):
 
     def settings(self):
         print('Settings')
-        # print(subprocess.check_output('ls'))
         new_window = SettingsWindow()
         self.windows.append(new_window)
         new_window.show()
