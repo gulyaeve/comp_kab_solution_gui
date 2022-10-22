@@ -11,7 +11,7 @@ from paramiko.channel import Channel
 from paramiko.ssh_exception import AuthenticationException, SSHException
 from PyQt5.QtCore import Qt
 
-from config import config_path
+from config import config_path, hostname_expression
 from desktop_entrys import ssh_add_link, veyon_link, network_share, network_share_for_teacher
 from hosts import Hosts, Host
 from system import exit_app, run_command, this_host, user
@@ -78,7 +78,7 @@ class SettingsWindow(QWidget):
                 self,
                 "Неверный пользователь!",
                 f"Данное приложение не следует запускать от имени суперпользователя",
-                QMessageBox.Ok | QMessageBox.Cancel,
+                QMessageBox.Ok,
             )
             if messageBox == QMessageBox.Ok:
                 exit_app()
@@ -88,22 +88,22 @@ class SettingsWindow(QWidget):
                 self,
                 "Неверный пользователь!",
                 f"Данное приложение не следует запускать от имени ученика",
-                QMessageBox.Ok | QMessageBox.Cancel,
+                QMessageBox.Ok,
             )
             if messageBox == QMessageBox.Ok:
                 exit_app()
         else:
-            button = QPushButton('Настроить доступ по ssh')
-            button.clicked.connect(self.setup_ssh)
-            grid.addWidget(button, 0, 0)
+            button_ssh = QPushButton('Настроить доступ по ssh')
+            button_ssh.clicked.connect(self.setup_ssh)
+            grid.addWidget(button_ssh, 0, 0)
 
-            button = QPushButton('Создать сетевую папку share')
-            button.clicked.connect(self.network_folders)
-            grid.addWidget(button, 1, 0)
+            button_share = QPushButton('Создать сетевую папку share')
+            button_share.clicked.connect(self.network_folders)
+            grid.addWidget(button_share, 1, 0)
 
-            button = QPushButton('Установить Veyon на всех компьютерах')
-            button.clicked.connect(self.install_veyon)
-            grid.addWidget(button, 2, 0)
+            button_veyon = QPushButton('Установить Veyon на всех компьютерах')
+            button_veyon.clicked.connect(self.install_veyon)
+            grid.addWidget(button_veyon, 2, 0)
 
     def update_table(self):
         """
@@ -113,7 +113,7 @@ class SettingsWindow(QWidget):
         self.hosts_table.setRowCount(len(self.hosts.to_list()))
         for index, host in enumerate(self.hosts.to_list()):
             item = QTableWidgetItem(host)
-            if re.match(r"(s[cmnpt][\w\d]*)-([\w\d]*)-([\w\d]*)-([\w\d]*).local", host):
+            if re.match(hostname_expression, host):
                 item.setBackground(QColor("green"))
             else:
                 item.setBackground(QColor("red"))
@@ -127,6 +127,10 @@ class SettingsWindow(QWidget):
         host = str(item.text())
         self.hosts_table.blockSignals(True)
         self.hosts[host] = host
+        if re.match(hostname_expression, host):
+            item.setBackground(QColor("green"))
+        else:
+            item.setBackground(QColor("red"))
         self.hosts_table.blockSignals(False)
 
     def add_row(self):
