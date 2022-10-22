@@ -103,7 +103,6 @@ class SettingsWindow(QWidget):
         self.hosts_table.setRowCount(len(self.hosts.to_list()))
         for index, host in enumerate(self.hosts.to_list()):
             self.hosts_table.setItem(index, 0, QTableWidgetItem(host))
-            # print(f"{index=} {host=}")
 
     def change_data(self, item):
         host = str(item.text())
@@ -113,8 +112,8 @@ class SettingsWindow(QWidget):
             item.setBackground(QColor("green"))
         else:
             item.setBackground(QColor("red"))
+            self.hosts += Host(f"{host}.local", '')
         self.hosts_table.blockSignals(False)
-        print(item.text())
 
     # def update_hosts(self):
     #     print("Updating ")
@@ -129,7 +128,20 @@ class SettingsWindow(QWidget):
         self.hosts_table.setRowCount(self.hosts_table.rowCount()+1)
 
     def delete_row(self):
-        self.hosts_table.setRowCount(self.hosts_table.rowCount()-1)
+        row = self.hosts_table.currentRow()
+        item_text = str(self.hosts_table.currentItem().text())
+        if row < 0:
+            return
+        messageBox = QMessageBox.warning(
+            self,
+            "Подтверждение удаления!",
+            f"Вы действительно хотите удалить компьютер {item_text}?",
+            QMessageBox.Ok | QMessageBox.Cancel,
+        )
+        if messageBox == QMessageBox.Ok:
+            self.hosts.__delitem__(item_text.split('.')[0])
+            self.update_table()
+        # self.hosts_table.setRowCount(self.hosts_table.rowCount()-1)
 
     def ssh_copy_to_root(self, host, root_pass):
         """

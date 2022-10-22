@@ -49,6 +49,10 @@ class Hosts:
         self.write(self.hosts)
         return self
 
+    def __delitem__(self, key):
+        del self.hosts[key]
+        return self.hosts
+
     def to_list(self):
         result = []
         for host in self.hosts:
