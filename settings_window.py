@@ -73,14 +73,24 @@ class SettingsWindow(QWidget):
 
         if user == 'root':
             logging.info("Попытка запустить от рута")
-            print("Данный скрипт не следует запускать от имени суперпользователя")
-            self.textfield.appendPlainText("Данный скрипт не следует запускать от имени суперпользователя")
-            # exit_app()
+            messageBox = QMessageBox.warning(
+                self,
+                "Неверный пользователь!",
+                f"Данное приложение не следует запускать от имени суперпользователя",
+                QMessageBox.Ok | QMessageBox.Cancel,
+            )
+            if messageBox == QMessageBox.Ok:
+                exit_app()
         elif user == 'student':
             logging.info("Попытка запустить от студента")
-            print("Данный скрипт не следует запускать от имени ученика")
-            self.textfield.appendPlainText("Данный скрипт не следует запускать от имени ученика")
-            # exit_app()
+            messageBox = QMessageBox.warning(
+                self,
+                "Неверный пользователь!",
+                f"Данное приложение не следует запускать от имени ученика",
+                QMessageBox.Ok | QMessageBox.Cancel,
+            )
+            if messageBox == QMessageBox.Ok:
+                exit_app()
         else:
             button = QPushButton('Настроить доступ по ssh')
             button.clicked.connect(self.setup_ssh)
@@ -439,13 +449,15 @@ class SettingsWindow(QWidget):
     # TODO: Добавить валидацию имён
     def open_file_dialog(self):
         fileName = QFileDialog.getOpenFileName(self, f"/home/{user}", '', '.txt')
+        # fileName = QFileDialog.getOpenFileName(self)
         try:
             with open(fileName[0], 'r') as inp:
                 lines = inp.readlines()
                 if len(lines) > 1000:
                     QMessageBox('Слишком большой файл!').show()
                 else:
-                    pass
-                    # self.hostsfield.setModel(TableModel([[i] for i in lines]))
+                    self.hosts_table.setRowCount(len(lines))
+                    for index, host in enumerate(lines):
+                        self.hosts_table.setItem(index, 0, QTableWidgetItem(host.strip()))
         except FileNotFoundError:
             pass
