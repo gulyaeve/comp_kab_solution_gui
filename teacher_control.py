@@ -75,7 +75,6 @@ class TeacherWindow(QWidget):
             hosts_from_file = self.hosts.to_list()
             self.hosts_items.addItems(hosts_from_file)
 
-
     def select_all(self):
         for i in range(self.n):
             self.hosts_items.item(i).setSelected(True)
