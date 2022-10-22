@@ -3,16 +3,16 @@ import subprocess
 import time
 from _socket import timeout
 import paramiko
+from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import QWidget, QGridLayout, QPushButton, QPlainTextEdit, QLabel, QLineEdit, QInputDialog, \
-    QFileDialog, QMessageBox, QTableView, QHeaderView
+    QFileDialog, QMessageBox, QTableWidget, QTableWidgetItem
 from paramiko.channel import Channel
 from paramiko.ssh_exception import AuthenticationException, SSHException
 from PyQt5.QtCore import Qt
 
-from classes import TableModel
 from config import config_path
 from desktop_entrys import ssh_add_link, veyon_link, network_share, network_share_for_teacher
-from hosts import Hosts
+from hosts import Hosts, Host
 from system import exit_app, run_command, this_host, user
 
 
@@ -44,30 +44,42 @@ class SettingsWindow(QWidget):
         hostslabel.setAlignment(Qt.AlignCenter)
         grid.addWidget(hostslabel, 0, 1, 1, 2)
 
-        openFilebtn = QPushButton('Открыть файл...')
-        openFilebtn.clicked.connect(self.open_file_dialog)
-        grid.addWidget(openFilebtn, 0, 3)
+        open_filebtn = QPushButton('Открыть файл...')
+        open_filebtn.clicked.connect(self.open_file_dialog)
+        grid.addWidget(open_filebtn, 0, 3)
 
-        self.hostsfield = QTableView()
-        self.hostsfield.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        # self.hostsfield = QTableView()
+        # self.hostsfield.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
 
+        self.hosts_table = QTableWidget()
+        self.hosts_table.setColumnCount(1)
+        self.hosts_table.setColumnWidth(0, 250)
         if not self.hosts:
-            self.hostsfield.setModel(TableModel([['Введите сюда имена хостов']]))
+            self.hosts_table.setRowCount(1)
+            self.hosts_table.setItem(0, 0, QTableWidgetItem('Введите сюда имена хостов'))
+            # self.hostsfield.setModel(TableModel([['Введите сюда имена хостов']]))
         else:
-            self.hostsfield.setModel(TableModel([[i] for i in self.hosts.to_list()]))
-        grid.addWidget(self.hostsfield, 1, 1, 6, 3)
+            self.update_table()
+            # self.hostsfield.setModel(TableModel([[i] for i in self.hosts.to_list()]))
+        # grid.addWidget(self.hostsfield, 1, 1, 6, 3)
+        grid.addWidget(self.hosts_table, 1, 1, 6, 3)
+        self.hosts_table.itemChanged.connect(self.change_data)
 
         button = QPushButton('+')
-        # button.clicked.connect(self.saveHosts)
+        button.clicked.connect(self.add_row)
         grid.addWidget(button, 7, 1)
 
         button = QPushButton('-')
-        # button.clicked.connect(self.saveHosts)
+        button.clicked.connect(self.delete_row)
         grid.addWidget(button, 7, 2)
 
-        button = QPushButton('Сохранить список хостов')
-        button.clicked.connect(self.save_hosts)
+        button = QPushButton('Обновить')
+        button.clicked.connect(self.update_table)
         grid.addWidget(button, 7, 3)
+
+        # button = QPushButton('Сохранить список хостов')
+        # button.clicked.connect(self.update_hosts)
+        # grid.addWidget(button, 7, 3)
 
         if user == 'root':
             logging.info("Попытка запустить от рута")
@@ -91,6 +103,44 @@ class SettingsWindow(QWidget):
             button = QPushButton('Установить Veyon на всех компьютерах')
             button.clicked.connect(self.install_veyon)
             grid.addWidget(button, 2, 0)
+
+    def update_table(self):
+        self.hosts_table.clear()
+        self.hosts_table.setRowCount(len(self.hosts.to_list()))
+        for index, host in enumerate(self.hosts.to_list()):
+            print(f"{index=} {host=}")
+            item = QTableWidgetItem(host)
+            self.hosts_table.setItem(index, 0, item)
+        # self.update()
+
+    def change_data(self, item):
+        host = str(item.text())
+        self.hosts_table.blockSignals(True)
+        if host.endswith('.local'):
+            self.hosts += Host(host, '')
+            item.setBackground(QColor("green"))
+        else:
+            item.setBackground(QColor("red"))
+        self.hosts_table.blockSignals(False)
+        # self.update_table()
+
+        # self.changed_items.append(item)
+        print(item.text())
+
+    # def update_hosts(self):
+    #     print("Updating ")
+    #     for item in self.changed_items:
+    #         self.hosts_table.blockSignals(True)
+    #         item.setBackgroundColor(QColor("white"))
+    #         self.hosts_table.blockSignals(False)
+    #         print(item)
+            # self.writeToDatabase(item)
+
+    def add_row(self):
+        self.hosts_table.setRowCount(self.hosts_table.rowCount()+1)
+
+    def delete_row(self):
+        self.hosts_table.setRowCount(self.hosts_table.rowCount()-1)
 
     def ssh_copy_to_root(self, host, root_pass):
         """
@@ -394,6 +444,7 @@ class SettingsWindow(QWidget):
                 if len(lines) > 1000:
                     QMessageBox('Слишком большой файл!').show()
                 else:
-                    self.hostsfield.setModel(TableModel([[i] for i in lines]))
+                    pass
+                    # self.hostsfield.setModel(TableModel([[i] for i in lines]))
         except FileNotFoundError:
             pass
