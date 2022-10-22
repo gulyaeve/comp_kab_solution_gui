@@ -1,4 +1,5 @@
 import logging
+import re
 import subprocess
 import time
 from _socket import timeout
@@ -50,7 +51,7 @@ class SettingsWindow(QWidget):
 
         self.hosts_table = QTableWidget()
         self.hosts_table.setColumnCount(1)
-        self.hosts_table.setColumnWidth(0, 250)
+        self.hosts_table.setColumnWidth(0, 238)
         if not self.hosts:
             self.hosts_table.setRowCount(1)
             self.hosts_table.setItem(0, 0, QTableWidgetItem('Введите сюда имена хостов'))
@@ -111,7 +112,12 @@ class SettingsWindow(QWidget):
         self.hosts_table.clear()
         self.hosts_table.setRowCount(len(self.hosts.to_list()))
         for index, host in enumerate(self.hosts.to_list()):
-            self.hosts_table.setItem(index, 0, QTableWidgetItem(host))
+            item = QTableWidgetItem(host)
+            if re.match(r"(s[cmnpt][\w\d]*)-([\w\d]*)-([\w\d]*)-([\w\d]*).local", host):
+                item.setBackground(QColor("green"))
+            else:
+                item.setBackground(QColor("red"))
+            self.hosts_table.setItem(index, 0, item)
 
     def change_data(self, item):
         """
@@ -120,13 +126,7 @@ class SettingsWindow(QWidget):
         """
         host = str(item.text())
         self.hosts_table.blockSignals(True)
-        self.hosts += host
-        # if host.endswith('.local'):
-        #     item.setBackground(QColor("green"))
-        #     self.hosts += host
-        # else:
-        #     item.setBackground(QColor("red"))
-        #     self.hosts += host
+        self.hosts[host] = host
         self.hosts_table.blockSignals(False)
 
     def add_row(self):

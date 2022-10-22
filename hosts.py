@@ -38,6 +38,17 @@ class Hosts:
         host = Host(hostname=self.hosts[item]['hostname'], mac_address=self.hosts[item]['mac_address'])
         return host
 
+    def __setitem__(self, key: str, hostname: str):
+        if hostname.endswith('.local'):
+            host = Host(hostname=hostname, mac_address='')
+        else:
+            host = Host(hostname=f"{hostname}.local", mac_address='')
+        if key.endswith('.local'):
+            key = key.split('.')[0]
+        self.hosts[key] = host.to_dict()
+        self.write(self.hosts)
+        return self
+
     def __add__(self, hostname: str):
         if hostname.endswith('.local'):
             host = Host(hostname=hostname, mac_address='')
