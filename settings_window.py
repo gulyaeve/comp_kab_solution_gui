@@ -76,6 +76,10 @@ class SettingsWindow(QWidget):
         button.clicked.connect(self.delete_row)
         grid.addWidget(button, 7, 2)
 
+        button = QPushButton('Очистить...')
+        button.clicked.connect(self.delete_all)
+        grid.addWidget(button, 7, 3)
+
         if user == 'root':
             logging.info("Попытка запустить от рута")
             messageBox = QMessageBox.warning(
@@ -150,6 +154,32 @@ class SettingsWindow(QWidget):
         )
         if messageBox == QMessageBox.Ok:
             del self.hosts[item_text.split('.')[0]]
+            self.hosts_table.clear()
+            self.hosts_table.setRowCount(len(self.hosts.to_list()))
+            for index, host in enumerate(self.hosts.to_list()):
+                item = QTableWidgetItem(host)
+                if re.match(hostname_expression, host):
+                    item.setBackground(QColor("green"))
+                else:
+                    item.setBackground(QColor("red"))
+                self.hosts_table.setItem(index, 0, item)
+
+    def delete_all(self):
+        """
+        Очистка таблицы и удаление из файла
+        """
+        # row = self.hosts_table.currentRow()
+        # if row < 0:
+        #     return
+        # item_text = str(self.hosts_table.currentItem().text())
+        messageBox = QMessageBox.warning(
+            self,
+            "Подтверждение удаления!",
+            f"Вы действительно хотите очистить список устройств?",
+            QMessageBox.Ok | QMessageBox.Cancel,
+        )
+        if messageBox == QMessageBox.Ok:
+            self.hosts.clean()
             self.hosts_table.clear()
             self.hosts_table.setRowCount(len(self.hosts.to_list()))
             for index, host in enumerate(self.hosts.to_list()):
