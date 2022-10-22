@@ -2,9 +2,8 @@
 # -*- coding: utf-8 -*-
 
 import datetime
-import subprocess
 
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QEvent
 from PyQt5.QtWidgets import (QPushButton, QLineEdit, \
                              QListWidget, QAbstractItemView, QMenuBar, \
                              QInputDialog, QProgressBar, QLabel, QMessageBox, QWidget, QGridLayout)
@@ -68,6 +67,14 @@ class TeacherWindow(QWidget):
         self.setWindowTitle(f'Teacher Control ver. {version}')
         self.setFixedWidth(600)
         self.show()
+
+    def enterEvent(self, event):
+        if event.type() == 10:
+            self.hosts_items.clear()
+            self.hosts = Hosts()
+            hosts_from_file = self.hosts.to_list()
+            self.hosts_items.addItems(hosts_from_file)
+
 
     def select_all(self):
         for i in range(self.n):
