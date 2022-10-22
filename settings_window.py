@@ -13,7 +13,7 @@ from PyQt5.QtCore import Qt
 
 from config import config_path, hostname_expression
 from desktop_entrys import ssh_add_link, veyon_link, network_share, network_share_for_teacher
-from hosts import Hosts, Host
+from hosts import Hosts
 from system import exit_app, run_command, this_host, user
 
 
