@@ -76,10 +76,6 @@ class SettingsWindow(QWidget):
         button.clicked.connect(self.delete_row)
         grid.addWidget(button, 7, 2)
 
-        # button = QPushButton('Обновить')
-        # button.clicked.connect(self.update_table)
-        # grid.addWidget(button, 7, 3)
-
         if user == 'root':
             logging.info("Попытка запустить от рута")
             messageBox = QMessageBox.warning(
