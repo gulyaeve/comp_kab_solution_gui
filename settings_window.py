@@ -436,12 +436,13 @@ class SettingsWindow(QWidget):
     def get_mac_address(self, hostname): # TODO нужно тестировать
         ip_address = subprocess.check_output(['ping', hostname, '-c', '1']).decode('utf-8').split('(')[1].split(')')[0]
         ifconfig_output = run_command(f'ssh root@{hostname} "ifconfig"')
-        macAddress = f'Компьютер {hostname} не подключён к проводной сети'
+        macAddress = ''
         for s in ifconfig_output:
             if s.startswith('e'):
                 macAddress = s.split('HWaddr ')[1].rstrip()
             if s.strip() == '':
-                macAddress = f'Компьютер {hostname} не подключён к проводной сети'
+                logging.info(f'Компьютер {hostname} не подключён к проводной сети')
+                return ''
             if ip_address in s:
                 return macAddress
         return macAddress
