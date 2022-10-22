@@ -116,9 +116,6 @@ class SettingsWindow(QWidget):
         else:
             item.setBackground(QColor("red"))
         self.hosts_table.blockSignals(False)
-        # self.update_table()
-
-        # self.changed_items.append(item)
         print(item.text())
 
     # def update_hosts(self):
