@@ -56,7 +56,15 @@ class SettingsWindow(QWidget):
             self.hosts_table.setRowCount(1)
             self.hosts_table.setItem(0, 0, QTableWidgetItem('Введите сюда имена хостов'))
         else:
-            self.update_table()
+            self.hosts_table.clear()
+            self.hosts_table.setRowCount(len(self.hosts.to_list()))
+            for index, host in enumerate(self.hosts.to_list()):
+                item = QTableWidgetItem(host)
+                if re.match(hostname_expression, host):
+                    item.setBackground(QColor("green"))
+                else:
+                    item.setBackground(QColor("red"))
+                self.hosts_table.setItem(index, 0, item)
         grid.addWidget(self.hosts_table, 1, 1, 6, 3)
         self.hosts_table.itemChanged.connect(self.change_data)
 
@@ -68,9 +76,9 @@ class SettingsWindow(QWidget):
         button.clicked.connect(self.delete_row)
         grid.addWidget(button, 7, 2)
 
-        button = QPushButton('Обновить')
-        button.clicked.connect(self.update_table)
-        grid.addWidget(button, 7, 3)
+        # button = QPushButton('Обновить')
+        # button.clicked.connect(self.update_table)
+        # grid.addWidget(button, 7, 3)
 
         if user == 'root':
             logging.info("Попытка запустить от рута")
@@ -105,10 +113,14 @@ class SettingsWindow(QWidget):
             button_veyon.clicked.connect(self.install_veyon)
             grid.addWidget(button_veyon, 2, 0)
 
-    def update_table(self):
+    def change_data(self, item):
         """
-        Обновление таблицы информацией из файла
+        Реагирует на изменение данных в таблице
+        :param item: элемент таблицы
         """
+        host = str(item.text())
+        self.hosts_table.blockSignals(True)
+        self.hosts[host] = host
         self.hosts_table.clear()
         self.hosts_table.setRowCount(len(self.hosts.to_list()))
         for index, host in enumerate(self.hosts.to_list()):
@@ -118,19 +130,6 @@ class SettingsWindow(QWidget):
             else:
                 item.setBackground(QColor("red"))
             self.hosts_table.setItem(index, 0, item)
-
-    def change_data(self, item):
-        """
-        Реагирует на изменение данных в таблице
-        :param item: элемент таблицы
-        """
-        host = str(item.text())
-        self.hosts_table.blockSignals(True)
-        self.hosts[host] = host
-        if re.match(hostname_expression, host):
-            item.setBackground(QColor("green"))
-        else:
-            item.setBackground(QColor("red"))
         self.hosts_table.blockSignals(False)
 
     def add_row(self):
@@ -155,7 +154,15 @@ class SettingsWindow(QWidget):
         )
         if messageBox == QMessageBox.Ok:
             del self.hosts[item_text.split('.')[0]]
-            self.update_table()
+            self.hosts_table.clear()
+            self.hosts_table.setRowCount(len(self.hosts.to_list()))
+            for index, host in enumerate(self.hosts.to_list()):
+                item = QTableWidgetItem(host)
+                if re.match(hostname_expression, host):
+                    item.setBackground(QColor("green"))
+                else:
+                    item.setBackground(QColor("red"))
+                self.hosts_table.setItem(index, 0, item)
 
     def ssh_copy_to_root(self, host, root_pass):
         """
