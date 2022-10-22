@@ -48,20 +48,14 @@ class SettingsWindow(QWidget):
         open_filebtn.clicked.connect(self.open_file_dialog)
         grid.addWidget(open_filebtn, 0, 3)
 
-        # self.hostsfield = QTableView()
-        # self.hostsfield.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-
         self.hosts_table = QTableWidget()
         self.hosts_table.setColumnCount(1)
         self.hosts_table.setColumnWidth(0, 250)
         if not self.hosts:
             self.hosts_table.setRowCount(1)
             self.hosts_table.setItem(0, 0, QTableWidgetItem('Введите сюда имена хостов'))
-            # self.hostsfield.setModel(TableModel([['Введите сюда имена хостов']]))
         else:
             self.update_table()
-            # self.hostsfield.setModel(TableModel([[i] for i in self.hosts.to_list()]))
-        # grid.addWidget(self.hostsfield, 1, 1, 6, 3)
         grid.addWidget(self.hosts_table, 1, 1, 6, 3)
         self.hosts_table.itemChanged.connect(self.change_data)
 
