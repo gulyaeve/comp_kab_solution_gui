@@ -130,9 +130,9 @@ class SettingsWindow(QWidget):
         Удаление строки и удаление из файла
         """
         row = self.hosts_table.currentRow()
-        item_text = str(self.hosts_table.currentItem().text())
         if row < 0:
             return
+        item_text = str(self.hosts_table.currentItem().text())
         messageBox = QMessageBox.warning(
             self,
             "Подтверждение удаления!",
