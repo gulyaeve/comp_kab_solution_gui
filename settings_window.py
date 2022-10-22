@@ -102,10 +102,8 @@ class SettingsWindow(QWidget):
         self.hosts_table.clear()
         self.hosts_table.setRowCount(len(self.hosts.to_list()))
         for index, host in enumerate(self.hosts.to_list()):
-            print(f"{index=} {host=}")
-            item = QTableWidgetItem(host)
-            self.hosts_table.setItem(index, 0, item)
-        # self.update()
+            self.hosts_table.setItem(index, 0, QTableWidgetItem(host))
+            # print(f"{index=} {host=}")
 
     def change_data(self, item):
         host = str(item.text())
