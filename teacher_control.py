@@ -58,6 +58,9 @@ class TeacherWindow(QWidget):
 
         self.hosts_items = QListWidget()
         self.hosts_items.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        hosts_from_file = self.hosts.to_list()
+        self.hosts_items.addItems(hosts_from_file)
+        self.n = len(self.hosts_items)
         grid.addWidget(self.hosts_items, 2, 1, 5, 2)
 
         self.move(300, 150)
