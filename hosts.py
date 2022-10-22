@@ -9,12 +9,6 @@ from config import hosts_file_path
 class Host:
     hostname: str
     mac_address: str
-    # name: str
-
-    # def __init__(self, name: str, hostname: str, mac_address: str = ''):
-    #     self.name = hostname.split('.')[0]
-    #     self.hostname = hostname
-    #     self.mac_address = mac_address
 
     def name(self) -> str:
         return self.hostname.split('.')[0]
@@ -44,7 +38,11 @@ class Hosts:
         host = Host(hostname=self.hosts[item]['hostname'], mac_address=self.hosts[item]['mac_address'])
         return host
 
-    def __add__(self, host: Host):
+    def __add__(self, hostname: str):
+        if hostname.endswith('.local'):
+            host = Host(hostname=hostname, mac_address='')
+        else:
+            host = Host(hostname=f"{hostname}.local", mac_address='')
         self.hosts[host.name()] = host.to_dict()
         self.write(self.hosts)
         return self

@@ -95,35 +95,40 @@ class SettingsWindow(QWidget):
             grid.addWidget(button, 2, 0)
 
     def update_table(self):
+        """
+        Обновление таблицы информацией из файла
+        """
         self.hosts_table.clear()
         self.hosts_table.setRowCount(len(self.hosts.to_list()))
         for index, host in enumerate(self.hosts.to_list()):
             self.hosts_table.setItem(index, 0, QTableWidgetItem(host))
 
     def change_data(self, item):
+        """
+        Реагирует на изменение данных в таблице
+        :param item: элемент таблицы
+        """
         host = str(item.text())
         self.hosts_table.blockSignals(True)
-        if host.endswith('.local'):
-            self.hosts += Host(host, '')
-            item.setBackground(QColor("green"))
-        else:
-            item.setBackground(QColor("red"))
-            self.hosts += Host(f"{host}.local", '')
+        self.hosts += host
+        # if host.endswith('.local'):
+        #     item.setBackground(QColor("green"))
+        #     self.hosts += host
+        # else:
+        #     item.setBackground(QColor("red"))
+        #     self.hosts += host
         self.hosts_table.blockSignals(False)
 
-    # def update_hosts(self):
-    #     print("Updating ")
-    #     for item in self.changed_items:
-    #         self.hosts_table.blockSignals(True)
-    #         item.setBackgroundColor(QColor("white"))
-    #         self.hosts_table.blockSignals(False)
-    #         print(item)
-            # self.writeToDatabase(item)
-
     def add_row(self):
+        """
+        Добавление пустой строки
+        """
         self.hosts_table.setRowCount(self.hosts_table.rowCount()+1)
 
     def delete_row(self):
+        """
+        Удаление строки и удаление из файла
+        """
         row = self.hosts_table.currentRow()
         item_text = str(self.hosts_table.currentItem().text())
         if row < 0:
@@ -135,9 +140,8 @@ class SettingsWindow(QWidget):
             QMessageBox.Ok | QMessageBox.Cancel,
         )
         if messageBox == QMessageBox.Ok:
-            self.hosts.__delitem__(item_text.split('.')[0])
+            del self.hosts[item_text.split('.')[0]]
             self.update_table()
-        # self.hosts_table.setRowCount(self.hosts_table.rowCount()-1)
 
     def ssh_copy_to_root(self, host, root_pass):
         """
