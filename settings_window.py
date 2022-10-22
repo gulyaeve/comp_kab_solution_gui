@@ -71,10 +71,6 @@ class SettingsWindow(QWidget):
         button.clicked.connect(self.update_table)
         grid.addWidget(button, 7, 3)
 
-        # button = QPushButton('Сохранить список хостов')
-        # button.clicked.connect(self.update_hosts)
-        # grid.addWidget(button, 7, 3)
-
         if user == 'root':
             logging.info("Попытка запустить от рута")
             print("Данный скрипт не следует запускать от имени суперпользователя")
