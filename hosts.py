@@ -11,7 +11,7 @@ class Host:
     mac_address: str
 
     def name(self) -> str:
-        return self.hostname.split('.')[0]
+        return self.hostname.split('.local')[0]
 
     def to_dict(self):
         return {"hostname": self.hostname, "mac_address": self.mac_address}
@@ -35,8 +35,10 @@ class Hosts:
         return len(self.hosts)
 
     def __getitem__(self, item: str):
-        host = Host(hostname=self.hosts[item]['hostname'], mac_address=self.hosts[item]['mac_address'])
-        return host
+        return Host(
+            hostname=self.hosts[item]['hostname'],
+            mac_address=self.hosts[item]['mac_address']
+        )
 
     def __setitem__(self, key: str, hostname: str):
         if hostname.endswith('.local'):
@@ -44,7 +46,7 @@ class Hosts:
         else:
             host = Host(hostname=f"{hostname}.local", mac_address='')
         if key.endswith('.local'):
-            key = key.split('.')[0]
+            key = key.split('.local')[0]
         self.hosts[key] = host.to_dict()
         self.write(self.hosts)
         return self
@@ -59,6 +61,8 @@ class Hosts:
         return self
 
     def __delitem__(self, key):
+        if key.endswith('.local'):
+            key = key.split('.local')[0]
         del self.hosts[key]
         return self.hosts
 

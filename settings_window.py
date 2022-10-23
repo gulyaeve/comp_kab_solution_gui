@@ -113,13 +113,16 @@ class SettingsWindow(QWidget):
             button_veyon.clicked.connect(self.install_veyon)
             grid.addWidget(button_veyon, 2, 0)
 
-    def change_data(self, item):
+    def change_data(self, item: QTableWidgetItem):
         """
         Реагирует на изменение данных в таблице
         :param item: элемент таблицы
         """
-        host = str(item.text())
         self.hosts_table.blockSignals(True)
+        item_index = item.row()
+        host = str(item.text())
+        if len(self.hosts.to_list()) > item_index:
+            del self.hosts[self.hosts.to_list()[item_index]]
         self.hosts[host] = host
         self.hosts_table.clear()
         self.hosts_table.setRowCount(len(self.hosts.to_list()))
@@ -153,7 +156,7 @@ class SettingsWindow(QWidget):
             QMessageBox.Ok | QMessageBox.Cancel,
         )
         if messageBox == QMessageBox.Ok:
-            del self.hosts[item_text.split('.')[0]]
+            del self.hosts[item_text.split('.local')[0]]
             self.hosts_table.clear()
             self.hosts_table.setRowCount(len(self.hosts.to_list()))
             for index, host in enumerate(self.hosts.to_list()):
@@ -168,10 +171,6 @@ class SettingsWindow(QWidget):
         """
         Очистка таблицы и удаление из файла
         """
-        # row = self.hosts_table.currentRow()
-        # if row < 0:
-        #     return
-        # item_text = str(self.hosts_table.currentItem().text())
         messageBox = QMessageBox.warning(
             self,
             "Подтверждение удаления!",
@@ -288,7 +287,7 @@ class SettingsWindow(QWidget):
             errors = 0
             ssh_hosts = []
             for host in list_of_hosts:
-                host = host.split('\n')[0]
+                host = host.strip()
                 ssh = paramiko.SSHClient()
                 ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
                 try:
@@ -344,7 +343,7 @@ class SettingsWindow(QWidget):
                 f"Введите пароль учётной записи суперпользователя root (для устройств учеников): ",
                 QLineEdit.Password, "")
             for host in list_of_hosts:
-                host = host.split('\n')[0]
+                host = host.strip()
                 print(f"Пробую подключиться к {host}")
                 self.textfield.appendPlainText(f"Пробую подключиться к {host}")
                 logging.info(f"Пробую подключиться к {host}")
