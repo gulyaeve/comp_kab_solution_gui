@@ -41,7 +41,14 @@ class TeacherWindow(QWidget):
         self.pbar = QProgressBar(self)
         self.pbar.setGeometry(200, 10, 200, 20)
 
-        names = ['Собрать работы', 'Очистить работы', 'Восстановить', 'Открыть Veyon', 'Открыть sftp', 'Команда']
+        names = [
+            'Собрать работы',
+            'Удалить работы',
+            'Восстановить компьютеры',
+            'Открыть Veyon',
+            'Открыть проводник',
+            'Выполнить команду'
+        ]
         functions = [self.get_works, self.clean_works, self.backup_student, self.open_veyon, self.open_sftp,
                      self.run_command]
 
