@@ -139,7 +139,7 @@ class SettingsWindow(QWidget):
         """
         Добавление пустой строки
         """
-        self.hosts_table.setRowCount(self.hosts_table.rowCount()+1)
+        self.hosts_table.setRowCount(self.hosts_table.rowCount() + 1)
 
     def delete_row(self):
         """
@@ -392,54 +392,57 @@ class SettingsWindow(QWidget):
                                                   QLineEdit.Normal, "")
             if okPressed:
                 logging.info(f'Установка вейон на компьютере учителя')
-                # hosts_names = ''
-                # for host in self.hosts.items_to_list():
-                #     hosts_names += f"{host.name()},{host.hostname},{host.mac_address};"
+                network_objects = ''
+                for host in self.hosts.items_to_list():
+                    mac_address = "aa:bb:cc:dd:ee:ff" if not host.mac_address else host.mac_address
+                    network_objects += "veyon-cli networkobjects add " \
+                                      "computer \"{name}\" \"{hostname}\" \"{mac_address}\" \"{kab}\"; ".format(
+                        name=host.name(),
+                        hostname=host.hostname,
+                        mac_address=mac_address,
+                        kab=kab
+                    )
                 run_command_by_root(
-                    f"apt-get update -y;"
-                    f"apt-get install veyon -y;"
-                    f"veyon-cli authkeys delete teacher/private; "
-                    f"veyon-cli authkeys delete teacher/public; "
-                    f"veyon-cli authkeys create teacher; "
-                    f"veyon-cli authkeys setaccessgroup teacher/private teacher; "
-                    f"veyon-cli authkeys export teacher/public {config_path}/teacher_public_key.pem; "
+                    f"apt-get update -y; "
+                    f"apt-get install veyon -y; "
+                    f"rm {config_path}/teacher_public_key.pem; "
+                    f"rm {config_path}/myconfig.json; "
+                    f"veyon-cli config clear; "
+                    f"veyon-cli authkeys delete {user}/private; "
+                    f"veyon-cli authkeys delete {user}/public; "
+                    f"veyon-cli authkeys create {user}; "
+                    f"veyon-cli authkeys setaccessgroup {user}/private {user}; "
+                    f"veyon-cli authkeys export {user}/public {config_path}/teacher_public_key.pem; "
                     f"veyon-cli networkobjects clear; "
                     f"veyon-cli networkobjects add location {kab}; "
-                )
-                for host in self.hosts.items_to_list():
-                    if host.mac_address:
-                        print(host, 'mac')
-                        run_command_by_root(
-                            f"veyon-cli networkobjects add computer {host.name()} {host.hostname} {host.mac_address} {kab}"
-                        )
-                    else:
-                        print(host, 'not mac')
-                        run_command_by_root(
-                            f"veyon-cli networkobjects add computer {host.name()} {host.hostname} \"\" {kab}"
-                        )
-                run_command_by_root(
+                    f"{network_objects}"
                     f"veyon-cli config export {config_path}/myconfig.json; "
                     f"veyon-cli service start"
                 )
                 logging.info(f'Установка вейон на комьютере учителя УСПЕШНО')
-                #
-                # print("Настраиваю veyon на компьютерах учеников (должен быть доступ к root по ssh):")
-                # logging.info(f'Установка вейон на комьютере учеников')
-                # run_command(
-                #     f'ssh-add; '
-                #     f'for i in $({str(self.hosts)}); do '
-                #     f'scp {config_path}/teacher_public_key.pem root@$i:/tmp/ && '
-                #     f'scp {config_path}/myconfig.json root@$i:/tmp/ && '
-                #     f'ssh root@$i "apt-get update && '
-                #     f'apt-get -y install veyon && '
-                #     f'veyon-cli authkeys delete teacher/public; '
-                #     f'veyon-cli authkeys import teacher/public /tmp/teacher_public_key.pem && '
-                #     f'veyon-cli config import /tmp/myconfig.json && '
-                #     f'veyon-cli service start && '
-                #     'reboot"; done '
-                # )
-                # logging.info(f'Установка вейон на компьютере учеников УСПЕШНО')
-                #
+
+                print("Настраиваю veyon на компьютерах учеников (должен быть доступ к root по ssh):")
+                logging.info(f'Установка вейон на комьютере учеников')
+                copy_to_hosts = []
+                for host in self.hosts.items_to_list():
+                    copy_to_hosts.append(
+                        f"scp {config_path}/teacher_public_key.pem root@{host.hostname}:/tmp/ && "
+                        f"scp {config_path}/myconfig.json root@{host.hostname}:/tmp/ && "
+                        f"ssh root@{host.hostname} 'apt-get update && "
+                        f"apt-get -y install veyon && "
+                        f"veyon-cli authkeys delete {user}/public; "
+                        f"veyon-cli authkeys import {user}/public /tmp/teacher_public_key.pem && "
+                        f"veyon-cli config import /tmp/myconfig.json && "
+                        f"veyon-cli service start && "
+                        f"reboot'"
+                    )
+                run_command_in_xterm(
+                    f"ssh-add"
+                )
+                for command in copy_to_hosts:
+                    run_command_in_xterm(command)
+                logging.info(f'Установка вейон на компьютере учеников УСПЕШНО')
+
                 # print("Создаю ярлык:")
                 # with open(f'/home/{user}/Рабочий стол/veyon.desktop', 'w') as file_link:
                 #     file_link.write(veyon_link)
@@ -475,13 +478,7 @@ class SettingsWindow(QWidget):
                 "\nДля настройки сетевой папка необходимо сначала настроить ssh"
             )
 
-    # def save_hosts(self):
-    #     # TODO: Добавить получение имён из таблицы
-    #     self.hosts.update(self.hostsfield.toPlainText())
-    #     # with open(f'{config_path}/hosts.txt', 'w') as out:
-    #     #     print(self.hostsfield.toPlainText(), file=out)
-
-    def get_mac_address(self, hostname): # TODO нужно тестировать
+    def get_mac_address(self, hostname):  # TODO нужно тестировать
         ip_address = subprocess.check_output(['ping', hostname, '-c', '1']).decode('utf-8').split('(')[1].split(')')[0]
         ifconfig_output = run_command(f'ssh root@{hostname} "ifconfig"')
         macAddress = ''
