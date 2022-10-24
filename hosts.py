@@ -72,6 +72,12 @@ class Hosts:
             result.append(self.hosts[host]['hostname'])
         return result
 
+    def items_to_list(self) -> [Host]:
+        result = []
+        for host in self.hosts:
+            result.append(Host(hostname=self.hosts[host]['hostname'], mac_address=self.hosts[host]['mac_address']))
+        return result
+
     def read(self):
         try:
             with open(self.filename, 'r', encoding='utf-8') as file:

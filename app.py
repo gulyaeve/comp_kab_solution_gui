@@ -4,9 +4,11 @@ import sys
 from PyQt5.QtWidgets import QApplication
 
 from config import hosts_file_path, config_path
-from system import this_host, user, run_command
+from system import this_host, user, run_command, exit_app
 from teacher_control import TeacherWindow
 
+if user == 'root':
+    sys.exit(exit_app())
 
 # Настройка логирования
 for handler in logging.root.handlers[:]:

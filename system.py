@@ -24,6 +24,18 @@ def run_command(command: str) -> str:
     return ret.stdout.decode()
 
 
+def run_command_in_xterm(command: str):
+    logging.info(f"Начало выполнения [{command}]")
+    run_command(f'xterm -e "{command}"')
+    logging.info(f"Конец выполнения [{command}]")
+
+
+def run_command_by_root(command: str):
+    logging.info(f"Начало выполнения [{command}]")
+    run_command(f'xterm -e \'echo "Введите пароль суперпользователя" && su - root -c "{command}"\'')
+    logging.info(f"Конец выполнения [{command}]")
+
+
 # Получение имени компьютера и текущего пользователя
 this_host = run_command('hostname').strip()
 user = run_command('whoami').strip()
