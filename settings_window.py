@@ -11,7 +11,7 @@ from paramiko.channel import Channel
 from paramiko.ssh_exception import AuthenticationException, SSHException
 from PyQt5.QtCore import Qt
 
-from config import config_path, hostname_expression
+from config import config_path, hostname_expression, version
 from desktop_entrys import ssh_add_link, veyon_link, network_share, network_share_for_teacher
 from hosts import Hosts
 from system import exit_app, run_command, this_host, user, run_command_in_xterm, run_command_by_root
@@ -33,7 +33,7 @@ class SettingsWindow(QWidget):
 
         grid = QGridLayout()
         self.setLayout(grid)
-        self.setWindowTitle('Настройка компьютерного кабинета')
+        self.setWindowTitle(f'Настройка компьютерного кабинета, версия {version}')
         self.setFixedWidth(700)
         # self.setFixedHeight(400)
 
