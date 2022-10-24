@@ -156,7 +156,7 @@ class SettingsWindow(QWidget):
             QMessageBox.Ok | QMessageBox.Cancel,
         )
         if messageBox == QMessageBox.Ok:
-            del self.hosts[item_text.split('.local')[0]]
+            del self.hosts[item_text]
             self.hosts_table.clear()
             self.hosts_table.setRowCount(len(self.hosts.to_list()))
             for index, host in enumerate(self.hosts.to_list()):
