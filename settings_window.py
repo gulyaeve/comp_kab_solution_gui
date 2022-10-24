@@ -384,7 +384,7 @@ class SettingsWindow(QWidget):
                                        f"computer \"{host.name()}\" \"{host.hostname}\" \"{mac_address}\" \"{kab}\"; "
                 # TODO: Проверить можно ли добавить юзера в группу тичер и настроить veyon ssh
                 run_command_by_root(
-                    f"usermod -a -G teacher {user}"
+                    f"usermod -a -G teacher {user}; "
                     f"apt-get update -y; "
                     f"apt-get install veyon -y; "
                     f"rm {config_path}/teacher_public_key.pem; "
