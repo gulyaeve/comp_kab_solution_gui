@@ -23,7 +23,7 @@ class Hosts:
         with open(self.filename, 'r', encoding='utf-8') as file:
             if not file.read():
                 self.clean()
-        self.hosts: dict = self.read()
+        self.hosts: dict = self._read()
 
     def __str__(self):
         result = ''
@@ -40,24 +40,24 @@ class Hosts:
             mac_address=self.hosts[item]['mac_address']
         )
 
-    def __setitem__(self, key: str, hostname: str):
+    def __setitem__(self, key: str, hostname: str, mac_address: str = ''):
         if hostname.endswith('.local'):
-            host = Host(hostname=hostname, mac_address='')
+            host = Host(hostname=hostname, mac_address=mac_address)
         else:
-            host = Host(hostname=f"{hostname}.local", mac_address='')
+            host = Host(hostname=f"{hostname}.local", mac_address=mac_address)
         if key.endswith('.local'):
             key = key.split('.local')[0]
         self.hosts[key] = host.to_dict()
-        self.write(self.hosts)
+        self._write(self.hosts)
         return self
 
-    def __add__(self, hostname: str):
+    def __add__(self, hostname: str, mac_address: str = ''):
         if hostname.endswith('.local'):
-            host = Host(hostname=hostname, mac_address='')
+            host = Host(hostname=hostname, mac_address=mac_address)
         else:
-            host = Host(hostname=f"{hostname}.local", mac_address='')
+            host = Host(hostname=f"{hostname}.local", mac_address=mac_address)
         self.hosts[host.name()] = host.to_dict()
-        self.write(self.hosts)
+        self._write(self.hosts)
         return self
 
     def __delitem__(self, key):
@@ -65,6 +65,22 @@ class Hosts:
             key = key.split('.local')[0]
         del self.hosts[key]
         return self.hosts
+
+    def _read(self):
+        try:
+            with open(self.filename, 'r', encoding='utf-8') as file:
+                return loads(file.read())
+        except FileNotFoundError:
+            logging.info('[error] Файл ' + self.filename + ' не найден')
+            return None
+
+    def _write(self, value):
+        try:
+            with open(self.filename, 'w', encoding='utf-8') as file:
+                file.write(dumps(value))
+        except KeyError:
+            logging.info('[error] Ключ не найден')
+            return None
 
     def to_list(self):
         result = []
@@ -78,30 +94,12 @@ class Hosts:
             result.append(Host(hostname=self.hosts[host]['hostname'], mac_address=self.hosts[host]['mac_address']))
         return result
 
-    def read(self):
-        try:
-            with open(self.filename, 'r', encoding='utf-8') as file:
-                return loads(file.read())
-        except FileNotFoundError:
-            logging.info('[error] Файл ' + self.filename + ' не найден')
-            return None
-
-    def write(self, value):
-        try:
-            with open(self.filename, 'w', encoding='utf-8') as file:
-                file.write(dumps(value))
-        except KeyError:
-            logging.info('[error] Ключ не найден')
-            return None
-        else:
-            return 0
-
     def clean(self):
         value = {}
         try:
             with open(self.filename, 'w', encoding='utf-8') as file:
                 file.write(dumps(value))
-            self.hosts: dict = self.read()
+            self.hosts: dict = self._read()
         except KeyError:
             logging.info('[error] Ключ не найден')
             return None
@@ -111,5 +109,5 @@ class Hosts:
         self.clean()
         for new_host in new_hosts:
             self.hosts[new_host.split('.')[0]] = Host(hostname=new_host, mac_address='').to_dict()
-        self.write(self.hosts)
+        self._write(self.hosts)
         return self
