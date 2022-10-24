@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import datetime
+import logging
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (QPushButton, QLineEdit, \
@@ -188,7 +189,7 @@ class TeacherWindow(QWidget):
             comp = comps[i].text().strip()
             try:
                 # TODO: необходимо заходить под root
-                # run_command(f'dolphin sftp://root@{comp}/home/student')
+                # run_command(f'dolphin sftp://root@{comp}:/home/student')
                 self.infoLabel.setText(f'Открываем {comp}...')
                 self.pbar.setValue((i + 1) * 100 // n)
             except:
@@ -214,7 +215,7 @@ class TeacherWindow(QWidget):
             run_command(f'ssh root@{comp} "{dialog}"')
 
     def settings(self):
-        print('Settings')
+        logging.info("Открыты настройки")
         new_window = SettingsWindow()
         self.windows.append(new_window)
         new_window.show()
