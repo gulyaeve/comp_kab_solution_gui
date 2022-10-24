@@ -64,7 +64,7 @@ class TeacherWindow(QWidget):
         grid.addWidget(self.hosts_items, 2, 1, 5, 2)
 
         self.move(300, 150)
-        self.setWindowTitle(f'Teacher Control ver. {version}')
+        self.setWindowTitle(f'Управление компьютерным кабинетом, версия {version}')
         self.setFixedWidth(600)
         self.show()
 

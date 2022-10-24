@@ -33,12 +33,12 @@ class SettingsWindow(QWidget):
 
         grid = QGridLayout()
         self.setLayout(grid)
-        self.setWindowTitle('Настройки компьютерного класса')
+        self.setWindowTitle('Настройка компьютерного кабинета')
         self.setFixedWidth(700)
         # self.setFixedHeight(400)
 
-        # TODO: Сделать нередактируемым
         self.textfield = QPlainTextEdit()
+        self.textfield.setReadOnly(True)
         grid.addWidget(self.textfield, 4, 0, 4, 1)
 
         hostslabel = QLabel('Список хостов:')
@@ -199,7 +199,6 @@ class SettingsWindow(QWidget):
         logging.info("Начало копирования ключей ssh to root")
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        # TODO: Проверить можно ли добавить юзера в группу тичер и подключиться по ssh
         try:
             ssh.connect(hostname=host, port=22, timeout=5, username='teacher')
             logging.info(f"Подключено по ssh@teacher без пароля к {host}")
@@ -214,7 +213,6 @@ class SettingsWindow(QWidget):
             logging.info(f"timeout Не удалось подключиться к ssh@teacher к {host}")
             raise SSHTimeoutError
         except SSHException:
-            print(f'Не удалось подключиться к ssh teacher@{host}')
             self.textfield.appendPlainText(f'Не удалось подключиться к ssh teacher@{host}')
             logging.info(f"SSHException Не удалось подключиться к ssh teacher@{host}")
             # exit_app()
@@ -244,7 +242,6 @@ class SettingsWindow(QWidget):
         """
         hosts = self.hosts.to_list()
         if hosts:
-            print("\nСписок устройств найден, выполняю ping всех устройств:")
             self.textfield.appendPlainText("\nСписок устройств найден, выполняю ping всех устройств:")
             errors = 0
             list_of_hosts = []
@@ -252,7 +249,6 @@ class SettingsWindow(QWidget):
                 # host = host.split('\n')[0]
                 result = subprocess.run(['ping', '-c1', host], stdout=subprocess.PIPE)
                 if result.returncode == 0:
-                    print(f"ping: {host}: УСПЕШНОЕ СОЕДИНЕНИЕ")
                     self.textfield.appendPlainText(f"ping: {host}: УСПЕШНОЕ СОЕДИНЕНИЕ")
                     logging.info(f"ping: {host}: УСПЕШНОЕ СОЕДИНЕНИЕ {result=} {result.returncode=}")
                 elif result.returncode == 2:
@@ -260,14 +256,11 @@ class SettingsWindow(QWidget):
                     self.textfield.appendPlainText(f"ping: {host}: УСТРОЙСТВО НЕ НАЙДЕНО")
                     errors += 1
                 else:
-                    print(host + " неизвестная ошибка")
                     self.textfield.appendPlainText(host + " неизвестная ошибка")
                     logging.info(host + f" неизвестная ошибка {result=} {result.returncode=}")
                     errors += 1
                 list_of_hosts.append(host)
             if errors > 0:
-                print("Некоторые компьютеры найти не удалось, "
-                      "проверьте правильность имён или адресов и повторите попытку.")
                 self.textfield.appendPlainText("Некоторые компьютеры найти не удалось, "
                                                "проверьте правильность имён и повторите попытку.")
                 return []
@@ -285,7 +278,6 @@ class SettingsWindow(QWidget):
         """
         Проверка подключения к хостам пользователем root
         """
-        print("\nПроверяю доступ по ssh к компьютерам")
         self.textfield.appendPlainText("\nПроверяю доступ по ssh к компьютерам")
         list_of_hosts = self.ping()
         if list_of_hosts:
@@ -301,7 +293,6 @@ class SettingsWindow(QWidget):
                     self.textfield.appendPlainText(f"Подключено по ssh@root без пароля к {host}")
                     ssh_hosts.append(host)
                 except AuthenticationException:
-                    print(f'Не удалось подключиться ssh root@{host}')
                     self.textfield.appendPlainText(f'Не удалось подключиться ssh root@{host}')
                     logging.info(f"Не удалось подключиться по ssh@root без пароля к {host}")
                     errors += 1
@@ -336,7 +327,6 @@ class SettingsWindow(QWidget):
                 file_link.write(ssh_add_link)
             logging.info(f"Ярлык в автозапуск ssh-add создан")
             logging.info(f"Начало копирования ключей")
-            print('\nКопирую ключ на все компьютеры')
             self.textfield.appendPlainText('\nКопирую ключ на все компьютеры:')
             run_command_in_xterm(f"ssh-add")
             for host in self.hosts.items_to_list():
@@ -344,7 +334,6 @@ class SettingsWindow(QWidget):
                     f"ssh-copy-id -f -i /home/{user}/.ssh/id_ed25519.pub teacher@{host.hostname} -o IdentitiesOnly=yes"
                 )
             logging.info(f"Ключи скопированы")
-            print("Теперь я настрою ssh для суперпользователя на всех устройствах")
             self.textfield.appendPlainText("Теперь я настрою ssh для суперпользователя на всех устройствах")
             root_pass, okPressed = QInputDialog.getText(
                 self, "Введите пароль",
@@ -353,13 +342,11 @@ class SettingsWindow(QWidget):
             if okPressed:
                 for host in list_of_hosts:
                     host = host.strip()
-                    print(f"Пробую подключиться к {host}")
                     self.textfield.appendPlainText(f"Пробую подключиться к {host}")
                     logging.info(f"Пробую подключиться к {host}")
                     try:
                         result = self.ssh_copy_to_root(host, root_pass)
                         if "[root@" not in result:
-                            print(f'Пароль root на {host} не подошёл, введите ещё раз: ')
                             self.textfield.appendPlainText(f'Пароль root на {host} не подошёл, введите ещё раз: ')
                             logging.info(f'Пароль root на {host} не подошёл 1 попытка')
                             root_pass2, okPressed = QInputDialog.getText(self, "Введите пароль",
@@ -371,11 +358,9 @@ class SettingsWindow(QWidget):
                                     logging.info(f'Пароль root на {host} не подошёл 2 попытка')
                                     raise WrongRootPass
                     except (SSHTimeoutError, WrongRootPass):
-                        print(f"Не удалось подключиться к {host}")
                         self.textfield.appendPlainText(f"Не удалось подключиться к {host}")
                         logging.info(f"Не удалось подключиться к {host}")
                         break
-                    print(f"На {host} ssh для root настроен успешно")
                     self.textfield.appendPlainText(f"На {host} ssh для root настроен успешно")
                     logging.info(f"На {host} ssh для root настроен успешно")
 
@@ -395,24 +380,21 @@ class SettingsWindow(QWidget):
                 network_objects = ''
                 for host in self.hosts.items_to_list():
                     mac_address = "aa:bb:cc:dd:ee:ff" if not host.mac_address else host.mac_address
-                    network_objects += "veyon-cli networkobjects add " \
-                                      "computer \"{name}\" \"{hostname}\" \"{mac_address}\" \"{kab}\"; ".format(
-                        name=host.name(),
-                        hostname=host.hostname,
-                        mac_address=mac_address,
-                        kab=kab
-                    )
+                    network_objects += f"veyon-cli networkobjects add " \
+                                       f"computer \"{host.name()}\" \"{host.hostname}\" \"{mac_address}\" \"{kab}\"; "
+                # TODO: Проверить можно ли добавить юзера в группу тичер и настроить veyon ssh
                 run_command_by_root(
+                    f"usermod -a -G teacher {user}"
                     f"apt-get update -y; "
                     f"apt-get install veyon -y; "
                     f"rm {config_path}/teacher_public_key.pem; "
                     f"rm {config_path}/myconfig.json; "
                     f"veyon-cli config clear; "
-                    f"veyon-cli authkeys delete {user}/private; "
-                    f"veyon-cli authkeys delete {user}/public; "
-                    f"veyon-cli authkeys create {user}; "
-                    f"veyon-cli authkeys setaccessgroup {user}/private {user}; "
-                    f"veyon-cli authkeys export {user}/public {config_path}/teacher_public_key.pem; "
+                    f"veyon-cli authkeys delete teacher/private; "
+                    f"veyon-cli authkeys delete teacher/public; "
+                    f"veyon-cli authkeys create teacher; "
+                    f"veyon-cli authkeys setaccessgroup teacher/private teacher; "
+                    f"veyon-cli authkeys export teacher/public {config_path}/teacher_public_key.pem; "
                     f"veyon-cli networkobjects clear; "
                     f"veyon-cli networkobjects add location {kab}; "
                     f"{network_objects}"
@@ -420,8 +402,9 @@ class SettingsWindow(QWidget):
                     f"veyon-cli service start"
                 )
                 logging.info(f'Установка вейон на комьютере учителя УСПЕШНО')
-
-                print("Настраиваю veyon на компьютерах учеников (должен быть доступ к root по ssh):")
+                self.textfield.appendPlainText(
+                    "Настраиваю veyon на компьютерах учеников (должен быть доступ к root по ssh):"
+                )
                 logging.info(f'Установка вейон на комьютере учеников')
                 copy_to_hosts = []
                 for host in self.hosts.items_to_list():
@@ -430,8 +413,8 @@ class SettingsWindow(QWidget):
                         f"scp {config_path}/myconfig.json root@{host.hostname}:/tmp/ && "
                         f"ssh root@{host.hostname} 'apt-get update && "
                         f"apt-get -y install veyon && "
-                        f"veyon-cli authkeys delete {user}/public; "
-                        f"veyon-cli authkeys import {user}/public /tmp/teacher_public_key.pem && "
+                        f"veyon-cli authkeys delete teacher/public; "
+                        f"veyon-cli authkeys import teacher/public /tmp/teacher_public_key.pem && "
                         f"veyon-cli config import /tmp/myconfig.json && "
                         f"veyon-cli service start && "
                         f"reboot'"
@@ -443,14 +426,15 @@ class SettingsWindow(QWidget):
                     run_command_in_xterm(command)
                 logging.info(f'Установка вейон на компьютере учеников УСПЕШНО')
 
-                # print("Создаю ярлык:")
-                # with open(f'/home/{user}/Рабочий стол/veyon.desktop', 'w') as file_link:
-                #     file_link.write(veyon_link)
-                # print('Veyon установлен')
-                # logging.info('Veyon установлен')
+                self.textfield.appendPlainText("Создаю ярлык:")
+                with open(f'/home/{user}/Рабочий стол/veyon.desktop', 'w') as file_link:
+                    file_link.write(veyon_link)
+                self.textfield.appendPlainText('Veyon установлен')
+                logging.info('Veyon установлен')
         else:
             self.textfield.appendPlainText(
-                '\nДля настройки veyon необходимо сначала настроить ssh')
+                '\nДля настройки veyon необходимо сначала настроить ssh'
+            )
 
     def network_folders(self):
         """
@@ -462,7 +446,6 @@ class SettingsWindow(QWidget):
         if ssh_hosts:
             self.textfield.appendPlainText(
                 'Создаю сетевую папку share (/home/share) и отправляю ссылку на компьютеры учеников')
-            # TODO: Не очень правильно создавать папку в хоум, нужно подумать куда перенести
             run_command_by_root(f'mkdir /home/share && chmod 755 /home/share && chown {user} /home/share')
             with open(f'{config_path}/share.desktop', 'w') as file_link:
                 file_link.write(network_share.format(teacher_host=this_host))
