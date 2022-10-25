@@ -14,7 +14,8 @@ from PyQt5.QtCore import Qt
 from config import config_path, hostname_expression, version
 from desktop_entrys import ssh_add_link, veyon_link, network_share, network_share_for_teacher
 from hosts import Hosts
-from system import exit_app, this_host, user, run_command_in_xterm, run_command_by_root, get_mac_address
+from system import exit_app, this_host, user, run_command_in_xterm, run_command_by_root, get_mac_address, \
+    run_command_in_xterm_hold
 
 
 class SSHTimeoutError(Exception):
@@ -112,6 +113,10 @@ class SettingsWindow(QWidget):
             button_veyon = QPushButton('Установить Veyon на всех компьютерах')
             button_veyon.clicked.connect(self.install_veyon)
             grid.addWidget(button_veyon, 2, 0)
+
+            command_veyon = QPushButton('Выполнить команду на всех компьютерах')
+            command_veyon.clicked.connect(self.run_command_on_ssh)
+            grid.addWidget(command_veyon, 3, 0)
 
     def change_data(self, item: QTableWidgetItem):
         """
@@ -482,3 +487,15 @@ class SettingsWindow(QWidget):
                         self.hosts_table.setItem(index, 0, QTableWidgetItem(host.strip()))
         except FileNotFoundError:
             pass
+
+    def run_command_on_ssh(self):
+        logging.info("Выполнение команды")
+        self.textfield.setPlainText('Выполнение команды...')
+        ssh_hosts = self.test_ssh()
+        command, pressed = QInputDialog.getText(self, 'Команда',
+                                                'Введите команду для выполнения на компьютерах учеников',
+                                                QLineEdit.Normal)
+        if pressed:
+            if ssh_hosts:
+                for host in self.hosts.items_to_list():
+                    run_command_in_xterm_hold(f'ssh root@{host.hostname} "{command}"')
