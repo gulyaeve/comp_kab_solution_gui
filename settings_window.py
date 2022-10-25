@@ -415,8 +415,8 @@ class SettingsWindow(QWidget):
                 run_command_by_root(
                     f"apt-get update -y; "
                     f"apt-get install veyon -y; "
-                    f"rm {config_path}/teacher_public_key.pem; "
-                    f"rm {config_path}/myconfig.json; "
+                    f"rm {config_path}/veyon_{user}_public_key.pem; "
+                    f"rm {config_path}/veyon_{user}_config.json; "
                     f"veyon-cli config clear; "
                     f"veyon-cli config set Authentication/Method 1; "
                     "veyon-cli config set VncServer/Plugin {39d7a07f-94db-4912-aa1a-c4df8aee3879}; "
@@ -424,11 +424,11 @@ class SettingsWindow(QWidget):
                     f"veyon-cli authkeys delete {user}/public; "
                     f"veyon-cli authkeys create {user}; "
                     f"veyon-cli authkeys setaccessgroup {user}/private {user}; "
-                    f"veyon-cli authkeys export {user}/public {config_path}/teacher_public_key.pem; "
+                    f"veyon-cli authkeys export {user}/public {config_path}/veyon_{user}_public_key.pem; "
                     f"veyon-cli networkobjects clear; "
                     f"veyon-cli networkobjects add location {kab}; "
                     f"{network_objects}"
-                    f"veyon-cli config export {config_path}/myconfig.json; "
+                    f"veyon-cli config export {config_path}/veyon_{user}_config.json; "
                     f"veyon-cli service start"
                 )
                 logging.info(f'Установка вейон на комьютере учителя УСПЕШНО')
@@ -440,14 +440,14 @@ class SettingsWindow(QWidget):
                 setup_wol = 'nmcli c modify \\"Проводное соединение 1\\" ethernet.wake-on-lan magic'
                 for host in self.hosts.items_to_list():
                     copy_to_hosts.append(
-                        f"scp {config_path}/teacher_public_key.pem root@{host.hostname}:/tmp/ && "
-                        f"scp {config_path}/myconfig.json root@{host.hostname}:/tmp/ && "
-                        f"ssh root@{host.hostname} '{setup_wol} && "
-                        f"apt-get update && "
+                        f"scp {config_path}/veyon_{user}_public_key.pem root@{host.hostname}:/tmp/ && "
+                        f"scp {config_path}/veyon_{user}_config.json root@{host.hostname}:/tmp/ && "
+                        f"ssh root@{host.hostname} 'apt-get update && "
                         f"apt-get -y install veyon && "
+                        f"{setup_wol} && "
                         f"veyon-cli authkeys delete {user}/public; "
-                        f"veyon-cli authkeys import {user}/public /tmp/teacher_public_key.pem && "
-                        f"veyon-cli config import /tmp/myconfig.json && "
+                        f"veyon-cli authkeys import {user}/public /tmp/veyon_{user}_public_key.pem && "
+                        f"veyon-cli config import /tmp/veyon_{user}_config.json && "
                         f"veyon-cli service start && "
                         f"reboot'"
                     )
