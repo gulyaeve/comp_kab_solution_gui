@@ -25,15 +25,13 @@ def run_command(command: str) -> str:
 
 
 def run_command_in_xterm(command: str):
-    logging.info(f"Начало выполнения [{command}]")
     run_command(f'xterm -e "{command}"')
-    logging.info(f"Конец выполнения [{command}]")
+    # run_command(f'xterm -hold -e "{command}"')
 
 
 def run_command_by_root(command: str):
-    logging.info(f"Начало выполнения [{command}]")
     run_command(f'xterm -e \'echo "Введите пароль суперпользователя" && su - root -c "{command}"\'')
-    logging.info(f"Конец выполнения [{command}]")
+    # run_command(f'xterm -hold -e \'echo "Введите пароль суперпользователя" && su - root -c "{command}"\'')
 
 
 # Получение имени компьютера и текущего пользователя
