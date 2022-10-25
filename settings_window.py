@@ -42,7 +42,7 @@ class SettingsWindow(QWidget):
         self.textfield.setReadOnly(True)
         grid.addWidget(self.textfield, 4, 0, 4, 1)
 
-        hostslabel = QLabel('Список хостов:')
+        hostslabel = QLabel('Список устройств:')
         hostslabel.setAlignment(Qt.AlignCenter)
         grid.addWidget(hostslabel, 0, 1, 1, 2)
 
@@ -55,7 +55,7 @@ class SettingsWindow(QWidget):
         self.hosts_table.setColumnWidth(0, 238)
         if not self.hosts:
             self.hosts_table.setRowCount(1)
-            self.hosts_table.setItem(0, 0, QTableWidgetItem('Введите сюда имена хостов'))
+            self.hosts_table.setItem(0, 0, QTableWidgetItem('Введите сетевые имена устройств'))
         else:
             self.hosts_table.clear()
             self.hosts_table.setRowCount(len(self.hosts.to_list()))
@@ -195,7 +195,12 @@ class SettingsWindow(QWidget):
                 self.hosts_table.setItem(index, 0, item)
 
     def open_file_dialog(self):
-        file_name = QFileDialog.getOpenFileName(self, directory=f"/home/{user}", caption='', filter='.txt')
+        file_name = QFileDialog.getOpenFileName(
+            self,
+            directory=f"/home/{user}",
+            caption='Импорт из текстового файла',
+            filter='.txt'
+        )
         # file_name = QFileDialog.getOpenFileName(self)
         try:
             with open(file_name[0], 'r') as inp:
