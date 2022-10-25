@@ -10,6 +10,10 @@ from teacher_control import TeacherWindow
 if user == 'root':
     sys.exit(exit_app())
 
+# Создание папки с конфигом
+run_command(f'mkdir -p {config_path}')
+run_command(f'touch {hosts_file_path}')
+
 # Настройка логирования
 for handler in logging.root.handlers[:]:
     logging.root.removeHandler(handler)
@@ -19,11 +23,6 @@ logging.basicConfig(
     format=u'%(asctime)s %(filename)s [LINE:%(lineno)d] [%(funcName)s()] #%(levelname)-15s %(message)s',
     level=logging.INFO,
 )
-
-
-# Создание папки с конфигом
-run_command(f'mkdir -p {config_path}')
-run_command(f'touch {hosts_file_path}')
 
 
 if __name__ == '__main__':
