@@ -194,6 +194,21 @@ class SettingsWindow(QWidget):
                     item.setBackground(QColor("red"))
                 self.hosts_table.setItem(index, 0, item)
 
+    def open_file_dialog(self):
+        file_name = QFileDialog.getOpenFileName(self, directory=f"/home/{user}", caption='', filter='.txt')
+        # file_name = QFileDialog.getOpenFileName(self)
+        try:
+            with open(file_name[0], 'r') as inp:
+                lines = inp.readlines()
+                if len(lines) > 1000:
+                    QMessageBox('Слишком большой файл!').show()
+                else:
+                    self.hosts_table.setRowCount(len(lines))
+                    for index, host in enumerate(lines):
+                        self.hosts_table.setItem(index, 0, QTableWidgetItem(host.strip()))
+        except FileNotFoundError:
+            pass
+
     def ssh_copy_to_root(self, host, root_pass):
         """
         Копирование ключей ssh от teacher в root
@@ -472,21 +487,6 @@ class SettingsWindow(QWidget):
             self.textfield.appendPlainText(
                 "\nДля настройки сетевой папка необходимо сначала настроить ssh"
             )
-
-    def open_file_dialog(self):
-        file_name = QFileDialog.getOpenFileName(self, f"/home/{user}", '', '.txt')
-        # file_name = QFileDialog.getOpenFileName(self)
-        try:
-            with open(file_name[0], 'r') as inp:
-                lines = inp.readlines()
-                if len(lines) > 1000:
-                    QMessageBox('Слишком большой файл!').show()
-                else:
-                    self.hosts_table.setRowCount(len(lines))
-                    for index, host in enumerate(lines):
-                        self.hosts_table.setItem(index, 0, QTableWidgetItem(host.strip()))
-        except FileNotFoundError:
-            pass
 
     def run_command_on_ssh(self):
         logging.info("Выполнение команды")

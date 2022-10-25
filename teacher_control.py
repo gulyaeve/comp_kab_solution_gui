@@ -124,10 +124,6 @@ class TeacherWindow(QWidget):
                       scp -r root@{comp}:\'/home/student/Рабочий\ стол/Сдать\ работы/*\' \
                       \"/home/{user}/Рабочий стол/Работы/\"{date}/{text}/{comp}')
 
-            # """
-            # subprocess.Popen(['ssh', f'root@{comps[i].text().strip()}', 'mkdir -p \"/home/student/Рабочий стол/Сдать работы\" && chmod 777 \"/home/student/Рабочий стол/Сдать работы\"'])
-            # subprocess.Popen(['scp', '-r', f"root@{comps[i].text().strip()}:\'/home/student/Рабочий стол/Сдать работы/*\'", '"/home/teacher/Рабочий стол/Работы/"' + date + '/' + text + '/' + comps[i].text().strip()])
-            # """
             self.pbar.setValue((i + 1) * 100 // n)
             self.infoLabel.setText(f'Собираем у {comp}')
         self.infoLabel.setText('Сбор работ завершён.')
