@@ -382,7 +382,6 @@ class SettingsWindow(QWidget):
                     mac_address = "aa:bb:cc:dd:ee:ff" if not host.mac_address else host.mac_address
                     network_objects += f"veyon-cli networkobjects add " \
                                        f"computer \"{host.name()}\" \"{host.hostname}\" \"{mac_address}\" \"{kab}\"; "
-                # TODO: Проверить можно ли добавить юзера в группу тичер и настроить veyon ssh
                 run_command_by_root(
                     f"apt-get update -y; "
                     f"apt-get install veyon -y; "
@@ -476,12 +475,11 @@ class SettingsWindow(QWidget):
                 return macAddress
         return macAddress
 
-    # TODO: Добавить валидацию имён
     def open_file_dialog(self):
-        fileName = QFileDialog.getOpenFileName(self, f"/home/{user}", '', '.txt')
-        # fileName = QFileDialog.getOpenFileName(self)
+        file_name = QFileDialog.getOpenFileName(self, f"/home/{user}", '', '.txt')
+        # file_name = QFileDialog.getOpenFileName(self)
         try:
-            with open(fileName[0], 'r') as inp:
+            with open(file_name[0], 'r') as inp:
                 lines = inp.readlines()
                 if len(lines) > 1000:
                     QMessageBox('Слишком большой файл!').show()
