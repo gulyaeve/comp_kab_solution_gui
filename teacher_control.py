@@ -11,7 +11,7 @@ from PyQt5.QtWidgets import (QPushButton, QLineEdit, \
 
 from config import config_path, version
 from hosts import Hosts
-from system import run_command, user
+from system import run_command, user, run_command_in_xterm_hold
 from settings_window import SettingsWindow
 
 
@@ -45,11 +45,10 @@ class TeacherWindow(QWidget):
             'Собрать работы',
             'Удалить работы',
             'Восстановить компьютеры',
-            'Открыть Veyon',
             'Открыть проводник',
             'Выполнить команду'
         ]
-        functions = [self.get_works, self.clean_works, self.backup_student, self.open_veyon, self.open_sftp,
+        functions = [self.get_works, self.clean_works, self.backup_student, self.open_sftp,
                      self.run_command]
 
         for i in range(len(names)):
@@ -177,9 +176,6 @@ class TeacherWindow(QWidget):
                 self.infoLabel.setText(f'Не удалось подключиться к {comp}.')
         self.infoLabel.setText('Команда восстановления выполнена на выбранных компьютерах.')
 
-    def open_veyon(self):
-        pass
-
     def open_sftp(self):
         comps = self.hosts_items.selectedItems()
         n = len(comps)
@@ -195,8 +191,7 @@ class TeacherWindow(QWidget):
         for i in range(n):
             comp = comps[i].text().strip()
             try:
-                # TODO: необходимо заходить под root
-                # run_command(f'dolphin sftp://root@{comp}:/home/student')
+                run_command(f'dolphin sftp://root@{comp}:/home')
                 self.infoLabel.setText(f'Открываем {comp}...')
                 self.pbar.setValue((i + 1) * 100 // n)
             except:
@@ -211,7 +206,6 @@ class TeacherWindow(QWidget):
             dlg.setWindowTitle("Ошибка")
             dlg.setText("Выберите хотя бы один компьютер из списка")
             button = dlg.exec()
-
             if button == QMessageBox.Ok:
                 return
         dialog, pressed = QInputDialog.getText(self, 'Команда',
@@ -219,7 +213,7 @@ class TeacherWindow(QWidget):
                                                QLineEdit.Normal)
         for i in range(n):
             comp = comps[i].text().strip()
-            run_command(f'ssh root@{comp} "{dialog}"')
+            run_command_in_xterm_hold(f'ssh root@{comp} "{dialog}"')
 
     def settings(self):
         logging.info("Открыты настройки")

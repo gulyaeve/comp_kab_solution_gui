@@ -14,7 +14,7 @@ from PyQt5.QtCore import Qt
 from config import config_path, hostname_expression, version
 from desktop_entrys import ssh_add_link, veyon_link, network_share, network_share_for_teacher
 from hosts import Hosts
-from system import exit_app, run_command, this_host, user, run_command_in_xterm, run_command_by_root
+from system import exit_app, this_host, user, run_command_in_xterm, run_command_by_root, get_mac_address
 
 
 class SSHTimeoutError(Exception):
@@ -372,6 +372,11 @@ class SettingsWindow(QWidget):
         self.textfield.setPlainText('Installing Veyon...')
         ssh_hosts = self.test_ssh()
         if ssh_hosts:
+            for host in self.hosts.hosts:
+                self.hosts.save_mac_address(
+                    host,
+                    get_mac_address(self.hosts.hosts[host]['hostname'])
+                )
             kab, okPressed = QInputDialog.getText(self, "Номер кабинета",
                                                   f"Введите номер этого кабинета:",
                                                   QLineEdit.Normal, "")
@@ -407,11 +412,13 @@ class SettingsWindow(QWidget):
                 )
                 logging.info(f'Установка вейон на комьютере учеников')
                 copy_to_hosts = []
+                setup_wol = 'nmcli c modify \\"Проводное соединение 1\\" ethernet.wake-on-lan magic'
                 for host in self.hosts.items_to_list():
                     copy_to_hosts.append(
                         f"scp {config_path}/teacher_public_key.pem root@{host.hostname}:/tmp/ && "
                         f"scp {config_path}/myconfig.json root@{host.hostname}:/tmp/ && "
-                        f"ssh root@{host.hostname} 'apt-get update && "
+                        f"ssh root@{host.hostname} '{setup_wol} && "
+                        f"apt-get update && "
                         f"apt-get -y install veyon && "
                         f"veyon-cli authkeys delete {user}/public; "
                         f"veyon-cli authkeys import {user}/public /tmp/teacher_public_key.pem && "
@@ -460,20 +467,6 @@ class SettingsWindow(QWidget):
             self.textfield.appendPlainText(
                 "\nДля настройки сетевой папка необходимо сначала настроить ssh"
             )
-
-    def get_mac_address(self, hostname):  # TODO нужно тестировать
-        ip_address = subprocess.check_output(['ping', hostname, '-c', '1']).decode('utf-8').split('(')[1].split(')')[0]
-        ifconfig_output = run_command(f'ssh root@{hostname} "ifconfig"')
-        macAddress = ''
-        for s in ifconfig_output:
-            if s.startswith('e'):
-                macAddress = s.split('HWaddr ')[1].rstrip()
-            if s.strip() == '':
-                logging.info(f'Компьютер {hostname} не подключён к проводной сети')
-                return ''
-            if ip_address in s:
-                return macAddress
-        return macAddress
 
     def open_file_dialog(self):
         file_name = QFileDialog.getOpenFileName(self, f"/home/{user}", '', '.txt')

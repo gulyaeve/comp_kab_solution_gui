@@ -64,7 +64,16 @@ class Hosts:
         if key.endswith('.local'):
             key = key.split('.local')[0]
         del self.hosts[key]
-        return self.hosts
+        return self
+
+    def save_mac_address(self, key, mac_address):
+        if key.endswith('.local'):
+            key = key.split('.local')[0]
+        host = self.hosts[key]
+        host['mac_address'] = mac_address
+        self.hosts[key] = host
+        self._write(self.hosts)
+        return self
 
     def _read(self):
         try:

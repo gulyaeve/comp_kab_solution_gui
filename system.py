@@ -29,9 +29,29 @@ def run_command_in_xterm(command: str):
     # run_command(f'xterm -hold -e "{command}"')
 
 
+def run_command_in_xterm_hold(command: str):
+    run_command(f'xterm -hold -e "{command}"')
+    # run_command(f'xterm -hold -e "{command}"')
+
+
 def run_command_by_root(command: str):
     run_command(f'xterm -e \'echo "Введите пароль суперпользователя" && su - root -c "{command}"\'')
     # run_command(f'xterm -hold -e \'echo "Введите пароль суперпользователя" && su - root -c "{command}"\'')
+
+
+def get_mac_address(hostname):
+    ip_address = run_command(f"ping {hostname} -c 1").split('(')[1].split(')')[0]
+    ifconfig_output = run_command(f'ssh root@{hostname} "ifconfig"')
+    mac_address = ''
+    for s in ifconfig_output.split('\n'):
+        if s.startswith('e'):
+            mac_address = s.split('HWaddr ')[1].rstrip()
+        if s.strip() == '':
+            logging.info(f'Компьютер {hostname} не подключён к проводной сети')
+            return ''
+        if ip_address in s:
+            return mac_address
+    return mac_address
 
 
 # Получение имени компьютера и текущего пользователя
