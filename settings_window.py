@@ -58,15 +58,6 @@ class SettingsWindow(QWidget):
             self.hosts_table.setItem(0, 0, QTableWidgetItem('Введите сетевые имена устройств'))
         else:
             self.update_data()
-            # self.hosts_table.clear()
-            # self.hosts_table.setRowCount(len(self.hosts.to_list()))
-            # for index, host in enumerate(self.hosts.to_list()):
-            #     item = QTableWidgetItem(host)
-            #     if re.match(hostname_expression, host):
-            #         item.setBackground(QColor("green"))
-            #     else:
-            #         item.setBackground(QColor("red"))
-            #     self.hosts_table.setItem(index, 0, item)
         grid.addWidget(self.hosts_table, 1, 1, 6, 3)
         self.hosts_table.itemChanged.connect(self.change_data)
 
