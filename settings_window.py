@@ -57,15 +57,16 @@ class SettingsWindow(QWidget):
             self.hosts_table.setRowCount(1)
             self.hosts_table.setItem(0, 0, QTableWidgetItem('Введите сетевые имена устройств'))
         else:
-            self.hosts_table.clear()
-            self.hosts_table.setRowCount(len(self.hosts.to_list()))
-            for index, host in enumerate(self.hosts.to_list()):
-                item = QTableWidgetItem(host)
-                if re.match(hostname_expression, host):
-                    item.setBackground(QColor("green"))
-                else:
-                    item.setBackground(QColor("red"))
-                self.hosts_table.setItem(index, 0, item)
+            self.update_data()
+            # self.hosts_table.clear()
+            # self.hosts_table.setRowCount(len(self.hosts.to_list()))
+            # for index, host in enumerate(self.hosts.to_list()):
+            #     item = QTableWidgetItem(host)
+            #     if re.match(hostname_expression, host):
+            #         item.setBackground(QColor("green"))
+            #     else:
+            #         item.setBackground(QColor("red"))
+            #     self.hosts_table.setItem(index, 0, item)
         grid.addWidget(self.hosts_table, 1, 1, 6, 3)
         self.hosts_table.itemChanged.connect(self.change_data)
 
@@ -118,17 +119,8 @@ class SettingsWindow(QWidget):
             command_veyon.clicked.connect(self.run_command_on_ssh)
             grid.addWidget(command_veyon, 3, 0)
 
-    def change_data(self, item: QTableWidgetItem):
-        """
-        Реагирует на изменение данных в таблице
-        :param item: элемент таблицы
-        """
+    def update_data(self):
         self.hosts_table.blockSignals(True)
-        item_index = item.row()
-        host = str(item.text())
-        if len(self.hosts.to_list()) > item_index:
-            del self.hosts[self.hosts.to_list()[item_index]]
-        self.hosts[host] = host
         self.hosts_table.clear()
         self.hosts_table.setRowCount(len(self.hosts.to_list()))
         for index, host in enumerate(self.hosts.to_list()):
@@ -139,6 +131,19 @@ class SettingsWindow(QWidget):
                 item.setBackground(QColor("red"))
             self.hosts_table.setItem(index, 0, item)
         self.hosts_table.blockSignals(False)
+
+    def change_data(self, item: QTableWidgetItem):
+        """
+        Реагирует на изменение данных в таблице
+        :param item: элемент таблицы
+        """
+        # self.hosts_table.blockSignals(True)
+        item_index = item.row()
+        host = str(item.text())
+        if len(self.hosts.to_list()) > item_index:
+            del self.hosts[self.hosts.to_list()[item_index]]
+        self.hosts[host] = host
+        self.update_data()
 
     def add_row(self):
         """
@@ -162,15 +167,7 @@ class SettingsWindow(QWidget):
         )
         if messageBox == QMessageBox.Ok:
             del self.hosts[item_text]
-            self.hosts_table.clear()
-            self.hosts_table.setRowCount(len(self.hosts.to_list()))
-            for index, host in enumerate(self.hosts.to_list()):
-                item = QTableWidgetItem(host)
-                if re.match(hostname_expression, host):
-                    item.setBackground(QColor("green"))
-                else:
-                    item.setBackground(QColor("red"))
-                self.hosts_table.setItem(index, 0, item)
+            self.update_data()
 
     def delete_all(self):
         """
@@ -184,15 +181,7 @@ class SettingsWindow(QWidget):
         )
         if messageBox == QMessageBox.Ok:
             self.hosts.clean()
-            self.hosts_table.clear()
-            self.hosts_table.setRowCount(len(self.hosts.to_list()))
-            for index, host in enumerate(self.hosts.to_list()):
-                item = QTableWidgetItem(host)
-                if re.match(hostname_expression, host):
-                    item.setBackground(QColor("green"))
-                else:
-                    item.setBackground(QColor("red"))
-                self.hosts_table.setItem(index, 0, item)
+            self.update_data()
 
     def open_file_dialog(self):
         file_name = QFileDialog.getOpenFileName(
