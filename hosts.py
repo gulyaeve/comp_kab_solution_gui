@@ -1,5 +1,5 @@
 import logging
-from dataclasses import dataclass
+from pydantic.dataclasses import dataclass
 from json import loads, dumps
 
 from config import hosts_file_path
@@ -8,13 +8,16 @@ from config import hosts_file_path
 @dataclass
 class Host:
     hostname: str
-    mac_address: str
+    mac_address: str = ""
 
     def name(self) -> str:
         return self.hostname.split('.local')[0]
 
     def to_dict(self):
-        return {"hostname": self.hostname, "mac_address": self.mac_address}
+        return {
+            "hostname": self.hostname,
+            "mac_address": self.mac_address
+        }
 
 
 class Hosts:
@@ -64,6 +67,7 @@ class Hosts:
         if key.endswith('.local'):
             key = key.split('.local')[0]
         del self.hosts[key]
+        self._write(self.hosts)
         return self
 
     def save_mac_address(self, key, mac_address):
