@@ -137,7 +137,6 @@ class SettingsWindow(QWidget):
         Реагирует на изменение данных в таблице
         :param item: элемент таблицы
         """
-        # self.hosts_table.blockSignals(True)
         item_index = item.row()
         host = str(item.text())
         if len(self.hosts.to_list()) > item_index:
