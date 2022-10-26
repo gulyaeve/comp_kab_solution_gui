@@ -2,6 +2,9 @@ import logging
 import subprocess
 import sys
 
+import paramiko
+from paramiko.ssh_exception import AuthenticationException
+
 
 def exit_app():
     """
@@ -40,7 +43,7 @@ def run_command_by_root(command: str):
 
 
 def get_mac_address(hostname):
-    ip_address = run_command(f"ping {hostname} -c 1").split('(')[1].split(')')[0]
+    ip_address = run_command(f"ping {hostname} -c1").split('(')[1].split(')')[0]
     ifconfig_output = run_command(f'ssh root@{hostname} "ifconfig"')
     mac_address = ''
     for s in ifconfig_output.split('\n'):
@@ -52,6 +55,30 @@ def get_mac_address(hostname):
         if ip_address in s:
             return mac_address
     return mac_address
+
+
+def ping(host) -> bool:
+    result = subprocess.run(['ping', '-c1', host], stdout=subprocess.PIPE)
+    if result.returncode == 0:
+        logging.info(f"ping: {host}: УСПЕШНОЕ СОЕДИНЕНИЕ {result=} {result.returncode=}")
+        return True
+    elif result.returncode == 2:
+        logging.info(f"ping: {host}: {result=} {result.returncode=}")
+        return False
+    else:
+        return False
+
+
+def test_ssh(host) -> bool:
+    ssh = paramiko.SSHClient()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    try:
+        ssh.connect(hostname=host, port=22, timeout=5, username='root')
+        logging.info(f"Подключено по ssh@root без пароля к {host}")
+        return True
+    except Exception as e:
+        logging.info(f"Не удалось подключиться по ssh@root без пароля к {host}: {e}")
+        return False
 
 
 # Получение имени компьютера и текущего пользователя
