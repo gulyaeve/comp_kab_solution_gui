@@ -125,6 +125,15 @@ class TeacherWindow(QWidget):
                 self.pbar.setValue((i + 1) * 100 // n)
                 self.infoLabel.setText(f'Собираем у {comp}')
             self.infoLabel.setText('Сбор работ завершён.')
+        elif okPressed and not text:
+            dlg = QMessageBox(self)
+            dlg.setWindowTitle("Ошибка")
+            dlg.setText("Необходимо ввести название")
+            button = dlg.exec()
+            if button == QMessageBox.Ok:
+                return
+        else:
+            return
 
     def clean_works(self):
         comps = self.hosts_items.selectedItems()
