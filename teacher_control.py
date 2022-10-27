@@ -166,7 +166,7 @@ class TeacherWindow(QWidget):
                 return
         self.pbar.setValue(0)
         # TODO: эти методы нужно тестировать в реальных условиях
-        run_command(f'tar -xf student.tar.gz -C {config_path}/')
+        run_command(f'tar -xf /usr/share/teacher_control/student.tar.gz -C {config_path}/')
         for i in range(n):
             comp = comps[i].text().strip()
             try:

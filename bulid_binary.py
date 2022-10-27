@@ -6,5 +6,5 @@ PyInstaller.__main__.run([
     '--windowed',
     '--onefile',
     '--clean',
-    '-n teacher_control',
+    '-nteacher_control',
 ])
