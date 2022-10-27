@@ -1,5 +1,5 @@
 import logging
-from pydantic.dataclasses import dataclass
+from dataclasses import dataclass
 from json import loads, dumps
 
 from config import hosts_file_path
