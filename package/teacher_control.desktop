@@ -1,0 +1,8 @@
+[Desktop Entry]
+Icon=teacher_control
+Name=Управление компьютерным кабинетом
+Type=Application
+Exec=/usr/bin/teacher_control
+Terminal=false
+Categories=Qt;Education;Network;RemoteAccess;
+Keywords=classroom,control,computer,room,lab,monitoring,teacher,student
