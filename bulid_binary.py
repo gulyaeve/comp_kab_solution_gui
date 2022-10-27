@@ -4,5 +4,6 @@ PyInstaller.__main__.run([
     'app.py',
     # '--console',
     '--windowed',
-    '--onefile'
+    '--onefile',
+    '-clean',
 ])

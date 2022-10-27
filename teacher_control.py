@@ -108,25 +108,23 @@ class TeacherWindow(QWidget):
             if button == QMessageBox.Ok:
                 return
         date = str(datetime.datetime.now().date())
-        text = ''
-        while text == '':
-            text, okPressed = QInputDialog.getText(self, "Введите название", "Название папки:", QLineEdit.Normal, "")
+        text, okPressed = QInputDialog.getText(self, "Введите название", "Название папки:", QLineEdit.Normal, "")
+        if okPressed and text:
+            self.pbar.setValue(0)
+            self.pbar.show()
 
-        self.pbar.setValue(0)
-        self.pbar.show()
+            for i in range(n):
+                comp = comps[i].text().strip()
+                run_command(f'mkdir -p "/home/{user}/Рабочий стол/Работы/"' + date + '/' + text + '/' + comp)
 
-        for i in range(n):
-            comp = comps[i].text().strip()
-            run_command(f'mkdir -p "/home/{user}/Рабочий стол/Работы/"' + date + '/' + text + '/' + comp)
+                run_command(f'ssh root@{comp} \'mkdir -p \"/home/student/Рабочий стол/Сдать работы\" && \
+                          chmod 777 \"/home/student/Рабочий стол/Сдать работы\"\' && \
+                          scp -r root@{comp}:\'/home/student/Рабочий\ стол/Сдать\ работы/*\' \
+                          \"/home/{user}/Рабочий стол/Работы/\"{date}/{text}/{comp}')
 
-            run_command(f'ssh root@{comp} \'mkdir -p \"/home/student/Рабочий стол/Сдать работы\" && \
-                      chmod 777 \"/home/student/Рабочий стол/Сдать работы\"\' && \
-                      scp -r root@{comp}:\'/home/student/Рабочий\ стол/Сдать\ работы/*\' \
-                      \"/home/{user}/Рабочий стол/Работы/\"{date}/{text}/{comp}')
-
-            self.pbar.setValue((i + 1) * 100 // n)
-            self.infoLabel.setText(f'Собираем у {comp}')
-        self.infoLabel.setText('Сбор работ завершён.')
+                self.pbar.setValue((i + 1) * 100 // n)
+                self.infoLabel.setText(f'Собираем у {comp}')
+            self.infoLabel.setText('Сбор работ завершён.')
 
     def clean_works(self):
         comps = self.hosts_items.selectedItems()
