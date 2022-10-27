@@ -8,6 +8,6 @@ cd comp_kab_solution_package &&
 cp teacher_control /usr/bin/teacher_control &&
 cp teacher_control.svg /usr/share/icons/hicolor/scalable/apps/teacher_control.svg &&
 cp teacher_control.desktop /usr/share/applications/teacher_control.desktop &&
-mkdir /usr/share/teacher_control &&
+mkdir -p /usr/share/teacher_control &&
 cp student.tar.gz /usr/share/teacher_control/student.tar.gz
 '
