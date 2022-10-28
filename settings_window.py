@@ -156,7 +156,9 @@ class SettingsWindow(QWidget):
             QMessageBox.Ok | QMessageBox.Cancel,
         )
         if messageBox == QMessageBox.Ok:
-            del self.hosts[item_text]
+            # print(f"{self.hosts.hosts=} {item_text=}")
+            if item_text.split('.local')[0] in self.hosts.hosts:
+                del self.hosts[item_text]
             self.update_data()
 
     def delete_all(self):
@@ -457,7 +459,7 @@ class SettingsWindow(QWidget):
         if ssh_hosts:
             self.textfield.appendPlainText(
                 'Создаю сетевую папку share (/home/share) и отправляю ссылку на компьютеры учеников')
-            run_command_by_root(f'mkdir /home/share && chmod 755 /home/share && chown {user} /home/share')
+            run_command_by_root(f'mkdir -p /home/share && chmod 755 /home/share && chown {user} /home/share')
             with open(f'{config_path}/share.desktop', 'w') as file_link:
                 file_link.write(network_share.format(teacher_host=this_host))
             for host in self.hosts.items_to_list():

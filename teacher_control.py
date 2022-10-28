@@ -76,6 +76,8 @@ class TeacherWindow(QWidget):
         self.move(300, 150)
         self.setWindowTitle(f'Управление компьютерным кабинетом, версия {version}')
         self.setFixedWidth(600)
+        self.setFixedHeight(300)
+
         self.show()
 
     def enterEvent(self, event):
@@ -166,18 +168,37 @@ class TeacherWindow(QWidget):
                 return
         self.pbar.setValue(0)
         # TODO: эти методы нужно тестировать в реальных условиях
-        run_command(f'tar -xf /usr/share/teacher_control/student.tar.gz -C {config_path}/')
+        # run_command(f'tar -xf /usr/share/teacher_control/student.tar.gz -C {config_path}/')
         for i in range(n):
             comp = comps[i].text().strip()
             try:
                 self.infoLabel.setText(f'Восстанавливаем {comp}...')
                 # self.pbar.setValue((i + 1) * 100 // n)
-                run_command(f'ssh root@{comp} "pkill -u student" && '
-                            f'rsync -avz --delete {config_path}/student root@{comp}:/home/student/ && '
-                            f'do ssh root@{comp} "mkdir -p /home/student/Рабочий\ стол/Сдать\ работы && '
-                            f'chmod 777 /home/student/Рабочий\ стол/Сдать\ работы && '
-                            f'do scp {config_path}/share.desktop root@{comp}:"/home/student/Рабочий\\ стол" && '
-                            f'reboot')
+                run_command(f'scp /usr/share/teacher_control/student.tar.gz root@{comp}:/home/ && '
+                            f'scp {config_path}/share.desktop root@{comp}:/home/ && '
+                            f'ssh root@{comp} "echo \'pkill -u student && sleep 3 &&'
+                            f'cd /home && rm -rf student && '
+                            f'tar xfz student.tar.gz && '
+                            f'mkdir -p /home/student/Рабочий\ стол/Сдать\ работы && '
+                            f'cp share.desktop /home/student/Рабочий\ стол/ && '
+                            f'chown -R student:student student && '
+                            f'rm -f student.tar.gz share.desktop && '
+                            f'reboot\' | at now"')
+
+                # run_command(f'ssh root@{comp} "pkill -u student"')
+                # run_command(f'rsync -avz --delete {config_path}/student root@{comp}:/home')
+                # run_command(f'ssh root@{comp} "chown -R student:student /home/student"')
+                # run_command(f'ssh root@{comp} "mkdir -p /home/student/Рабочий\ стол/Сдать\ работы && '
+                #             f'chmod 777 /home/student/Рабочий\ стол/Сдать\ работы"')
+                # run_command(f'scp {config_path}/share.desktop root@{comp}:/home/student/Рабочий\ стол')
+                # run_command(f'ssh root@{comp} "reboot"')
+
+                # run_command(f'ssh root@{comp} "pkill -u student" && '
+                #             f'rsync -avz --delete {config_path}/student root@{comp}:/home/student/ && '
+                #             f'ssh root@{comp} "mkdir -p /home/student/Рабочий\ стол/Сдать\ работы && '
+                #             f'chmod 777 /home/student/Рабочий\ стол/Сдать\ работы" && '
+                #             f'scp {config_path}/share.desktop root@{comp}:/home/student/Рабочий\ стол && '
+                #             f'reboot"')
             except:
                 self.infoLabel.setText(f'Не удалось подключиться к {comp}.')
         self.infoLabel.setText('Команда восстановления выполнена на выбранных компьютерах.')

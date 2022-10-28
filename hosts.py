@@ -47,6 +47,8 @@ class Hosts:
         )
 
     def __setitem__(self, key: str, hostname: str, mac_address: str = ''):
+        key = key.replace(' ', '').strip()
+        hostname = hostname.replace(' ', '').strip()
         if hostname.endswith('.local'):
             host = Host(hostname=hostname, mac_address=mac_address)
         else:
@@ -58,6 +60,7 @@ class Hosts:
         return self
 
     def __add__(self, hostname: str, mac_address: str = ''):
+        hostname = hostname.replace(' ', '').strip()
         if hostname.endswith('.local'):
             host = Host(hostname=hostname, mac_address=mac_address)
         else:
