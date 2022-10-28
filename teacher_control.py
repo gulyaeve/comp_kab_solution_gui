@@ -117,15 +117,15 @@ class TeacherWindow(QWidget):
 
             for i in range(n):
                 comp = comps[i].text().strip()
+                print(comp)
                 run_command(f'mkdir -p "/home/{user}/Рабочий стол/Работы/"' + date + '/' + text + '/' + comp)
 
                 run_command(f'ssh root@{comp} \'mkdir -p \"/home/student/Рабочий стол/Сдать работы\" && \
                           chmod 777 \"/home/student/Рабочий стол/Сдать работы\"\' && \
                           scp -r root@{comp}:\'/home/student/Рабочий\ стол/Сдать\ работы/*\' \
                           \"/home/{user}/Рабочий стол/Работы/\"{date}/{text}/{comp}')
-
-                self.pbar.setValue((i + 1) * 100 // n)
                 self.infoLabel.setText(f'Собираем у {comp}')
+                self.pbar.setValue((i + 1) * 100 // n)
             self.infoLabel.setText('Сбор работ завершён.')
         elif okPressed and not text:
             dlg = QMessageBox(self)
@@ -152,8 +152,8 @@ class TeacherWindow(QWidget):
         for i in range(n):
             comp = comps[i].text().strip()
             run_command(f'ssh root@{comp} \'rm -rf /home/student/Рабочий\ стол/Сдать\ работы/*\'')
-            self.pbar.setValue((i + 1) * 100 // n)
             self.infoLabel.setText(f'Очищаем {comp}')
+            self.pbar.setValue((i + 1) * 100 // n)
         self.infoLabel.setText('Очистка завершена.')
 
     def backup_student(self):
@@ -220,8 +220,9 @@ class TeacherWindow(QWidget):
             try:
                 run_command_in_xterm(f'dolphin sftp://root@{comp}:/home')
                 # run_command_in_xterm(f'mc cd sh://root@{comp}:/home')
-                self.infoLabel.setText(f'Открываем {comp}...')
                 self.pbar.setValue((i + 1) * 100 // n)
+                self.infoLabel.setText(f'Открываем {comp}...')
+
             except:
                 self.infoLabel.setText(f'Не удалось подключиться к {comp}.')
         self.infoLabel.setText('Открыт Dolphin для всех доступных компьютеров.')
