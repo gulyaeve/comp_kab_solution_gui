@@ -174,31 +174,19 @@ class TeacherWindow(QWidget):
             try:
                 self.infoLabel.setText(f'Восстанавливаем {comp}...')
                 # self.pbar.setValue((i + 1) * 100 // n)
-                run_command(f'scp /usr/share/teacher_control/student.tar.gz root@{comp}:/home/ && '
-                            f'scp {config_path}/share.desktop root@{comp}:/home/ && '
-                            f'ssh root@{comp} "echo \'pkill -u student && sleep 3 &&'
-                            f'cd /home && rm -rf student && '
-                            f'tar xfz student.tar.gz && '
-                            f'mkdir -p /home/student/Рабочий\ стол/Сдать\ работы && '
-                            f'cp share.desktop /home/student/Рабочий\ стол/ && '
-                            f'chown -R student:student student && '
-                            f'rm -f student.tar.gz share.desktop && '
-                            f'reboot\' | at now"')
+                # run_command(f'scp /usr/share/teacher_control/student.tar.gz root@{comp}:/home/ && '
+                #             f'scp {config_path}/share.desktop root@{comp}:/home/ && '
+                #             f'ssh root@{comp} "echo \'pkill -u student && sleep 3 &&'
+                #             f'cd /home && rm -rf student && '
+                #             f'tar xfz student.tar.gz && '
+                #             f'mkdir -p /home/student/Рабочий\ стол/Сдать\ работы && '
+                #             f'cp share.desktop /home/student/Рабочий\ стол/ && '
+                #             f'chown -R student:student student && '
+                #             f'rm -f student.tar.gz share.desktop && '
+                #             f'reboot\' | at now"')
 
-                # run_command(f'ssh root@{comp} "pkill -u student"')
-                # run_command(f'rsync -avz --delete {config_path}/student root@{comp}:/home')
-                # run_command(f'ssh root@{comp} "chown -R student:student /home/student"')
-                # run_command(f'ssh root@{comp} "mkdir -p /home/student/Рабочий\ стол/Сдать\ работы && '
-                #             f'chmod 777 /home/student/Рабочий\ стол/Сдать\ работы"')
-                # run_command(f'scp {config_path}/share.desktop root@{comp}:/home/student/Рабочий\ стол')
-                # run_command(f'ssh root@{comp} "reboot"')
+                run_command(f'ssh root@{comp} "echo \'pkill -u student && userdel -rf student && useradd student && chpasswd <<<\"student:1\"\' | at now"')
 
-                # run_command(f'ssh root@{comp} "pkill -u student" && '
-                #             f'rsync -avz --delete {config_path}/student root@{comp}:/home/student/ && '
-                #             f'ssh root@{comp} "mkdir -p /home/student/Рабочий\ стол/Сдать\ работы && '
-                #             f'chmod 777 /home/student/Рабочий\ стол/Сдать\ работы" && '
-                #             f'scp {config_path}/share.desktop root@{comp}:/home/student/Рабочий\ стол && '
-                #             f'reboot"')
             except:
                 self.infoLabel.setText(f'Не удалось подключиться к {comp}.')
         self.infoLabel.setText('Команда восстановления выполнена на выбранных компьютерах.')
