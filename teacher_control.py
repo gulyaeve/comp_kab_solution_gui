@@ -44,13 +44,15 @@ class TeacherWindow(QWidget):
         names = [
             'Собрать работы',
             'Удалить работы',
-            'Восстановить компьютеры',
+            'Пересоздать student',
+            'Удалить student',
             'Открыть проводник',
         ]
         functions = [
             self.get_works,
             self.clean_works,
             self.backup_student,
+            self.delete_student,
             self.open_sftp,
         ]
 
@@ -156,6 +158,30 @@ class TeacherWindow(QWidget):
             self.pbar.setValue((i + 1) * 100 // n)
         self.infoLabel.setText('Очистка завершена.')
 
+    def delete_student(self):
+        comps = self.hosts_items.selectedItems()
+        n = len(comps)
+        if n == 0:
+            dlg = QMessageBox(self)
+            dlg.setWindowTitle("Ошибка")
+            dlg.setText("Выберите хотя бы один компьютер из списка")
+            button = dlg.exec()
+            if button == QMessageBox.Ok:
+                return
+        self.pbar.setValue(0)
+        for i in range(n):
+            comp = comps[i].text().strip()
+            try:
+                self.infoLabel.setText(f'Удаляю student на {comp}...')
+
+                run_command(f'ssh root@{comp} "echo \''
+                            f'pkill -u student; '
+                            f'userdel -rf student\' | at now"')
+
+            except:
+                self.infoLabel.setText(f'Не удалось подключиться к {comp}.')
+        self.infoLabel.setText('Команда удаления выполнена на выбранных компьютерах.')
+
     def backup_student(self):
         comps = self.hosts_items.selectedItems()
         n = len(comps)
@@ -172,7 +198,7 @@ class TeacherWindow(QWidget):
         for i in range(n):
             comp = comps[i].text().strip()
             try:
-                self.infoLabel.setText(f'Восстанавливаем {comp}...')
+                self.infoLabel.setText(f'Пересоздаю student на {comp}...')
                 # self.pbar.setValue((i + 1) * 100 // n)
                 # run_command(f'scp /usr/share/teacher_control/student.tar.gz root@{comp}:/home/ && '
                 #             f'scp {config_path}/share.desktop root@{comp}:/home/ && '
@@ -185,11 +211,15 @@ class TeacherWindow(QWidget):
                 #             f'rm -f student.tar.gz share.desktop && '
                 #             f'reboot\' | at now"')
 
-                run_command(f'ssh root@{comp} "echo \'pkill -u student && userdel -rf student && useradd student && chpasswd <<<\"student:1\"\' | at now"')
+                run_command(f'ssh root@{comp} "echo \''
+                            f'pkill -u student; '
+                            f'userdel -rf student; '
+                            f'useradd student && '
+                            f'chpasswd <<<\"student:1\"\' | at now"')
 
             except:
                 self.infoLabel.setText(f'Не удалось подключиться к {comp}.')
-        self.infoLabel.setText('Команда восстановления выполнена на выбранных компьютерах.')
+        self.infoLabel.setText('Команда пересоздания выполнена на выбранных компьютерах.')
 
     def open_sftp(self):
         comps = self.hosts_items.selectedItems()
