@@ -245,7 +245,6 @@ class TeacherWindow(QWidget):
                 self.infoLabel.setText(f'Не удалось подключиться к {comp}.')
         self.infoLabel.setText('Открыт Dolphin для всех доступных компьютеров.')
 
-
     def settings(self):
         logging.info("Открыты настройки")
         new_window = SettingsWindow()
