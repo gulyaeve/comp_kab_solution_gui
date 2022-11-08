@@ -3,7 +3,7 @@ Group: Education
 Version: 1
 Release: 1
 Summary: teacher control
-License: MIT
+License: DigitalCenter
 
 %description
 teacher control
