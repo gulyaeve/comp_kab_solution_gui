@@ -33,7 +33,7 @@ help_body = f"""<b>Инструменты организации работы в
 <a href = "https://link.educom.ru/solutions/8/show">Страница решения</a>.
 <br>
 <br>
-[{version}] Разработано 
+[Версия {version}] Разработано 
 <a href="http://digitalcenter.moscow/">ГАУ "Центр цифровизации образования"</a>
 """
 
