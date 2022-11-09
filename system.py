@@ -3,7 +3,6 @@ import subprocess
 import sys
 
 import paramiko
-from paramiko.ssh_exception import AuthenticationException
 
 
 def exit_app():

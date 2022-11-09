@@ -10,6 +10,7 @@ from PyQt5.QtWidgets import (QPushButton, QLineEdit, \
                              QInputDialog, QProgressBar, QLabel, QMessageBox, QWidget, QGridLayout)
 
 from config import config_path, version
+from help import HelpWindow
 from hosts import Hosts
 from system import run_command, user, run_command_in_xterm
 from settings_window import SettingsWindow
@@ -23,9 +24,11 @@ class TeacherWindow(QWidget):
 
         menu_bar = QMenuBar()
         menu_file = menu_bar.addMenu('Меню')
-        action_set = menu_file.addAction('Настройка...')
+        action_help = menu_file.addAction('Справка')
+        action_set = menu_file.addAction('Настройка')
         action_exit = menu_file.addAction('Выход')
 
+        action_help.triggered.connect(self.help)
         action_set.triggered.connect(self.settings)
         action_exit.triggered.connect(self.close)
 
@@ -81,6 +84,9 @@ class TeacherWindow(QWidget):
         self.setFixedHeight(300)
 
         self.show()
+
+        if not hosts_from_file:
+            self.help()
 
     def enterEvent(self, event):
         if event.type() == 10:
@@ -248,5 +254,11 @@ class TeacherWindow(QWidget):
     def settings(self):
         logging.info("Открыты настройки")
         new_window = SettingsWindow()
+        self.windows.append(new_window)
+        new_window.show()
+
+    def help(self):
+        logging.info("Открыта справка")
+        new_window = HelpWindow()
         self.windows.append(new_window)
         new_window.show()
