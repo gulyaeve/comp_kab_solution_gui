@@ -10,7 +10,7 @@ from command_worker import SSHCommandExec
 from config import hostname_expression, version
 from hosts import Hosts
 from share_worker import NetworkFolderSetup
-from system import exit_app, user, run_command_in_xterm_hold
+from system import exit_app, user
 from ssh_worker import SSHRootSetup
 from veyon_worker import VeyonSetup
 
