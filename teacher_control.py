@@ -97,14 +97,10 @@ class TeacherWindow(QWidget):
             self.n = len(self.hosts_items)
 
     def select_all(self):
-        for i in range(self.n):
-            self.hosts_items.item(i).setSelected(True)
-        return
+        self.hosts_items.selectAll()
 
     def select_none(self):
-        for i in range(self.n):
-            self.hosts_items.item(i).setSelected(False)
-        return
+        self.hosts_items.clearSelection()
 
     def get_works(self):
         comps = self.hosts_items.selectedItems()
