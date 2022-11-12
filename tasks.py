@@ -24,7 +24,6 @@ class SSHRootSetup(QThread):
 
     def run(self):
         self.setup_ssh()
-        # print(self.window)  # <--  data которая нужна для расчетов !!!!!
 
     def ping(self):
         """
@@ -65,8 +64,8 @@ class SSHRootSetup(QThread):
         else:
             # self.textfield.appendPlainText(
             self.progress_signal.emit(
-                'Заполните список устройств: '
-                'перечислите в нём имена компьютеров построчно и запустите скрипт повторно.\n\n'
+                '\nЗаполните список устройств: '
+                'перечислите в нём имена компьютеров и запустите скрипт повторно.\n\n'
                 '    ВАЖНО!\n\nДля М ОС имя компьютера должно оканчиваться на .local\n'
             )
             return []
@@ -136,19 +135,6 @@ class SSHRootSetup(QThread):
                     # self.textfield.appendPlainText(f"На {host} ssh для root настроен успешно")
                     self.progress_signal.emit(f"На {host} ssh для root настроен успешно")
                     logging.info(f"На {host} ssh для root настроен успешно")
-        # имитирую процесс длительной задачи  !!!
-        # running = 1
-        # while running < 100:
-        #     # довольно длительно выполняющаяся часть кода
-        #     self.msleep(50)
-        #     running += 1
-        #     self.textfield.appendPlainText()
-        #     print(running)
-        # # # в результате решения длительной задачи мы получили какие-то данные
-        # # dwd, st = [1, 2, 3], "Просто строка"
-        # # td = "Что-то еще"
-        #
-        # self.finish_signal.emit()
 
     def ssh_copy_to_root(self, host, root_pass):
         """
