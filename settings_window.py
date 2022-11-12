@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import QWidget, QGridLayout, QPushButton, QPlainTextEdit, Q
     QFileDialog, QMessageBox, QTableWidget, QTableWidgetItem
 from PyQt5.QtCore import Qt
 
+from command_worker import SSHCommandExec
 from config import hostname_expression, version
 from hosts import Hosts
 from share_worker import NetworkFolderSetup
@@ -265,13 +266,24 @@ class SettingsWindow(QWidget):
             )
 
     def run_command_on_ssh(self):
-        logging.info("Выполнение команды")
-        self.textfield.setPlainText('Выполнение команды...')
-        ssh_hosts = self.test_ssh()
         command, pressed = QInputDialog.getText(self, 'Команда',
                                                 'Введите команду для выполнения на компьютерах учеников',
                                                 QLineEdit.Normal)
         if pressed:
-            if ssh_hosts:
-                for host in self.hosts.items_to_list():
-                    run_command_in_xterm_hold(f'ssh root@{host.hostname} "{command}"')
+            self.textfield.setPlainText(f"НАЧАЛО ВЫПОЛНЕНИЯ КОМАНДЫ: {command}")
+
+            self.thread = SSHCommandExec()
+            self.thread.hosts = self.hosts
+            self.thread.command = command
+
+            self.thread.finished.connect(self.thread.deleteLater)
+            self.thread.progress_signal.connect(self.update_textfield)
+            self.thread.start()
+
+            self.set_buttons_enabled(False)
+            self.thread.finished.connect(
+                lambda: self.set_buttons_enabled(True)
+            )
+            self.thread.finished.connect(
+                lambda: self.textfield.appendPlainText(f"\nЗАВЕРШЕНИЕ ВЫПОЛНЕНИЯ КОМАНДЫ: {command}")
+            )
