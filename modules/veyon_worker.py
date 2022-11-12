@@ -5,9 +5,9 @@ import paramiko
 from PyQt5.QtCore import QThread, pyqtSignal
 from paramiko.ssh_exception import AuthenticationException
 
-from config import config_path
-from desktop_entrys import veyon_link
-from system import get_mac_address, run_command_by_root, user, run_command_in_xterm
+from modules.config import config_path
+from modules.desktop_entrys import veyon_link
+from modules.system import get_mac_address, run_command_by_root, user, run_command_in_xterm
 
 
 class VeyonSetup(QThread):

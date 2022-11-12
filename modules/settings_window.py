@@ -6,13 +6,13 @@ from PyQt5.QtWidgets import QWidget, QGridLayout, QPushButton, QPlainTextEdit, Q
     QFileDialog, QMessageBox, QTableWidget, QTableWidgetItem
 from PyQt5.QtCore import Qt
 
-from command_worker import SSHCommandExec
-from config import hostname_expression, version
-from hosts import Hosts
-from share_worker import NetworkFolderSetup
-from system import exit_app, user
-from ssh_worker import SSHRootSetup
-from veyon_worker import VeyonSetup
+from modules.command_worker import SSHCommandExec
+from modules.config import hostname_expression, version
+from modules.hosts import Hosts
+from modules.share_worker import NetworkFolderSetup
+from modules.system import exit_app, user
+from modules.ssh_worker import SSHRootSetup
+from modules.veyon_worker import VeyonSetup
 
 
 class SettingsWindow(QWidget):

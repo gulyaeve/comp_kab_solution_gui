@@ -10,12 +10,12 @@ from PyQt5.QtWidgets import (QPushButton, QLineEdit, \
                              QListWidget, QAbstractItemView, QMenuBar, \
                              QInputDialog, QProgressBar, QLabel, QMessageBox, QWidget, QGridLayout, QListWidgetItem)
 
-from config import version
-from help import HelpWindow
-from hosts import Hosts
-from ping_ssh_worker import PingSSH
-from system import run_command, user, run_command_in_xterm
-from settings_window import SettingsWindow
+from modules.config import version
+from modules.help import HelpWindow
+from modules.hosts import Hosts
+from modules.ping_ssh_worker import PingSSH
+from modules.system import run_command, user, run_command_in_xterm
+from modules.settings_window import SettingsWindow
 
 
 class TeacherWindow(QWidget):

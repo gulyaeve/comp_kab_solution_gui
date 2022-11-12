@@ -5,9 +5,9 @@ import paramiko
 from PyQt5.QtCore import QThread, pyqtSignal
 from paramiko.ssh_exception import AuthenticationException
 
-from config import config_path
-from desktop_entrys import network_share, network_share_for_teacher
-from system import run_command_by_root, user, this_host, run_command_in_xterm
+from modules.config import config_path
+from modules.desktop_entrys import network_share, network_share_for_teacher
+from modules.system import run_command_by_root, user, this_host, run_command_in_xterm
 
 
 class NetworkFolderSetup(QThread):

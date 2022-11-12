@@ -2,8 +2,8 @@ import time
 
 from PyQt5.QtCore import QThread, pyqtSignal
 
-from hosts import Hosts
-from system import test_ssh
+from modules.hosts import Hosts
+from modules.system import test_ssh
 
 
 class PingSSH(QThread):

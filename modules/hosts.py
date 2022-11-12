@@ -2,8 +2,8 @@ import logging
 from dataclasses import dataclass
 from json import loads, dumps
 
-from config import hosts_file_path
-from system import test_ping, test_ssh, get_mac_address
+from modules.config import hosts_file_path
+from modules.system import test_ping, test_ssh, get_mac_address
 
 
 @dataclass

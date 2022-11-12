@@ -9,8 +9,8 @@ from PyQt5.QtWidgets import QInputDialog, QLineEdit
 from paramiko.channel import Channel
 from paramiko.ssh_exception import AuthenticationException, SSHException
 
-from desktop_entrys import ssh_add_link
-from system import run_command_in_xterm, user
+from modules.desktop_entrys import ssh_add_link
+from modules.system import run_command_in_xterm, user
 
 
 class SSHTimeoutError(Exception):

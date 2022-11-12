@@ -1,4 +1,4 @@
-from system import user
+from modules.system import user
 
 # test config
 # config_path = f'misc'
