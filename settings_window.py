@@ -88,15 +88,15 @@ class SettingsWindow(QWidget):
             self.button_ssh.clicked.connect(self.setup_ssh)
             grid.addWidget(self.button_ssh, 0, 0)
 
-            self.button_share = QPushButton('Создать сетевую папку share')
+            self.button_share = QPushButton('Создать сетевую папку')
             self.button_share.clicked.connect(self.network_folders)
             grid.addWidget(self.button_share, 1, 0)
 
-            self.button_veyon = QPushButton('Установить Veyon на всех компьютерах')
+            self.button_veyon = QPushButton('Установить Veyon')
             self.button_veyon.clicked.connect(self.install_veyon)
             grid.addWidget(self.button_veyon, 2, 0)
 
-            self.command_exec = QPushButton('Выполнить команду на всех компьютерах')
+            self.command_exec = QPushButton('Выполнить команду')
             self.command_exec.clicked.connect(self.run_command_on_ssh)
             grid.addWidget(self.command_exec, 3, 0)
 

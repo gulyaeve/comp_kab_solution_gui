@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from json import loads, dumps
 
 from config import hosts_file_path
-from system import ping, test_ssh, get_mac_address
+from system import test_ping, test_ssh, get_mac_address
 
 
 @dataclass
@@ -117,7 +117,7 @@ class Hosts:
         result = []
         for host in self.hosts:
             hostname = self.hosts[host]['hostname']
-            host_ping = ping(hostname)
+            host_ping = test_ping(hostname)
             host_ssh = False if host_ping is False else test_ssh(hostname)
             host_mac_address = '' if host_ssh is False else get_mac_address(hostname)
             result.append(

@@ -58,14 +58,11 @@ def get_mac_address(hostname):
     return mac_address
 
 
-def ping(host) -> bool:
+def test_ping(host) -> bool:
     result = subprocess.run(['ping', '-c1', host], stdout=subprocess.PIPE)
     if result.returncode == 0:
         logging.info(f"ping: {host}: УСПЕШНОЕ СОЕДИНЕНИЕ {result=} {result.returncode=}")
         return True
-    elif result.returncode == 2:
-        logging.info(f"ping: {host}: {result=} {result.returncode=}")
-        return False
     else:
         return False
 
@@ -73,13 +70,16 @@ def ping(host) -> bool:
 def test_ssh(host) -> bool:
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    ssh.load_system_host_keys()
     try:
-        ssh.connect(hostname=host, port=22, timeout=5, username='root')
+        ssh.connect(hostname=host, port=22, timeout=1, username='root')
         logging.info(f"Подключено по ssh@root без пароля к {host}")
         return True
     except Exception as e:
         logging.info(f"Не удалось подключиться по ssh@root без пароля к {host}: {e}")
         return False
+    finally:
+        ssh.close()
 
 
 # Получение имени компьютера и текущего пользователя

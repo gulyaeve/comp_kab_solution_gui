@@ -5,13 +5,15 @@ import datetime
 import logging
 
 from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import (QPushButton, QLineEdit, \
                              QListWidget, QAbstractItemView, QMenuBar, \
-                             QInputDialog, QProgressBar, QLabel, QMessageBox, QWidget, QGridLayout)
+                             QInputDialog, QProgressBar, QLabel, QMessageBox, QWidget, QGridLayout, QListWidgetItem)
 
 from config import version
 from help import HelpWindow
 from hosts import Hosts
+from ping_ssh_worker import PingSSH
 from system import run_command, user, run_command_in_xterm
 from settings_window import SettingsWindow
 
@@ -88,13 +90,66 @@ class TeacherWindow(QWidget):
         if not hosts_from_file:
             self.help()
 
-    def enterEvent(self, event):
-        if event.type() == 10:
-            self.hosts_items.clear()
-            self.hosts = Hosts()
-            hosts_from_file = self.hosts.to_list()
-            self.hosts_items.addItems(hosts_from_file)
-            self.n = len(self.hosts_items)
+        self.thread = PingSSH()
+        self.thread.hosts = self.hosts
+
+        self.thread.finished.connect(self.thread.deleteLater)
+        self.thread.progress_signal.connect(self.update_hosts_list)
+        self.thread.start()
+
+    # def enterEvent(self, event):
+    #     if event.type() == 10:
+    #         self.thread = PingSSH()
+    #         self.thread.hosts = self.hosts
+    #         self.thread.hosts = self.hosts.to_list()
+    #
+    #         self.thread.finished.connect(self.thread.deleteLater)
+    #         self.thread.progress_signal.connect(self.update_hosts_list)
+    #         self.thread.start()
+
+            # self.hosts_items.clear()
+            # self.hosts = Hosts()
+            # hosts_from_file = self.hosts.to_list()
+            # self.hosts_items.addItems(hosts_from_file)
+            # self.n = len(self.hosts_items)
+
+            # self.thread = PingSSH()
+            # self.thread.hosts = self.hosts
+            # self.thread.hosts = self.hosts.to_list()
+            #
+            # self.thread.finished.connect(self.thread.deleteLater)
+            # self.thread.progress_signal.connect(self.update_hosts_list)
+            # self.thread.start()
+
+    # def get_all_items(self):
+    #     lst = self.hosts_items
+    #     items = []
+    #     for x in range(lst.count()):
+    #         items.append(lst.item(x).text())
+    #     print(items)
+    #     return items
+
+    def update_hosts_list(self, hosts_list: list[str]):
+        self.hosts_items.blockSignals(True)
+        # current_items = self.get_all_items()
+        # print(current_items)
+        self.hosts_items.clear()
+        for host in hosts_list:
+            hostname = host.split(' ')[0]
+            host_ssh = host.split(' ')[1]
+            if host_ssh == "SSH":
+                item = QListWidgetItem()
+                item.setText(hostname)
+                item.setBackground(QColor("green"))
+                self.hosts_items.addItem(item)
+            elif host_ssh == "NO_SSH":
+                item = QListWidgetItem()
+                item.setText(hostname)
+                item.setBackground(QColor("red"))
+                self.hosts_items.addItem(item)
+        # self.hosts_items.addItems(hosts_list)
+        self.n = len(self.hosts_items)
+        self.hosts_items.blockSignals(False)
 
     def select_all(self):
         self.hosts_items.selectAll()
