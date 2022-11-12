@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import (QPushButton, QLineEdit, \
                              QListWidget, QAbstractItemView, QMenuBar, \
                              QInputDialog, QProgressBar, QLabel, QMessageBox, QWidget, QGridLayout)
 
-from config import config_path, version
+from config import version
 from help import HelpWindow
 from hosts import Hosts
 from system import run_command, user, run_command_in_xterm
@@ -230,14 +230,14 @@ class TeacherWindow(QWidget):
     def open_sftp(self):
         comps = self.hosts_items.selectedItems()
         n = len(comps)
-        if n == 0:
+        if n != 1:
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Ошибка")
-            dlg.setText("Выберите хотя бы один компьютер из списка")
+            dlg.setText("Выберите один компьютер из списка")
             button = dlg.exec()
-
             if button == QMessageBox.Ok:
                 return
+
         self.pbar.setValue(0)
         for i in range(n):
             comp = comps[i].text().strip()

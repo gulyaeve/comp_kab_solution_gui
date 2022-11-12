@@ -270,7 +270,7 @@ class SettingsWindow(QWidget):
                                                 'Введите команду для выполнения на компьютерах учеников',
                                                 QLineEdit.Normal)
         if pressed:
-            self.textfield.setPlainText(f"НАЧАЛО ВЫПОЛНЕНИЯ КОМАНДЫ: {command}")
+            self.textfield.setPlainText(f"НАЧАЛО ВЫПОЛНЕНИЯ КОМАНДЫ:\n{command}")
 
             self.thread = SSHCommandExec()
             self.thread.hosts = self.hosts
@@ -285,5 +285,5 @@ class SettingsWindow(QWidget):
                 lambda: self.set_buttons_enabled(True)
             )
             self.thread.finished.connect(
-                lambda: self.textfield.appendPlainText(f"\nЗАВЕРШЕНИЕ ВЫПОЛНЕНИЯ КОМАНДЫ: {command}")
+                lambda: self.textfield.appendPlainText(f"\nЗАВЕРШЕНИЕ ВЫПОЛНЕНИЯ КОМАНДЫ:\n{command}")
             )
