@@ -2,11 +2,27 @@ Name: teacher_control
 Group: Education
 Version: 1
 Release: 1
-Summary: teacher control
-License: DigitalCenter
+
+Summary: Setup computer auditory
+Summary(ru_RU.UTF-8): Инструменты организации работы в компьютерном классе
+
+License: GPLv3
+ExclusiveArch: x86_64
 
 %description
-teacher control
+Scripts for computer auditory
+
+%description -l ru_RU.UTF-8
+Данное решение позволяет:
+ИТ-специалисту:
+- настроить доступ по SSH для пользователя root на компьютеры учеников;
+- настроить сетевую папку sftp для выдачи задания учителем;
+- установить и настроить приложение veyon для управления и наблюдением за компьютерами учеников.
+Учителю:
+- удалённо собирать работы с компьютеров учеников;
+- очищать папки для сбора работ;
+- создавать и удалять локальную учётную запись student на компьютерах учеников;
+- открывать в проводнике содержимое компьютера ученика для просмотра и редактирования.
 
 %build
 pyinstaller -n "teacher_control" --onefile %{_sourcedir}/app.py
