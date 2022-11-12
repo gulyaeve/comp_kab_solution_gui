@@ -165,7 +165,3 @@ class VeyonSetup(QThread):
                 '    ВАЖНО!\n\nДля М ОС имя компьютера должно оканчиваться на .local\n'
             )
             return []
-
-
-    
-    
