@@ -2,6 +2,7 @@ import time
 
 from PyQt5.QtCore import QThread, pyqtSignal
 
+from hosts import Hosts
 from system import test_ssh
 
 
@@ -11,16 +12,16 @@ class PingSSH(QThread):
 
     def __init__(self, parent=None):
         QThread.__init__(self, parent)
-        self.hosts = None
 
     def run(self):
         while True:
+            hosts = Hosts()
             result = []
-            for host in self.hosts.to_list():
+            for host in hosts.to_list():
                 if test_ssh(host):
                     result.append(f"{host} SSH")
                 else:
                     result.append(f"{host} NO_SSH")
             self.progress_signal.emit(result)
-            time.sleep(3)
+            time.sleep(1)
             # print(test_ssh(host))

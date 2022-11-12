@@ -91,7 +91,7 @@ class TeacherWindow(QWidget):
             self.help()
 
         self.thread = PingSSH()
-        self.thread.hosts = self.hosts
+        # self.thread.hosts = self.hosts
 
         self.thread.finished.connect(self.thread.deleteLater)
         self.thread.progress_signal.connect(self.update_hosts_list)
