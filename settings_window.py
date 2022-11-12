@@ -1,30 +1,21 @@
 import logging
 import re
 import subprocess
-import time
-from _socket import timeout
+
 import paramiko
 from PyQt5.QtGui import QColor, QTextCursor
 from PyQt5.QtWidgets import QWidget, QGridLayout, QPushButton, QPlainTextEdit, QLabel, QLineEdit, QInputDialog, \
     QFileDialog, QMessageBox, QTableWidget, QTableWidgetItem
-from paramiko.channel import Channel
-from paramiko.ssh_exception import AuthenticationException, SSHException
-from PyQt5.QtCore import Qt, QThread
+from paramiko.ssh_exception import AuthenticationException
+from PyQt5.QtCore import Qt
 
 from config import config_path, hostname_expression, version
-from desktop_entrys import ssh_add_link, veyon_link, network_share, network_share_for_teacher
+from desktop_entrys import veyon_link, network_share, network_share_for_teacher
 from hosts import Hosts
+from share_worker import NetworkFolderSetup
 from system import exit_app, this_host, user, run_command_in_xterm, run_command_by_root, get_mac_address, \
     run_command_in_xterm_hold
-from tasks import SSHRootSetup
-
-
-class SSHTimeoutError(Exception):
-    pass
-
-
-class WrongRootPass(Exception):
-    pass
+from ssh_worker import SSHRootSetup
 
 
 class SettingsWindow(QWidget):
@@ -111,6 +102,18 @@ class SettingsWindow(QWidget):
             self.command_exec = QPushButton('Выполнить команду на всех компьютерах')
             self.command_exec.clicked.connect(self.run_command_on_ssh)
             grid.addWidget(self.command_exec, 3, 0)
+
+    def set_buttons_enabled(self, status: bool):
+        if status:
+            self.button_ssh.setEnabled(True)
+            self.button_share.setEnabled(True)
+            self.button_veyon.setEnabled(True)
+            self.command_exec.setEnabled(True)
+        else:
+            self.button_ssh.setEnabled(False)
+            self.button_share.setEnabled(False)
+            self.button_veyon.setEnabled(False)
+            self.command_exec.setEnabled(False)
 
     def update_data(self):
         self.hosts_table.blockSignals(True)
@@ -200,95 +203,101 @@ class SettingsWindow(QWidget):
     def update_textfield(self, message):
         self.textfield.appendPlainText(message)
 
-    def ping(self):
-        """
-        Подключение к хостам и проверка ping
-        :return: список хостов в случае успеха
-        """
-        hosts = self.hosts.to_list()
-        if hosts:
-            self.textfield.appendPlainText("\nСписок устройств найден, выполняю ping всех устройств:")
-            errors = 0
-            list_of_hosts = []
-            for host in hosts:
-                # host = host.split('\n')[0]
-                result = subprocess.run(['ping', '-c1', host], stdout=subprocess.PIPE)
-                if result.returncode == 0:
-                    self.textfield.appendPlainText(f"ping: {host}: УСПЕШНОЕ СОЕДИНЕНИЕ")
-                    logging.info(f"ping: {host}: УСПЕШНОЕ СОЕДИНЕНИЕ {result=} {result.returncode=}")
-                elif result.returncode == 2:
-                    logging.info(f"ping: {host}: {result=} {result.returncode=}")
-                    self.textfield.appendPlainText(f"ping: {host}: УСТРОЙСТВО НЕ НАЙДЕНО")
-                    errors += 1
-                else:
-                    self.textfield.appendPlainText(host + " неизвестная ошибка")
-                    logging.info(host + f" неизвестная ошибка {result=} {result.returncode=}")
-                    errors += 1
-                list_of_hosts.append(host)
-            if errors > 0:
-                self.textfield.appendPlainText("Некоторые компьютеры найти не удалось, "
-                                               "проверьте правильность имён и повторите попытку.")
-                return []
-            return list_of_hosts
-        else:
-            self.textfield.appendPlainText(
-                'Заполните список устройств: '
-                'перечислите в нём имена компьютеров построчно и запустите скрипт повторно.\n\n'
-                '    ВАЖНО!\n\nДля М ОС имя компьютера должно оканчиваться на .local\n'
-                'Если по имени компьютеры не находятся, '
-                'то используйте ip-адреса, но так делать не рекомендуется из-за смены адресов по DHCP.')
-            return []
+    # def ping(self):
+    #     """
+    #     Подключение к хостам и проверка ping
+    #     :return: список хостов в случае успеха
+    #     """
+    #     hosts = self.hosts.to_list()
+    #     if hosts:
+    #         self.textfield.appendPlainText("\nСписок устройств найден, выполняю ping всех устройств:")
+    #         errors = 0
+    #         list_of_hosts = []
+    #         for host in hosts:
+    #             # host = host.split('\n')[0]
+    #             result = subprocess.run(['ping', '-c1', host], stdout=subprocess.PIPE)
+    #             if result.returncode == 0:
+    #                 self.textfield.appendPlainText(f"ping: {host}: УСПЕШНОЕ СОЕДИНЕНИЕ")
+    #                 logging.info(f"ping: {host}: УСПЕШНОЕ СОЕДИНЕНИЕ {result=} {result.returncode=}")
+    #             elif result.returncode == 2:
+    #                 logging.info(f"ping: {host}: {result=} {result.returncode=}")
+    #                 self.textfield.appendPlainText(f"ping: {host}: УСТРОЙСТВО НЕ НАЙДЕНО")
+    #                 errors += 1
+    #             else:
+    #                 self.textfield.appendPlainText(host + " неизвестная ошибка")
+    #                 logging.info(host + f" неизвестная ошибка {result=} {result.returncode=}")
+    #                 errors += 1
+    #             list_of_hosts.append(host)
+    #         if errors > 0:
+    #             self.textfield.appendPlainText("Некоторые компьютеры найти не удалось, "
+    #                                            "проверьте правильность имён и повторите попытку.")
+    #             return []
+    #         return list_of_hosts
+    #     else:
+    #         self.textfield.appendPlainText(
+    #             'Заполните список устройств: '
+    #             'перечислите в нём имена компьютеров построчно и запустите скрипт повторно.\n\n'
+    #             '    ВАЖНО!\n\nДля М ОС имя компьютера должно оканчиваться на .local\n'
+    #             'Если по имени компьютеры не находятся, '
+    #             'то используйте ip-адреса, но так делать не рекомендуется из-за смены адресов по DHCP.')
+    #         return []
 
-    def test_ssh(self):
-        """
-        Проверка подключения к хостам пользователем root
-        """
-        self.textfield.appendPlainText("\nПроверяю доступ по ssh к компьютерам")
-        list_of_hosts = self.ping()
-        if list_of_hosts:
-            errors = 0
-            ssh_hosts = []
-            for host in list_of_hosts:
-                host = host.strip()
-                ssh = paramiko.SSHClient()
-                ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-                try:
-                    ssh.connect(hostname=host, port=22, timeout=5, username='root')
-                    logging.info(f"Подключено по ssh@root без пароля к {host}")
-                    self.textfield.appendPlainText(f"Подключено по ssh@root без пароля к {host}")
-                    ssh_hosts.append(host)
-                except AuthenticationException:
-                    self.textfield.appendPlainText(f'Не удалось подключиться ssh root@{host}')
-                    logging.info(f"Не удалось подключиться по ssh@root без пароля к {host}")
-                    errors += 1
-                    return []
-                return ssh_hosts
-            if errors > 1:
-                self.textfield.appendPlainText(
-                    '\nssh не удалось настроить'
-                )
-        else:
-            self.textfield.appendPlainText(
-                '\nssh не настроен'
-            )
+    # def test_ssh(self):
+    #     """
+    #     Проверка подключения к хостам пользователем root
+    #     """
+    #     self.textfield.appendPlainText("\nПроверяю доступ по ssh к компьютерам")
+    #     list_of_hosts = self.ping()
+    #     if list_of_hosts:
+    #         errors = 0
+    #         ssh_hosts = []
+    #         for host in list_of_hosts:
+    #             host = host.strip()
+    #             ssh = paramiko.SSHClient()
+    #             ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    #             try:
+    #                 ssh.connect(hostname=host, port=22, timeout=5, username='root')
+    #                 logging.info(f"Подключено по ssh@root без пароля к {host}")
+    #                 self.textfield.appendPlainText(f"Подключено по ssh@root без пароля к {host}")
+    #                 ssh_hosts.append(host)
+    #             except AuthenticationException:
+    #                 self.textfield.appendPlainText(f'Не удалось подключиться ssh root@{host}')
+    #                 logging.info(f"Не удалось подключиться по ssh@root без пароля к {host}")
+    #                 errors += 1
+    #                 return []
+    #             return ssh_hosts
+    #         if errors > 1:
+    #             self.textfield.appendPlainText(
+    #                 '\nssh не удалось настроить'
+    #             )
+    #     else:
+    #         self.textfield.appendPlainText(
+    #             '\nssh не настроен'
+    #         )
 
     def setup_ssh(self):
-        self.textfield.setPlainText("НАЧАЛО НАСТРОЙКИ SSH")
+        root_pass, okPressed = QInputDialog.getText(
+            self, "Введите пароль root",
+            f"Введите пароль учётной записи суперпользователя root (для устройств учеников): ",
+            QLineEdit.Password, "")
+        if okPressed:
+            self.textfield.setPlainText("НАЧАЛО НАСТРОЙКИ SSH")
 
-        self.thread = SSHRootSetup()
-        self.thread.hosts = self.hosts
+            self.thread = SSHRootSetup()
+            self.thread.hosts = self.hosts
+            self.thread.root_pass = root_pass
 
-        self.thread.finished.connect(self.thread.deleteLater)
-        self.thread.progress_signal.connect(self.update_textfield)
-        self.thread.start()
+            self.thread.finished.connect(self.thread.deleteLater)
+            self.thread.progress_signal.connect(self.update_textfield)
+            self.thread.start()
 
-        self.button_ssh.setEnabled(False)
-        self.thread.finished.connect(
-            lambda: self.button_ssh.setEnabled(True)
-        )
-        self.thread.finished.connect(
-            lambda: self.textfield.appendPlainText("\nЗАВЕРШЕНИЕ НАСТРОЙКИ SSH")
-        )
+            self.set_buttons_enabled(False)
+            self.thread.finished.connect(
+                lambda: self.set_buttons_enabled(True)
+            )
+            self.thread.finished.connect(
+                lambda: self.textfield.appendPlainText("\nЗАВЕРШЕНИЕ НАСТРОЙКИ SSH")
+            )
 
     def install_veyon(self):
         """
@@ -370,29 +379,22 @@ class SettingsWindow(QWidget):
             )
 
     def network_folders(self):
-        """
-        Создание сетевой папки и копирование ярлыка по ssh на хосты
-        """
-        logging.info("Создание сетевой папки")
-        self.textfield.setPlainText('Создание сетевой папки...')
-        ssh_hosts = self.test_ssh()
-        if ssh_hosts:
-            self.textfield.appendPlainText(
-                'Создаю сетевую папку share (/home/share) и отправляю ссылку на компьютеры учеников')
-            run_command_by_root(f'mkdir -p /home/share && chmod 755 /home/share && chown {user} /home/share')
-            with open(f'{config_path}/share.desktop', 'w') as file_link:
-                file_link.write(network_share.format(teacher_host=this_host))
-            for host in self.hosts.items_to_list():
-                run_command_in_xterm(
-                    f"scp {config_path}/share.desktop root@{host.hostname}:'/home/student/Рабочий\ стол'"
-                )
-            with open(f'/home/{user}/Рабочий стол/share.desktop', 'w') as file_link_2:
-                file_link_2.write(network_share_for_teacher)
-            logging.info('Сетевая папка создана')
-        else:
-            self.textfield.appendPlainText(
-                "\nДля настройки сетевой папка необходимо сначала настроить ssh"
-            )
+        self.textfield.setPlainText("НАЧАЛО НАСТРОЙКИ СЕТЕВЫХ ПАПОК")
+
+        self.thread = NetworkFolderSetup()
+        self.thread.hosts = self.hosts
+
+        self.thread.finished.connect(self.thread.deleteLater)
+        self.thread.progress_signal.connect(self.update_textfield)
+        self.thread.start()
+
+        self.set_buttons_enabled(False)
+        self.thread.finished.connect(
+            lambda: self.set_buttons_enabled(True)
+        )
+        self.thread.finished.connect(
+            lambda: self.textfield.appendPlainText("\nЗАВЕРШЕНИЕ НАСТРОЙКИ СЕТЕВЫХ ПАПОК")
+        )
 
     def run_command_on_ssh(self):
         logging.info("Выполнение команды")
