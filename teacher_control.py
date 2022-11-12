@@ -242,14 +242,13 @@ class TeacherWindow(QWidget):
         for i in range(n):
             comp = comps[i].text().strip()
             try:
-                run_command_in_xterm(f'dolphin sftp://root@{comp}:/home')
+                run_command_in_xterm(f'kde5 dolphin sftp://root@{comp}:/home')
                 # run_command_in_xterm(f'mc cd sh://root@{comp}:/home')
                 self.pbar.setValue((i + 1) * 100 // n)
                 self.infoLabel.setText(f'Открываем {comp}...')
-
             except:
                 self.infoLabel.setText(f'Не удалось подключиться к {comp}.')
-        self.infoLabel.setText('Открыт Dolphin для всех доступных компьютеров.')
+        # self.infoLabel.setText('Открыт Dolphin для всех доступных компьютеров.')
 
     def settings(self):
         logging.info("Открыты настройки")
