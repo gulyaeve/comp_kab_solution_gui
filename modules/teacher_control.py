@@ -5,7 +5,6 @@ import datetime
 import logging
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import (QPushButton, QLineEdit, \
                              QListWidget, QAbstractItemView, QMenuBar, \
                              QInputDialog, QProgressBar, QLabel, QMessageBox, QWidget, QGridLayout, QListWidgetItem)

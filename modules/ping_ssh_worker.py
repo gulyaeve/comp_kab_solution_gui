@@ -1,4 +1,3 @@
-import time
 
 from PyQt5.QtCore import QThread, pyqtSignal
 from PyQt5.QtGui import QColor
