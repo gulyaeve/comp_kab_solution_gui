@@ -77,7 +77,7 @@ class TeacherWindow(QWidget):
         self.hosts_items.setSelectionMode(QAbstractItemView.ExtendedSelection)
         hosts_from_file = self.hosts.to_list()
         self.hosts_items.addItems(hosts_from_file)
-        self.n = len(self.hosts_items)
+        # self.n = len(self.hosts_items)
         grid.addWidget(self.hosts_items, 2, 1, 5, 2)
 
         self.move(300, 150)
@@ -91,64 +91,40 @@ class TeacherWindow(QWidget):
             self.help()
 
         self.thread = PingSSH()
-        # self.thread.hosts = self.hosts
-
         self.thread.finished.connect(self.thread.deleteLater)
         self.thread.progress_signal.connect(self.update_hosts_list)
         self.thread.start()
 
-    # def enterEvent(self, event):
-    #     if event.type() == 10:
-    #         self.thread = PingSSH()
-    #         self.thread.hosts = self.hosts
-    #         self.thread.hosts = self.hosts.to_list()
-    #
-    #         self.thread.finished.connect(self.thread.deleteLater)
-    #         self.thread.progress_signal.connect(self.update_hosts_list)
-    #         self.thread.start()
-
-            # self.hosts_items.clear()
-            # self.hosts = Hosts()
-            # hosts_from_file = self.hosts.to_list()
-            # self.hosts_items.addItems(hosts_from_file)
-            # self.n = len(self.hosts_items)
-
-            # self.thread = PingSSH()
-            # self.thread.hosts = self.hosts
-            # self.thread.hosts = self.hosts.to_list()
-            #
-            # self.thread.finished.connect(self.thread.deleteLater)
-            # self.thread.progress_signal.connect(self.update_hosts_list)
-            # self.thread.start()
-
     # def get_all_items(self):
-    #     lst = self.hosts_items
     #     items = []
-    #     for x in range(lst.count()):
-    #         items.append(lst.item(x).text())
-    #     print(items)
+    #     for item_index in range(self.hosts_items.count()):
+    #         items.append(self.hosts_items.item(item_index))
     #     return items
+
+    def get_selected_items(self):
+        selected_items = self.hosts_items.selectedItems()
+        items = []
+        for item in selected_items:
+            items.append(item.text())
+        return items
 
     def update_hosts_list(self, hosts_list: list[str]):
         self.hosts_items.blockSignals(True)
-        # current_items = self.get_all_items()
-        # print(current_items)
+
+        current_selected_items = self.get_selected_items()
         self.hosts_items.clear()
         for host in hosts_list:
-            hostname = host.split(' ')[0]
-            host_ssh = host.split(' ')[1]
-            if host_ssh == "SSH":
-                item = QListWidgetItem()
-                item.setText(hostname)
+            hostname = host.split(' SSH')[0]
+            item = QListWidgetItem()
+            item.setText(hostname)
+            if host.endswith(" SSH"):
                 item.setBackground(QColor("green"))
-                self.hosts_items.addItem(item)
-            elif host_ssh == "NO_SSH":
-                item = QListWidgetItem()
-                item.setText(hostname)
+            else:
                 item.setBackground(QColor("red"))
-                self.hosts_items.addItem(item)
-        # self.hosts_items.addItems(hosts_list)
-        self.n = len(self.hosts_items)
+            self.hosts_items.addItem(item)
+            if hostname in current_selected_items:
+                item.setSelected(True)
+
         self.hosts_items.blockSignals(False)
 
     def select_all(self):
@@ -158,25 +134,22 @@ class TeacherWindow(QWidget):
         self.hosts_items.clearSelection()
 
     def get_works(self):
-        comps = self.hosts_items.selectedItems()
-        n = len(comps)
-        if n == 0:
+        comps = self.get_selected_items()
+
+        if len(comps) == 0:
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Ошибка")
             dlg.setText("Выберите хотя бы один компьютер из списка")
             button = dlg.exec()
-
             if button == QMessageBox.Ok:
                 return
+
         date = str(datetime.datetime.now().date())
         text, okPressed = QInputDialog.getText(self, "Введите название", "Название папки:", QLineEdit.Normal, "")
         if okPressed and text:
             self.pbar.setValue(0)
             self.pbar.show()
-
-            for i in range(n):
-                comp = comps[i].text().strip()
-                print(comp)
+            for i, comp in enumerate(comps):
                 run_command(f'mkdir -p "/home/{user}/Рабочий стол/Работы/"' + date + '/' + text + '/' + comp)
 
                 run_command(f'ssh root@{comp} \'mkdir -p \"/home/student/Рабочий стол/Сдать работы\" && \
@@ -184,7 +157,7 @@ class TeacherWindow(QWidget):
                           scp -r root@{comp}:\'/home/student/Рабочий\ стол/Сдать\ работы/*\' \
                           \"/home/{user}/Рабочий стол/Работы/\"{date}/{text}/{comp}')
                 self.infoLabel.setText(f'Собираем у {comp}')
-                self.pbar.setValue((i + 1) * 100 // n)
+                self.pbar.setValue((i + 1) * 100 // len(comps))
             self.infoLabel.setText('Сбор работ завершён.')
         elif okPressed and not text:
             dlg = QMessageBox(self)
@@ -197,9 +170,8 @@ class TeacherWindow(QWidget):
             return
 
     def clean_works(self):
-        comps = self.hosts_items.selectedItems()
-        n = len(comps)
-        if n == 0:
+        comps = self.get_selected_items()
+        if len(comps) == 0:
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Ошибка")
             dlg.setText("Выберите хотя бы один компьютер из списка")
@@ -208,17 +180,15 @@ class TeacherWindow(QWidget):
             if button == QMessageBox.Ok:
                 return
         self.pbar.setValue(0)
-        for i in range(n):
-            comp = comps[i].text().strip()
+        for i, comp in enumerate(comps):
             run_command(f'ssh root@{comp} \'rm -rf /home/student/Рабочий\ стол/Сдать\ работы/*\'')
             self.infoLabel.setText(f'Очищаем {comp}')
-            self.pbar.setValue((i + 1) * 100 // n)
+            self.pbar.setValue((i + 1) * 100 // len(comps))
         self.infoLabel.setText('Очистка завершена.')
 
     def delete_student(self):
-        comps = self.hosts_items.selectedItems()
-        n = len(comps)
-        if n == 0:
+        comps = self.get_selected_items()
+        if len(comps) == 0:
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Ошибка")
             dlg.setText("Выберите хотя бы один компьютер из списка")
@@ -226,23 +196,19 @@ class TeacherWindow(QWidget):
             if button == QMessageBox.Ok:
                 return
         self.pbar.setValue(0)
-        for i in range(n):
-            comp = comps[i].text().strip()
+        for i, comp in enumerate(comps):
             try:
                 self.infoLabel.setText(f'Удаляю student на {comp}...')
-
                 run_command(f'ssh root@{comp} "echo \''
                             f'pkill -u student; '
                             f'userdel -rf student\' | at now"')
-
             except:
                 self.infoLabel.setText(f'Не удалось подключиться к {comp}.')
         self.infoLabel.setText('Команда удаления выполнена на выбранных компьютерах.')
 
     def backup_student(self):
-        comps = self.hosts_items.selectedItems()
-        n = len(comps)
-        if n == 0:
+        comps = self.get_selected_items()
+        if len(comps) == 0:
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Ошибка")
             dlg.setText("Выберите хотя бы один компьютер из списка")
@@ -252,8 +218,8 @@ class TeacherWindow(QWidget):
         self.pbar.setValue(0)
         # TODO: эти методы нужно тестировать в реальных условиях
         # run_command(f'tar -xf /usr/share/teacher_control/student.tar.gz -C {config_path}/')
-        for i in range(n):
-            comp = comps[i].text().strip()
+        for i, comp in enumerate(comps):
+            # comp = comps[i].text().strip()
             try:
                 self.infoLabel.setText(f'Пересоздаю student на {comp}...')
                 # self.pbar.setValue((i + 1) * 100 // n)
@@ -279,9 +245,8 @@ class TeacherWindow(QWidget):
         self.infoLabel.setText('Команда пересоздания выполнена на выбранных компьютерах.')
 
     def open_sftp(self):
-        comps = self.hosts_items.selectedItems()
-        n = len(comps)
-        if n != 1:
+        comps = self.get_selected_items()
+        if len(comps) != 1:
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Ошибка")
             dlg.setText("Выберите один компьютер из списка")
@@ -290,12 +255,12 @@ class TeacherWindow(QWidget):
                 return
 
         self.pbar.setValue(0)
-        for i in range(n):
-            comp = comps[i].text().strip()
+        for i, comp in enumerate(comps):
+            # comp = comps[i].text().strip()
             try:
                 run_command_in_xterm(f'kde5 dolphin sftp://root@{comp}:/home')
                 # run_command_in_xterm(f'mc cd sh://root@{comp}:/home')
-                self.pbar.setValue((i + 1) * 100 // n)
+                self.pbar.setValue((i + 1) * 100 // len(comps))
                 self.infoLabel.setText(f'Открываем {comp}...')
             except:
                 self.infoLabel.setText(f'Не удалось подключиться к {comp}.')

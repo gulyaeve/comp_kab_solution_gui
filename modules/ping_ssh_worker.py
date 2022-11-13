@@ -21,7 +21,7 @@ class PingSSH(QThread):
                 if test_ssh(host):
                     result.append(f"{host} SSH")
                 else:
-                    result.append(f"{host} NO_SSH")
+                    result.append(f"{host}")
             self.progress_signal.emit(result)
-            time.sleep(1)
+            # time.sleep(1)
             # print(test_ssh(host))
