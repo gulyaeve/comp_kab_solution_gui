@@ -108,6 +108,20 @@ class TeacherWindow(QWidget):
             items.append(item.text())
         return items
 
+    def get_selected_items_with_confirm(self):
+        selected_items = self.hosts_items.selectedItems()
+        items = []
+        for item in selected_items:
+            items.append(item.text())
+        if not items:
+            dlg = QMessageBox(self)
+            dlg.setWindowTitle("Ошибка")
+            dlg.setText("Выберите хотя бы один компьютер из списка")
+            button = dlg.exec()
+            if button == QMessageBox.Ok:
+                return None
+        return items
+
     def update_hosts_list(self, hosts_list: list[str]):
         self.hosts_items.blockSignals(True)
 
@@ -134,137 +148,94 @@ class TeacherWindow(QWidget):
         self.hosts_items.clearSelection()
 
     def get_works(self):
-        comps = self.get_selected_items()
+        comps = self.get_selected_items_with_confirm()
+        if comps:
+            date = str(datetime.datetime.now().date())
+            text, okPressed = QInputDialog.getText(self, "Введите название", "Название папки:", QLineEdit.Normal, "")
+            if okPressed and text:
+                self.pbar.setValue(0)
+                self.pbar.show()
+                for i, comp in enumerate(comps):
+                    run_command(f'mkdir -p "/home/{user}/Рабочий стол/Работы/"' + date + '/' + text + '/' + comp)
 
-        if len(comps) == 0:
-            dlg = QMessageBox(self)
-            dlg.setWindowTitle("Ошибка")
-            dlg.setText("Выберите хотя бы один компьютер из списка")
-            button = dlg.exec()
-            if button == QMessageBox.Ok:
+                    run_command(f'ssh root@{comp} \'mkdir -p \"/home/student/Рабочий стол/Сдать работы\" && \
+                              chmod 777 \"/home/student/Рабочий стол/Сдать работы\"\' && \
+                              scp -r root@{comp}:\'/home/student/Рабочий\ стол/Сдать\ работы/*\' \
+                              \"/home/{user}/Рабочий стол/Работы/\"{date}/{text}/{comp}')
+                    self.infoLabel.setText(f'Собираем у {comp}')
+                    self.pbar.setValue((i + 1) * 100 // len(comps))
+                self.infoLabel.setText('Сбор работ завершён.')
+            elif okPressed and not text:
+                dlg = QMessageBox(self)
+                dlg.setWindowTitle("Ошибка")
+                dlg.setText("Необходимо ввести название")
+                button = dlg.exec()
+                if button == QMessageBox.Ok:
+                    return
+            else:
                 return
-
-        date = str(datetime.datetime.now().date())
-        text, okPressed = QInputDialog.getText(self, "Введите название", "Название папки:", QLineEdit.Normal, "")
-        if okPressed and text:
-            self.pbar.setValue(0)
-            self.pbar.show()
-            for i, comp in enumerate(comps):
-                run_command(f'mkdir -p "/home/{user}/Рабочий стол/Работы/"' + date + '/' + text + '/' + comp)
-
-                run_command(f'ssh root@{comp} \'mkdir -p \"/home/student/Рабочий стол/Сдать работы\" && \
-                          chmod 777 \"/home/student/Рабочий стол/Сдать работы\"\' && \
-                          scp -r root@{comp}:\'/home/student/Рабочий\ стол/Сдать\ работы/*\' \
-                          \"/home/{user}/Рабочий стол/Работы/\"{date}/{text}/{comp}')
-                self.infoLabel.setText(f'Собираем у {comp}')
-                self.pbar.setValue((i + 1) * 100 // len(comps))
-            self.infoLabel.setText('Сбор работ завершён.')
-        elif okPressed and not text:
-            dlg = QMessageBox(self)
-            dlg.setWindowTitle("Ошибка")
-            dlg.setText("Необходимо ввести название")
-            button = dlg.exec()
-            if button == QMessageBox.Ok:
-                return
-        else:
-            return
 
     def clean_works(self):
-        comps = self.get_selected_items()
-        if len(comps) == 0:
-            dlg = QMessageBox(self)
-            dlg.setWindowTitle("Ошибка")
-            dlg.setText("Выберите хотя бы один компьютер из списка")
-            button = dlg.exec()
-
-            if button == QMessageBox.Ok:
-                return
-        self.pbar.setValue(0)
-        for i, comp in enumerate(comps):
-            run_command(f'ssh root@{comp} \'rm -rf /home/student/Рабочий\ стол/Сдать\ работы/*\'')
-            self.infoLabel.setText(f'Очищаем {comp}')
-            self.pbar.setValue((i + 1) * 100 // len(comps))
-        self.infoLabel.setText('Очистка завершена.')
+        comps = self.get_selected_items_with_confirm()
+        if comps:
+            self.pbar.setValue(0)
+            for i, comp in enumerate(comps):
+                run_command(f'ssh root@{comp} \'rm -rf /home/student/Рабочий\ стол/Сдать\ работы/*\'')
+                self.infoLabel.setText(f'Очищаем {comp}')
+                self.pbar.setValue((i + 1) * 100 // len(comps))
+            self.infoLabel.setText('Очистка завершена.')
 
     def delete_student(self):
-        comps = self.get_selected_items()
-        if len(comps) == 0:
-            dlg = QMessageBox(self)
-            dlg.setWindowTitle("Ошибка")
-            dlg.setText("Выберите хотя бы один компьютер из списка")
-            button = dlg.exec()
-            if button == QMessageBox.Ok:
-                return
-        self.pbar.setValue(0)
-        for i, comp in enumerate(comps):
-            try:
-                self.infoLabel.setText(f'Удаляю student на {comp}...')
-                run_command(f'ssh root@{comp} "echo \''
-                            f'pkill -u student; '
-                            f'userdel -rf student\' | at now"')
-            except:
-                self.infoLabel.setText(f'Не удалось подключиться к {comp}.')
-        self.infoLabel.setText('Команда удаления выполнена на выбранных компьютерах.')
+        comps = self.get_selected_items_with_confirm()
+        if comps:
+            self.pbar.setValue(0)
+            for i, comp in enumerate(comps):
+                try:
+                    self.infoLabel.setText(f'Удаляю student на {comp}...')
+                    run_command(f'ssh root@{comp} "echo \''
+                                f'pkill -u student; '
+                                f'userdel -rf student\' | at now"')
+                except:
+                    self.infoLabel.setText(f'Не удалось подключиться к {comp}.')
+            self.infoLabel.setText('Команда удаления выполнена на выбранных компьютерах.')
 
     def backup_student(self):
-        comps = self.get_selected_items()
-        if len(comps) == 0:
-            dlg = QMessageBox(self)
-            dlg.setWindowTitle("Ошибка")
-            dlg.setText("Выберите хотя бы один компьютер из списка")
-            button = dlg.exec()
-            if button == QMessageBox.Ok:
-                return
-        self.pbar.setValue(0)
-        # TODO: эти методы нужно тестировать в реальных условиях
-        # run_command(f'tar -xf /usr/share/teacher_control/student.tar.gz -C {config_path}/')
-        for i, comp in enumerate(comps):
-            # comp = comps[i].text().strip()
-            try:
-                self.infoLabel.setText(f'Пересоздаю student на {comp}...')
-                # self.pbar.setValue((i + 1) * 100 // n)
-                # run_command(f'scp /usr/share/teacher_control/student.tar.gz root@{comp}:/home/ && '
-                #             f'scp {config_path}/share.desktop root@{comp}:/home/ && '
-                #             f'ssh root@{comp} "echo \'pkill -u student && sleep 3 &&'
-                #             f'cd /home && rm -rf student && '
-                #             f'tar xfz student.tar.gz && '
-                #             f'mkdir -p /home/student/Рабочий\ стол/Сдать\ работы && '
-                #             f'cp share.desktop /home/student/Рабочий\ стол/ && '
-                #             f'chown -R student:student student && '
-                #             f'rm -f student.tar.gz share.desktop && '
-                #             f'reboot\' | at now"')
+        comps = self.get_selected_items_with_confirm()
+        if comps:
+            self.pbar.setValue(0)
+            for i, comp in enumerate(comps):
+                try:
+                    self.infoLabel.setText(f'Пересоздаю student на {comp}...')
+                    run_command(f'ssh root@{comp} "echo \''
+                                f'pkill -u student; '
+                                f'userdel -rf student; '
+                                f'useradd student && '
+                                f'chpasswd <<<\"student:1\"\' | at now"')
 
-                run_command(f'ssh root@{comp} "echo \''
-                            f'pkill -u student; '
-                            f'userdel -rf student; '
-                            f'useradd student && '
-                            f'chpasswd <<<\"student:1\"\' | at now"')
-
-            except:
-                self.infoLabel.setText(f'Не удалось подключиться к {comp}.')
-        self.infoLabel.setText('Команда пересоздания выполнена на выбранных компьютерах.')
+                except:
+                    self.infoLabel.setText(f'Не удалось подключиться к {comp}.')
+            self.infoLabel.setText('Команда пересоздания выполнена на выбранных компьютерах.')
 
     def open_sftp(self):
-        comps = self.get_selected_items()
-        if len(comps) != 1:
-            dlg = QMessageBox(self)
-            dlg.setWindowTitle("Ошибка")
-            dlg.setText("Выберите один компьютер из списка")
-            button = dlg.exec()
-            if button == QMessageBox.Ok:
-                return
+        comps = self.get_selected_items_with_confirm()
+        if comps:
+            if len(comps) != 1:
+                dlg = QMessageBox(self)
+                dlg.setWindowTitle("Ошибка")
+                dlg.setText("Выберите один компьютер из списка")
+                button = dlg.exec()
+                if button == QMessageBox.Ok:
+                    return
 
-        self.pbar.setValue(0)
-        for i, comp in enumerate(comps):
-            # comp = comps[i].text().strip()
-            try:
-                run_command_in_xterm(f'kde5 dolphin sftp://root@{comp}:/home')
-                # run_command_in_xterm(f'mc cd sh://root@{comp}:/home')
-                self.pbar.setValue((i + 1) * 100 // len(comps))
-                self.infoLabel.setText(f'Открываем {comp}...')
-            except:
-                self.infoLabel.setText(f'Не удалось подключиться к {comp}.')
-        # self.infoLabel.setText('Открыт Dolphin для всех доступных компьютеров.')
+            self.pbar.setValue(0)
+            for i, comp in enumerate(comps):
+                try:
+                    run_command_in_xterm(f'kde5 dolphin sftp://root@{comp}:/home')
+                    # run_command_in_xterm(f'mc cd sh://root@{comp}:/home')
+                    self.pbar.setValue((i + 1) * 100 // len(comps))
+                    self.infoLabel.setText(f'Открываем {comp}...')
+                except:
+                    self.infoLabel.setText(f'Не удалось подключиться к {comp}.')
 
     def settings(self):
         logging.info("Открыты настройки")
