@@ -121,22 +121,15 @@ class TeacherWindow(QWidget):
                 return None
         return items
 
-    def update_hosts_list(self, hosts_list: list[str]):
+    def update_hosts_list(self, hosts_list: list[QListWidgetItem]):
         self.hosts_items.blockSignals(True)
 
         current_selected_items = self.get_selected_items()
         self.hosts_items.clear()
         for host in hosts_list:
-            hostname = host.split(' SSH')[0]
-            item = QListWidgetItem()
-            item.setText(hostname)
-            if host.endswith(" SSH"):
-                item.setBackground(QColor("green"))
-            else:
-                item.setBackground(QColor("red"))
-            self.hosts_items.addItem(item)
-            if hostname in current_selected_items:
-                item.setSelected(True)
+            self.hosts_items.addItem(host)
+            if host.text() in current_selected_items:
+                host.setSelected(True)
 
         self.hosts_items.blockSignals(False)
 

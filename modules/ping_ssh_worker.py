@@ -1,6 +1,8 @@
 import time
 
 from PyQt5.QtCore import QThread, pyqtSignal
+from PyQt5.QtGui import QColor
+from PyQt5.QtWidgets import QListWidgetItem
 
 from modules.hosts import Hosts
 from modules.system import test_ssh
@@ -18,10 +20,12 @@ class PingSSH(QThread):
             hosts = Hosts()
             result = []
             for host in hosts.to_list():
+                item = QListWidgetItem()
+                item.setText(host)
                 if test_ssh(host):
-                    result.append(f"{host} SSH")
+                    item.setBackground(QColor("green"))
                 else:
-                    result.append(f"{host}")
+                    item.setBackground(QColor("red"))
+                result.append(item)
             self.progress_signal.emit(result)
-            # time.sleep(1)
-            # print(test_ssh(host))
+
