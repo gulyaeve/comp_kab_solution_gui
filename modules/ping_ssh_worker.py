@@ -1,3 +1,4 @@
+import time
 
 from PyQt5.QtCore import QThread, pyqtSignal
 from PyQt5.QtGui import QColor
@@ -27,4 +28,5 @@ class PingSSH(QThread):
                     item.setBackground(QColor("red"))
                 result.append(item)
             self.progress_signal.emit(result)
+            time.sleep(1)
 
