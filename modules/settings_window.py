@@ -1,9 +1,9 @@
 import logging
 import re
 
-from PyQt5.QtGui import QColor, QTextCursor
+from PyQt5.QtGui import QColor, QTextCursor, QFont, QTextCharFormat
 from PyQt5.QtWidgets import QWidget, QGridLayout, QPushButton, QPlainTextEdit, QLabel, QLineEdit, QInputDialog, \
-    QFileDialog, QMessageBox, QTableWidget, QTableWidgetItem
+    QFileDialog, QMessageBox, QTableWidget, QTableWidgetItem, QTextEdit, QStyle
 from PyQt5.QtCore import Qt
 
 from modules.command_worker import SSHCommandExec
@@ -30,6 +30,10 @@ class SettingsWindow(QWidget):
         self.textfield = QPlainTextEdit()
         self.textfield.cursor = QTextCursor()
         self.textfield.setReadOnly(True)
+        self.textfield.setStyleSheet("QPlainTextEdit {background-color: black; color: green;}")
+        font = QFont('Courier New')
+        font.setBold(True)
+        self.textfield.setFont(font)
         grid.addWidget(self.textfield, 4, 0, 4, 1)
 
         hostslabel = QLabel('Список устройств:')
