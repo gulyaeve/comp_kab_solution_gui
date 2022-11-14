@@ -212,8 +212,8 @@ class SettingsWindow(QWidget):
             self.thread.hosts = self.hosts
             self.thread.root_pass = root_pass
 
-            self.thread.finished.connect(self.thread.deleteLater)
             self.thread.progress_signal.connect(self.update_textfield)
+            self.thread.finished.connect(self.thread.deleteLater)
             self.thread.start()
 
             self.set_buttons_enabled(False)
@@ -230,8 +230,8 @@ class SettingsWindow(QWidget):
         self.thread = NetworkFolderSetup()
         self.thread.hosts = self.hosts
 
-        self.thread.finished.connect(self.thread.deleteLater)
         self.thread.progress_signal.connect(self.update_textfield)
+        self.thread.finished.connect(self.thread.deleteLater)
         self.thread.start()
 
         self.set_buttons_enabled(False)
@@ -253,8 +253,8 @@ class SettingsWindow(QWidget):
             self.thread.hosts = self.hosts
             self.thread.kab = kab
 
-            self.thread.finished.connect(self.thread.deleteLater)
             self.thread.progress_signal.connect(self.update_textfield)
+            self.thread.finished.connect(self.thread.deleteLater)
             self.thread.start()
 
             self.set_buttons_enabled(False)
@@ -276,8 +276,8 @@ class SettingsWindow(QWidget):
             self.thread.hosts = self.hosts
             self.thread.command = command
 
-            self.thread.finished.connect(self.thread.deleteLater)
             self.thread.progress_signal.connect(self.update_textfield)
+            self.thread.finished.connect(self.thread.deleteLater)
             self.thread.start()
 
             self.set_buttons_enabled(False)
