@@ -18,6 +18,9 @@ from modules.system import run_command, user, run_command_in_xterm
 from modules.settings_window import SettingsWindow
 
 
+works_folder = 'install -d -m 0755 -o student -g student \"/home/student/Рабочий стол/Сдать работы\"'
+
+
 class TeacherWindow(QWidget):
     def __init__(self):
         super().__init__()
@@ -148,15 +151,18 @@ class TeacherWindow(QWidget):
                 self.pbar.setValue(0)
                 self.pbar.show()
                 for i, comp in enumerate(comps):
-                    run_command(f'mkdir -p "/home/{user}/Рабочий стол/Работы/"' + date + '/' + text + '/' + comp)
+                    check_student = run_command(f"ssh root@{comp} file /home/student").strip()
+                    if check_student.endswith('directory'):
+                        run_command(f'mkdir -p "/home/{user}/Рабочий стол/Работы/"' + date + '/' + text + '/' + comp)
 
-                    run_command(f'ssh root@{comp} \'mkdir -p \"/home/student/Рабочий стол/Сдать работы\" && \
-                              chmod 777 \"/home/student/Рабочий стол/Сдать работы\"\' && \
-                              scp -r root@{comp}:\'/home/student/Рабочий\ стол/Сдать\ работы/*\' \
-                              \"/home/{user}/Рабочий стол/Работы/\"{date}/{text}/{comp}')
-                    self.infoLabel.setText(f'Собираем у {comp}')
+                        run_command(f'ssh root@{comp} \'{works_folder}\' && \
+                                    scp -r root@{comp}:\'/home/student/Рабочий\ стол/Сдать\ работы/*\' \
+                                    \"/home/{user}/Рабочий стол/Работы/\"{date}/{text}/{comp}')
+                        self.infoLabel.setText(f'Собираем у {comp}')
+                    else:
+                        self.infoLabel.setText(f'Нет student на {comp}')
                     self.pbar.setValue((i + 1) * 100 // len(comps))
-                self.infoLabel.setText('Сбор работ завершён.')
+                # self.infoLabel.setText('Сбор работ завершён.')
             elif okPressed and not text:
                 dlg = QMessageBox(self)
                 dlg.setWindowTitle("Ошибка")
@@ -172,8 +178,12 @@ class TeacherWindow(QWidget):
         if comps:
             self.pbar.setValue(0)
             for i, comp in enumerate(comps):
-                run_command(f'ssh root@{comp} \'rm -rf /home/student/Рабочий\ стол/Сдать\ работы/*\'')
-                self.infoLabel.setText(f'Очищаем {comp}')
+                check_student = run_command(f"ssh root@{comp} file /home/student").strip()
+                if check_student.endswith('directory'):
+                    run_command(f'ssh root@{comp} \'rm -rf /home/student/Рабочий\ стол/Сдать\ работы/*\'')
+                    self.infoLabel.setText(f'Очищаем {comp}')
+                else:
+                    self.infoLabel.setText(f'Нет student на {comp}')
                 self.pbar.setValue((i + 1) * 100 // len(comps))
             self.infoLabel.setText('Очистка завершена.')
 
@@ -182,16 +192,25 @@ class TeacherWindow(QWidget):
         if comps:
             self.pbar.setValue(0)
             for i, comp in enumerate(comps):
-                try:
+                check_student = run_command(f"ssh root@{comp} file /home/student").strip()
+                if check_student.endswith('directory'):
                     self.infoLabel.setText(f'Удаляю student на {comp}...')
-                    run_command(f'ssh root@{comp} "echo \''
-                                f'pkill -u student; '
-                                f'userdel -rf student\' | at now"')
-                except:
-                    self.infoLabel.setText(f'Не удалось подключиться к {comp}.')
-                finally:
-                    self.pbar.setValue((i + 1) * 100 // len(comps))
-            self.infoLabel.setText('Команда удаления выполнена на выбранных компьютерах.')
+                    command = f'echo \'pkill -u student; sleep 2; userdel -rf student\' | at now'
+                    self.thread = SSHCommandExec()
+                    self.thread.hosts_list = [comp]
+                    self.thread.command = command
+
+                    # self.thread.progress_signal.connect(self.update_textfield)
+                    self.thread.finished.connect(self.thread.deleteLater)
+                    self.thread.start()
+
+                    self.thread.finished.connect(
+                        lambda: self.infoLabel.setText(f'Команда удаления student отправлена на {comp}.')
+                    )
+                else:
+                    self.infoLabel.setText(f'Нет student на {comp}')
+
+                self.pbar.setValue((i + 1) * 100 // len(comps))
 
     def backup_student(self):
         comps = self.get_selected_items_with_confirm()
@@ -202,38 +221,27 @@ class TeacherWindow(QWidget):
             )
             if okPressed and student_pass:
                 for i, comp in enumerate(comps):
-                    try:
-                        self.infoLabel.setText(f'Пересоздаю student на {comp}...')
-                        command = f'echo \'' \
-                                  f'pkill -u student; ' \
-                                  f'userdel -rf student; ' \
-                                  f'useradd student && ' \
-                                  f'chpasswd <<<\"student:{student_pass}\" && ' \
-                                  f'mkdir -p \"/home/student/Рабочий стол/Сдать работы\" && ' \
-                                  f'chmod 777 \"/home/student/Рабочий стол/Сдать работы\"\'| at now'
-                        self.thread = SSHCommandExec()
-                        self.thread.hosts_list = [comp]
-                        self.thread.command = command
+                    self.infoLabel.setText(f'Пересоздаю student на {comp}...')
+                    command = f'echo \'' \
+                              f'pkill -u student; ' \
+                              f'sleep 2; ' \
+                              f'userdel -rf student; ' \
+                              f'useradd student && ' \
+                              f'chpasswd <<<\"student:{student_pass}\" && ' \
+                              f'{works_folder}\'| at now'
+                    self.thread = SSHCommandExec()
+                    self.thread.hosts_list = [comp]
+                    self.thread.command = command
 
-                        # self.thread.progress_signal.connect(self.update_textfield)
-                        self.thread.finished.connect(self.thread.deleteLater)
-                        self.thread.start()
+                    # self.thread.progress_signal.connect(self.update_textfield)
+                    self.thread.finished.connect(self.thread.deleteLater)
+                    self.thread.start()
 
-                        self.thread.finished.connect(
-                            lambda: self.infoLabel.setText(f'Команда пересоздания выполнена на {comp}.')
-                        )
-                        # run_command(f'ssh root@{comp} "echo \''
-                        #             f'pkill -u student; '
-                        #             f'userdel -rf student; '
-                        #             f'useradd student && '
-                        #             f'chpasswd <<<\"student:{student_pass}\"\' &&'
-                        #             f'mkdir -p \"/home/student/Рабочий стол/Сдать работы\" && '
-                        #             f'chmod 777 \"/home/student/Рабочий стол/Сдать работы\"| at now"')
-                    except:
-                        self.infoLabel.setText(f'Не удалось подключиться к {comp}.')
-                    finally:
-                        self.pbar.setValue((i + 1) * 100 // len(comps))
-            # self.infoLabel.setText('Команда пересоздания выполнена на выбранных компьютерах.')
+                    self.thread.finished.connect(
+                        lambda: self.infoLabel.setText(f'Команда пересоздания student отправлена на {comp}.')
+                    )
+
+                    self.pbar.setValue((i + 1) * 100 // len(comps))
 
     def open_sftp(self):
         comps = self.get_selected_items_with_confirm()

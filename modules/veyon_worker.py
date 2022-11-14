@@ -39,14 +39,15 @@ class VeyonSetup(QThread):
             for host in self.hosts.items_to_list():
                 mac_address = "aa:bb:cc:dd:ee:ff" if not host.mac_address else host.mac_address
                 network_objects += f"veyon-cli networkobjects add " \
-                                   f"computer \"{host.name()}\" \"{host.hostname}\" \"{mac_address}\" \"{self.kab}\"; "
+                                   f"computer \"{host.name()}\" \"{host.hostname}\" \"{mac_address}\" \"{self.kab}\""
             run_command_by_root(
                 f"apt-get update -y; "
                 f"apt-get install veyon -y; "
                 f"rm {config_path}/veyon_{user}_public_key.pem; "
-                f"rm {config_path}/veyon_{user}_config.json; "
+                # f"rm {config_path}/veyon_{user}_config.json; "
                 f"veyon-cli config clear; "
                 f"veyon-cli config set Authentication/Method 1; "
+                f"veyon-cli config set Service/Autostart true; "
                 "veyon-cli config set VncServer/Plugin {39d7a07f-94db-4912-aa1a-c4df8aee3879}; "
                 f"veyon-cli authkeys delete {user}/private; "
                 f"veyon-cli authkeys delete {user}/public; "
@@ -55,13 +56,13 @@ class VeyonSetup(QThread):
                 f"veyon-cli authkeys export {user}/public {config_path}/veyon_{user}_public_key.pem; "
                 f"veyon-cli networkobjects clear; "
                 f"veyon-cli networkobjects add location {self.kab}; "
-                f"{network_objects}"
-                f"veyon-cli config export {config_path}/veyon_{user}_config.json; "
+                f"{network_objects}; "
+                # f"veyon-cli config export {config_path}/veyon_{user}_config.json; "
                 f"veyon-cli service start"
             )
             logging.info(f'Установка вейон на комьютере учителя УСПЕШНО')
             self.progress_signal.emit(
-                "Настраиваю veyon на компьютерах учеников (должен быть доступ к root по ssh):"
+                "Настраиваю veyon на компьютерах учеников:"
             )
             logging.info(f'Установка вейон на комьютере учеников')
             copy_to_hosts = []
@@ -69,13 +70,18 @@ class VeyonSetup(QThread):
             for host in self.hosts.items_to_list():
                 copy_to_hosts.append(
                     f"scp {config_path}/veyon_{user}_public_key.pem root@{host.hostname}:/tmp/ && "
-                    f"scp {config_path}/veyon_{user}_config.json root@{host.hostname}:/tmp/ && "
+                    # f"scp {config_path}/veyon_{user}_config.json root@{host.hostname}:/tmp/ && "
                     f"ssh root@{host.hostname} 'apt-get update && "
                     f"apt-get -y install veyon && "
                     f"{setup_wol} && "
                     f"veyon-cli authkeys delete {user}/public; "
                     f"veyon-cli authkeys import {user}/public /tmp/veyon_{user}_public_key.pem && "
-                    f"veyon-cli config import /tmp/veyon_{user}_config.json && "
+                    f"veyon-cli config clear; "
+                    f"veyon-cli config set Authentication/Method 1; "
+                    f"veyon-cli config set Service/Autostart true; "
+                    f"veyon-cli config set Service/HideTrayIcon true; "
+                    "veyon-cli config set VncServer/Plugin {39d7a07f-94db-4912-aa1a-c4df8aee3879}; "
+                    # f"veyon-cli config import /tmp/veyon_{user}_config.json && "
                     f"veyon-cli service start && "
                     f"reboot'"
                 )
