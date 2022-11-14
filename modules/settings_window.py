@@ -1,9 +1,9 @@
 import logging
 import re
 
-from PyQt5.QtGui import QColor, QTextCursor, QFont, QTextCharFormat
+from PyQt5.QtGui import QColor, QTextCursor, QFont
 from PyQt5.QtWidgets import QWidget, QGridLayout, QPushButton, QPlainTextEdit, QLabel, QLineEdit, QInputDialog, \
-    QFileDialog, QMessageBox, QTableWidget, QTableWidgetItem, QTextEdit, QStyle
+    QFileDialog, QMessageBox, QTableWidget, QTableWidgetItem
 from PyQt5.QtCore import Qt
 
 from modules.command_worker import SSHCommandExec
