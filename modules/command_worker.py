@@ -16,26 +16,26 @@ class SSHCommandExec(QThread):
 
     def __init__(self, parent=None):
         QThread.__init__(self, parent)
-        self.hosts = None
+        self.hosts_list = None
         self.command = ""
 
     def run(self):
         self.run_command_on_ssh()
 
     def run_command_on_ssh(self):
-        logging.info("Выполнение команды")
+        logging.info(f"Выполнение команды {self.command} на {self.hosts_list}")
         client = SSHClient()
         client.load_system_host_keys()
-        for host in self.hosts.items_to_list():
+        for host in self.hosts_list:
             try:
-                client.connect(hostname=host.hostname, username="root")
+                client.connect(hostname=host, username="root")
                 stdin, stdout, stderr = client.exec_command(self.command)
                 # print(f"{stdout.read().decode().strip()=}")
                 result = stdout.read().decode().strip()
-                self.progress_signal.emit(f"\nРезультат выполнения на {host.hostname}:\n\n{result}")
+                self.progress_signal.emit(f"\nРезультат выполнения на {host}:\n\n{result}")
             except (AuthenticationException, SSHException, socket.gaierror):
-                self.progress_signal.emit(f'Не удалось подключиться ssh root@{host.hostname}')
+                self.progress_signal.emit(f'Не удалось подключиться ssh root@{host}')
                 logging.info(f"Не удалось подключиться по ssh@root без пароля к {host}")
             except Exception as e:
-                self.progress_signal.emit(f'{host.hostname} неизвестная ошибка.')
+                self.progress_signal.emit(f'{host} неизвестная ошибка.')
                 logging.info(f"неизвестная ошибка {host}: {e}")

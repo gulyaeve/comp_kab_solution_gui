@@ -277,7 +277,7 @@ class SettingsWindow(QWidget):
             self.textfield.setPlainText(f"НАЧАЛО ВЫПОЛНЕНИЯ КОМАНДЫ:\n{command}")
 
             self.thread = SSHCommandExec()
-            self.thread.hosts = self.hosts
+            self.thread.hosts_list = self.hosts.to_list()
             self.thread.command = command
 
             self.thread.progress_signal.connect(self.update_textfield)
