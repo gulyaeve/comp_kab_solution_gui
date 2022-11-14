@@ -194,17 +194,20 @@ class TeacherWindow(QWidget):
         comps = self.get_selected_items_with_confirm()
         if comps:
             self.pbar.setValue(0)
-            for i, comp in enumerate(comps):
-                try:
-                    self.infoLabel.setText(f'Пересоздаю student на {comp}...')
-                    run_command(f'ssh root@{comp} "echo \''
-                                f'pkill -u student; '
-                                f'userdel -rf student; '
-                                f'useradd student && '
-                                f'chpasswd <<<\"student:1\"\' | at now"')
-
-                except:
-                    self.infoLabel.setText(f'Не удалось подключиться к {comp}.')
+            student_pass, okPressed = QInputDialog.getText(
+                self, "Определите пароль", "Пароль для student:", QLineEdit.Normal, ""
+            )
+            if okPressed and student_pass:
+                for i, comp in enumerate(comps):
+                    try:
+                        self.infoLabel.setText(f'Пересоздаю student на {comp}...')
+                        run_command(f'ssh root@{comp} "echo \''
+                                    f'pkill -u student; '
+                                    f'userdel -rf student; '
+                                    f'useradd student && '
+                                    f'chpasswd <<<\"student:{student_pass}\"\' | at now"')
+                    except:
+                        self.infoLabel.setText(f'Не удалось подключиться к {comp}.')
             self.infoLabel.setText('Команда пересоздания выполнена на выбранных компьютерах.')
 
     def open_sftp(self):
