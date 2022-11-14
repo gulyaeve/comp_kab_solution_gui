@@ -30,9 +30,10 @@ class SettingsWindow(QWidget):
         self.textfield = QPlainTextEdit()
         self.textfield.cursor = QTextCursor()
         self.textfield.setReadOnly(True)
-        self.textfield.setStyleSheet("QPlainTextEdit {background-color: black; color: green;}")
+        self.textfield.setStyleSheet("QPlainTextEdit {background-color: black; color: white;}")
         font = QFont('Courier New')
         font.setBold(True)
+        font.setPixelSize(13)
         self.textfield.setFont(font)
         grid.addWidget(self.textfield, 4, 0, 4, 1)
 
@@ -105,27 +106,25 @@ class SettingsWindow(QWidget):
             grid.addWidget(self.command_exec, 3, 0)
 
     def set_buttons_enabled(self, status: bool):
-        if status:
-            self.button_ssh.setEnabled(True)
-            self.button_share.setEnabled(True)
-            self.button_veyon.setEnabled(True)
-            self.command_exec.setEnabled(True)
-        else:
-            self.button_ssh.setEnabled(False)
-            self.button_share.setEnabled(False)
-            self.button_veyon.setEnabled(False)
-            self.command_exec.setEnabled(False)
+        self.button_ssh.setEnabled(status)
+        self.button_share.setEnabled(status)
+        self.button_veyon.setEnabled(status)
+        self.command_exec.setEnabled(status)
 
     def update_data(self):
         self.hosts_table.blockSignals(True)
+        font = QFont()
+        font.setUnderline(True)
         self.hosts_table.clear()
         self.hosts_table.setRowCount(len(self.hosts.to_list()))
         for index, host in enumerate(self.hosts.to_list()):
             item = QTableWidgetItem(host)
             if re.match(hostname_expression, host):
-                item.setBackground(QColor("green"))
-            else:
-                item.setBackground(QColor("red"))
+                item.setFont(font)
+                # item.setForeground(QColor("green"))
+                # item.setBackground(QColor("green"))
+            # else:
+            #     item.setBackground(QColor("red"))
             self.hosts_table.setItem(index, 0, item)
         self.hosts_table.blockSignals(False)
 
