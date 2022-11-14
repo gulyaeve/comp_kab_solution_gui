@@ -9,6 +9,7 @@ from PyQt5.QtWidgets import (QPushButton, QLineEdit, \
                              QListWidget, QAbstractItemView, QMenuBar, \
                              QInputDialog, QProgressBar, QLabel, QMessageBox, QWidget, QGridLayout, QListWidgetItem)
 
+from modules.command_worker import SSHCommandExec
 from modules.config import version
 from modules.help import HelpWindow
 from modules.hosts import Hosts
@@ -203,16 +204,36 @@ class TeacherWindow(QWidget):
                 for i, comp in enumerate(comps):
                     try:
                         self.infoLabel.setText(f'Пересоздаю student на {comp}...')
-                        run_command(f'ssh root@{comp} "echo \''
-                                    f'pkill -u student; '
-                                    f'userdel -rf student; '
-                                    f'useradd student && '
-                                    f'chpasswd <<<\"student:{student_pass}\"\' | at now"')
+                        command = f'ssh root@{comp} "echo \'' \
+                                  f'pkill -u student; ' \
+                                  f'userdel -rf student; ' \
+                                  f'useradd student && ' \
+                                  f'chpasswd <<<\"student:{student_pass}\"\' &&' \
+                                  f'mkdir -p \"/home/student/Рабочий стол/Сдать работы\" && ' \
+                                  f'chmod 777 \"/home/student/Рабочий стол/Сдать работы\"| at now"'
+                        self.thread = SSHCommandExec()
+                        self.thread.hosts_list = [comp]
+                        self.thread.command = command
+
+                        # self.thread.progress_signal.connect(self.update_textfield)
+                        self.thread.finished.connect(self.thread.deleteLater)
+                        self.thread.start()
+
+                        self.thread.finished.connect(
+                            lambda: self.infoLabel.setText(f'Команда пересоздания выполнена на {comp}.')
+                        )
+                        # run_command(f'ssh root@{comp} "echo \''
+                        #             f'pkill -u student; '
+                        #             f'userdel -rf student; '
+                        #             f'useradd student && '
+                        #             f'chpasswd <<<\"student:{student_pass}\"\' &&'
+                        #             f'mkdir -p \"/home/student/Рабочий стол/Сдать работы\" && '
+                        #             f'chmod 777 \"/home/student/Рабочий стол/Сдать работы\"| at now"')
                     except:
                         self.infoLabel.setText(f'Не удалось подключиться к {comp}.')
                     finally:
                         self.pbar.setValue((i + 1) * 100 // len(comps))
-            self.infoLabel.setText('Команда пересоздания выполнена на выбранных компьютерах.')
+            # self.infoLabel.setText('Команда пересоздания выполнена на выбранных компьютерах.')
 
     def open_sftp(self):
         comps = self.get_selected_items_with_confirm()

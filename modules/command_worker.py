@@ -33,6 +33,7 @@ class SSHCommandExec(QThread):
                 # print(f"{stdout.read().decode().strip()=}")
                 result = stdout.read().decode().strip()
                 self.progress_signal.emit(f"\nРезультат выполнения на {host}:\n\n{result}")
+                logging.info(f"\nРезультат выполнения на {host}:\n\n{result}")
             except (AuthenticationException, SSHException, socket.gaierror):
                 self.progress_signal.emit(f'Не удалось подключиться ssh root@{host}')
                 logging.info(f"Не удалось подключиться по ssh@root без пароля к {host}")
