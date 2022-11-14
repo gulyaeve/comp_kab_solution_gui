@@ -204,13 +204,13 @@ class TeacherWindow(QWidget):
                 for i, comp in enumerate(comps):
                     try:
                         self.infoLabel.setText(f'Пересоздаю student на {comp}...')
-                        command = f'ssh root@{comp} "echo \'' \
+                        command = f'echo \'' \
                                   f'pkill -u student; ' \
                                   f'userdel -rf student; ' \
                                   f'useradd student && ' \
-                                  f'chpasswd <<<\"student:{student_pass}\"\' &&' \
+                                  f'chpasswd <<<\"student:{student_pass}\"\' && ' \
                                   f'mkdir -p \"/home/student/Рабочий стол/Сдать работы\" && ' \
-                                  f'chmod 777 \"/home/student/Рабочий стол/Сдать работы\"| at now"'
+                                  f'chmod 777 \"/home/student/Рабочий стол/Сдать работы\"| at now'
                         self.thread = SSHCommandExec()
                         self.thread.hosts_list = [comp]
                         self.thread.command = command
