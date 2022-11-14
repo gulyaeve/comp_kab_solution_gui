@@ -188,6 +188,8 @@ class TeacherWindow(QWidget):
                                 f'userdel -rf student\' | at now"')
                 except:
                     self.infoLabel.setText(f'Не удалось подключиться к {comp}.')
+                finally:
+                    self.pbar.setValue((i + 1) * 100 // len(comps))
             self.infoLabel.setText('Команда удаления выполнена на выбранных компьютерах.')
 
     def backup_student(self):
@@ -208,6 +210,8 @@ class TeacherWindow(QWidget):
                                     f'chpasswd <<<\"student:{student_pass}\"\' | at now"')
                     except:
                         self.infoLabel.setText(f'Не удалось подключиться к {comp}.')
+                    finally:
+                        self.pbar.setValue((i + 1) * 100 // len(comps))
             self.infoLabel.setText('Команда пересоздания выполнена на выбранных компьютерах.')
 
     def open_sftp(self):
@@ -230,6 +234,8 @@ class TeacherWindow(QWidget):
                     self.infoLabel.setText(f'Открываем {comp}...')
                 except:
                     self.infoLabel.setText(f'Не удалось подключиться к {comp}.')
+                finally:
+                    self.pbar.setValue((i + 1) * 100 // len(comps))
 
     def settings(self):
         logging.info("Открыты настройки")
