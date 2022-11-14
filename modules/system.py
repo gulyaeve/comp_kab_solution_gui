@@ -73,7 +73,7 @@ def test_ssh(host) -> bool:
     ssh.load_system_host_keys()
     try:
         ssh.connect(hostname=host, port=22, timeout=1, username='root')
-        logging.info(f"Подключено по ssh@root без пароля к {host}")
+        # logging.info(f"Подключено по ssh@root без пароля к {host}")
         return True
     except Exception as e:
         logging.info(f"Не удалось подключиться по ssh@root без пароля к {host}: {e}")
