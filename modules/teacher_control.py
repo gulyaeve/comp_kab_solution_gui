@@ -252,25 +252,21 @@ class TeacherWindow(QWidget):
     def open_sftp(self):
         comps = self.get_selected_items_with_confirm()
         if comps:
-            if len(comps) != 1:
-                dlg = QMessageBox(self)
-                dlg.setWindowTitle("Ошибка")
-                dlg.setText("Выберите один компьютер из списка")
-                button = dlg.exec()
-                if button == QMessageBox.Ok:
-                    return
-
-            self.pbar.setValue(0)
+            # if len(comps) != 1:
+            #     dlg = QMessageBox(self)
+            #     dlg.setWindowTitle("Ошибка")
+            #     dlg.setText("Выберите один компьютер из списка")
+            #     button = dlg.exec()
+            #     if button == QMessageBox.Ok:
+            #         return
+            #
+            # self.pbar.setValue(0)
             for i, comp in enumerate(comps):
-                try:
-                    run_command_in_xterm(f'kde5 dolphin sftp://root@{comp}:/home')
-                    # run_command_in_xterm(f'mc cd sh://root@{comp}:/home')
-                    self.pbar.setValue((i + 1) * 100 // len(comps))
-                    self.infoLabel.setText(f'Открываем {comp}...')
-                except:
-                    self.infoLabel.setText(f'Не удалось подключиться к {comp}.')
-                finally:
-                    self.pbar.setValue((i + 1) * 100 // len(comps))
+                run_command_in_xterm(f'nohup kde5 dolphin sftp://root@{comp}:/home')
+                # run_command_in_xterm(f'mc cd sh://root@{comp}:/home')
+                self.pbar.setValue((i + 1) * 100 // len(comps))
+                self.infoLabel.setText(f'Открываем {comp}...')
+                self.pbar.setValue((i + 1) * 100 // len(comps))
 
     def settings(self):
         logging.info("Открыты настройки")
