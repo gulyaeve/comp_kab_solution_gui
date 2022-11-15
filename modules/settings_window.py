@@ -265,7 +265,8 @@ class SettingsWindow(QWidget):
                 lambda: self.set_buttons_enabled(True)
             )
             self.thread.finished.connect(
-                lambda: self.textfield.appendPlainText("\nЗАВЕРШЕНИЕ НАСТРОЙКИ VEYON")
+                lambda: self.textfield.appendPlainText("\nКОМАНДЫ ДЛЯ НАСТРОЙКИ VEYON ОТПРАВЛЕНЫ\n"
+                                                       "ДОЖДИТЕСЬ ПЕРЕЗАГРУЗКИ УСТРОЙСТВ")
             )
 
     def run_command_on_ssh(self):

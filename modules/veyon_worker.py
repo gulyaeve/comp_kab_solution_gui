@@ -5,6 +5,7 @@ import paramiko
 from PyQt5.QtCore import QThread, pyqtSignal
 from paramiko.ssh_exception import AuthenticationException
 
+from modules.command_worker import SSHCommandExec
 from modules.config import config_path
 from modules.desktop_entrys import veyon_link
 from modules.system import get_mac_address, run_command_by_root, user, run_command_in_xterm
@@ -29,22 +30,24 @@ class VeyonSetup(QThread):
         """
         ssh_hosts = self.test_ssh()
         if ssh_hosts:
+            self.progress_signal.emit("Проверка мак-адресов проводных сетевых плат")
             for host in self.hosts.hosts:
                 self.hosts.save_mac_address(
                     host,
                     get_mac_address(self.hosts.hosts[host]['hostname'])
                 )
+            self.progress_signal.emit("Мак-адреса проверены")
             logging.info(f'Установка вейон на компьютере учителя')
             network_objects = ''
             for host in self.hosts.items_to_list():
                 mac_address = "aa:bb:cc:dd:ee:ff" if not host.mac_address else host.mac_address
                 network_objects += f"veyon-cli networkobjects add " \
                                    f"computer \"{host.name()}\" \"{host.hostname}\" \"{mac_address}\" \"{self.kab}\""
+            self.progress_signal.emit("Установка veyon на компьютере учителя")
             run_command_by_root(
                 f"apt-get update -y; "
                 f"apt-get install veyon -y; "
-                f"rm {config_path}/veyon_{user}_public_key.pem; "
-                # f"rm {config_path}/veyon_{user}_config.json; "
+                f"rm {config_path}/veyon_{user}_public_key.pem -f; "
                 f"veyon-cli config clear; "
                 f"veyon-cli config set Authentication/Method 1; "
                 f"veyon-cli config set Service/Autostart true; "
@@ -57,45 +60,54 @@ class VeyonSetup(QThread):
                 f"veyon-cli networkobjects clear; "
                 f"veyon-cli networkobjects add location {self.kab}; "
                 f"{network_objects}; "
-                # f"veyon-cli config export {config_path}/veyon_{user}_config.json; "
                 f"veyon-cli service start"
             )
+            self.progress_signal.emit("Установка veyon на компьютере учителя завершена")
             logging.info(f'Установка вейон на комьютере учителя УСПЕШНО')
-            self.progress_signal.emit(
-                "Настраиваю veyon на компьютерах учеников:"
-            )
+
+            # self.progress_signal.emit("Установка veyon на компьютерах учеников")
             logging.info(f'Установка вейон на комьютере учеников')
-            copy_to_hosts = []
+            # copy_to_hosts = []
             setup_wol = 'nmcli c modify \\"Проводное соединение 1\\" ethernet.wake-on-lan magic'
-            for host in self.hosts.items_to_list():
-                copy_to_hosts.append(
-                    f"scp {config_path}/veyon_{user}_public_key.pem root@{host.hostname}:/tmp/ && "
-                    # f"scp {config_path}/veyon_{user}_config.json root@{host.hostname}:/tmp/ && "
-                    f"ssh root@{host.hostname} 'apt-get update && "
-                    f"apt-get -y install veyon && "
-                    f"{setup_wol} && "
-                    f"veyon-cli authkeys delete {user}/public; "
-                    f"veyon-cli authkeys import {user}/public /tmp/veyon_{user}_public_key.pem && "
-                    f"veyon-cli config clear; "
-                    f"veyon-cli config set Authentication/Method 1; "
-                    f"veyon-cli config set Service/Autostart true; "
-                    f"veyon-cli config set Service/HideTrayIcon true; "
-                    "veyon-cli config set VncServer/Plugin {39d7a07f-94db-4912-aa1a-c4df8aee3879}; "
-                    # f"veyon-cli config import /tmp/veyon_{user}_config.json && "
-                    f"veyon-cli service start && "
-                    f"reboot'"
-                )
+            install_on_hosts = [
+                f"apt-get update",
+                f"apt-get -y install veyon",
+                f"{setup_wol}",
+                f"veyon-cli config clear",
+                f"veyon-cli authkeys delete {user}/public",
+                f"veyon-cli authkeys import {user}/public /tmp/veyon_{user}_public_key.pem",
+                f"veyon-cli config set Authentication/Method 1",
+                f"veyon-cli config set Service/Autostart true",
+                f"veyon-cli config set Service/HideTrayIcon true",
+                "veyon-cli config set VncServer/Plugin {39d7a07f-94db-4912-aa1a-c4df8aee3879}",
+                f"veyon-cli service start",
+                f"reboot"
+            ]
+
+            self.progress_signal.emit("Создние ярлыка на рабочем столе")
+            with open(f'/home/{user}/Рабочий стол/veyon.desktop', 'w') as file_link:
+                file_link.write(veyon_link)
+                self.progress_signal.emit("Ярлык создан")
+
             run_command_in_xterm(
                 f"ssh-add"
             )
-            for command in copy_to_hosts:
-                run_command_in_xterm(command)
-            logging.info(f'Установка вейон на компьютере учеников УСПЕШНО')
 
-            self.progress_signal.emit("Создаю ярлык:")
-            with open(f'/home/{user}/Рабочий стол/veyon.desktop', 'w') as file_link:
-                file_link.write(veyon_link)
-            self.progress_signal.emit('Veyon установлен')
+            self.progress_signal.emit("Копирование ключа")
+            for host in self.hosts.items_to_list():
+                run_command_in_xterm(f"scp {config_path}/veyon_{user}_public_key.pem root@{host.hostname}:/tmp/")
+            self.progress_signal.emit("Ключ скопирован")
+
+            self.progress_signal.emit("Отправка команд на установку")
+            self.thread = SSHCommandExec()
+            self.thread.hosts_list = self.hosts.items_to_list()
+            self.thread.commands_list = install_on_hosts
+            # self.thread.progress_signal.connect(lambda: self.progress_signal.emit("Команда"))
+            self.thread.finished.connect(self.thread.deleteLater)
+            self.thread.start()
+            self.thread.finished.connect(lambda: self.progress_signal.emit("Перезагрузка устройства"))
+            # self.progress_signal.emit("Команды отправлены на компьютеры учеников, дождитесь перезагрузки устройств.")
+            logging.info(f'Установка вейон на компьютере учеников УСПЕШНО')
             logging.info('Veyon установлен')
         else:
             self.progress_signal.emit(

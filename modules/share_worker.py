@@ -7,7 +7,7 @@ from paramiko.ssh_exception import AuthenticationException
 
 from modules.config import config_path
 from modules.desktop_entrys import network_share, network_share_for_teacher
-from modules.system import run_command_by_root, user, this_host, run_command_in_xterm
+from modules.system import run_command_by_root, user, this_host, run_command_in_xterm, run_command
 
 
 class NetworkFolderSetup(QThread):
@@ -33,10 +33,16 @@ class NetworkFolderSetup(QThread):
             run_command_by_root(f'mkdir -p /home/share && chmod 755 /home/share && chown {user} /home/share')
             with open(f'{config_path}/share.desktop', 'w') as file_link:
                 file_link.write(network_share.format(teacher_host=this_host))
-            for host in self.hosts.items_to_list():
-                run_command_in_xterm(
-                    f"scp {config_path}/share.desktop root@{host.hostname}:'/home/student/Рабочий\ стол'"
-                )
+            for comp in self.hosts.items_to_list():
+                check_student = run_command(f"ssh root@{comp} file /home/student").strip()
+                if check_student.endswith('directory'):
+                    run_command_in_xterm(
+                        f"scp {config_path}/share.desktop root@{comp.hostname}:'/home/student/Рабочий\ стол'"
+                    )
+                else:
+                    self.progress_signal.emit(
+                        f"\nНастройка сетевой папки не выполнена на {comp}, отсутствует student"
+                    )
             with open(f'/home/{user}/Рабочий стол/share.desktop', 'w') as file_link_2:
                 file_link_2.write(network_share_for_teacher)
             logging.info('Сетевая папка создана')
