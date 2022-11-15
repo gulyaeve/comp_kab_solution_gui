@@ -17,16 +17,15 @@ class SSHCommandExec(QThread):
     def __init__(self, parent=None):
         QThread.__init__(self, parent)
         self.hosts_list = None
-        self.command = ""
-        self.commands_list = []
+        self.command = None
 
     def run(self):
-        if self.command:
-            self.run_command_on_ssh()
-        elif self.commands_list:
-            self.run_command_on_ssh_from_list(self.commands_list)
+        if type(self.command) is str:
+            self.run_command_on_ssh_from_str()
+        elif type(self.command) is list:
+            self.run_command_on_ssh_from_list(self.command)
 
-    def run_command_on_ssh(self):
+    def run_command_on_ssh_from_str(self):
         logging.info(f"Выполнение команды {self.command} на {self.hosts_list}")
         client = SSHClient()
         client.load_system_host_keys()
@@ -36,7 +35,8 @@ class SSHCommandExec(QThread):
                 stdin, stdout, stderr = client.exec_command(self.command)
                 # print(f"{stdout.read().decode().strip()=}")
                 result = stdout.read().decode().strip()
-                self.progress_signal.emit(f"\nРезультат выполнения на {host}:\n\n{result}")
+                self.progress_signal.emit(f"\nРезультат выполнения на {host}:\n{result}")
+                # self.progress_signal.emit(f"{result}")
                 logging.info(f"\nРезультат выполнения на {host}:\n\n{result}")
             except (AuthenticationException, SSHException, socket.gaierror):
                 self.progress_signal.emit(f'Не удалось подключиться ssh root@{host}')

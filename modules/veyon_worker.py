@@ -42,7 +42,7 @@ class VeyonSetup(QThread):
             for host in self.hosts.items_to_list():
                 mac_address = "aa:bb:cc:dd:ee:ff" if not host.mac_address else host.mac_address
                 network_objects += f"veyon-cli networkobjects add " \
-                                   f"computer \"{host.name()}\" \"{host.hostname}\" \"{mac_address}\" \"{self.kab}\""
+                                   f"computer \"{host.name()}\" \"{host.hostname}\" \"{mac_address}\" \"{self.kab}\"; "
             self.progress_signal.emit("Установка veyon на компьютере учителя")
             run_command_by_root(
                 f"apt-get update -y; "
@@ -59,7 +59,7 @@ class VeyonSetup(QThread):
                 f"veyon-cli authkeys export {user}/public {config_path}/veyon_{user}_public_key.pem; "
                 f"veyon-cli networkobjects clear; "
                 f"veyon-cli networkobjects add location {self.kab}; "
-                f"{network_objects}; "
+                f"{network_objects} "
                 f"veyon-cli service start"
             )
             self.progress_signal.emit("Установка veyon на компьютере учителя завершена")
@@ -101,7 +101,7 @@ class VeyonSetup(QThread):
             self.progress_signal.emit("Отправка команд на установку")
             self.thread = SSHCommandExec()
             self.thread.hosts_list = self.hosts.items_to_list()
-            self.thread.commands_list = install_on_hosts
+            self.thread.command = install_on_hosts
             # self.thread.progress_signal.connect(lambda: self.progress_signal.emit("Команда"))
             self.thread.finished.connect(self.thread.deleteLater)
             self.thread.start()

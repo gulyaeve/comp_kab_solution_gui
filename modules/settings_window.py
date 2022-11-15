@@ -1,7 +1,7 @@
 import logging
 import re
 
-from PyQt5.QtGui import QColor, QTextCursor, QFont
+from PyQt5.QtGui import QTextCursor, QFont
 from PyQt5.QtWidgets import QWidget, QGridLayout, QPushButton, QPlainTextEdit, QLabel, QLineEdit, QInputDialog, \
     QFileDialog, QMessageBox, QTableWidget, QTableWidgetItem
 from PyQt5.QtCore import Qt
@@ -281,13 +281,12 @@ class SettingsWindow(QWidget):
             self.thread.command = command
 
             self.thread.progress_signal.connect(self.update_textfield)
-            self.thread.finished.connect(self.thread.deleteLater)
-            self.thread.start()
-
             self.set_buttons_enabled(False)
-            self.thread.finished.connect(
-                lambda: self.set_buttons_enabled(True)
-            )
+            self.thread.start()
             self.thread.finished.connect(
                 lambda: self.textfield.appendPlainText(f"\nЗАВЕРШЕНИЕ ВЫПОЛНЕНИЯ КОМАНДЫ:\n{command}")
             )
+            self.thread.finished.connect(
+                lambda: self.set_buttons_enabled(True)
+            )
+            self.thread.finished.connect(self.thread.deleteLater)
