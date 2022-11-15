@@ -5,6 +5,7 @@ import datetime
 import logging
 
 from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import (QPushButton, QLineEdit, \
                              QListWidget, QAbstractItemView, QMenuBar, \
                              QInputDialog, QProgressBar, QLabel, QMessageBox, QWidget, QGridLayout, QListWidgetItem)
@@ -78,6 +79,10 @@ class TeacherWindow(QWidget):
 
         self.hosts_items = QListWidget()
         self.hosts_items.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        font = QFont("Courier")
+        font.setPixelSize(16)
+        font.setBold(True)
+        self.hosts_items.setFont(font)
         hosts_from_file = self.hosts.to_list()
         self.hosts_items.addItems(hosts_from_file)
         grid.addWidget(self.hosts_items, 2, 1, 5, 2)
@@ -85,7 +90,8 @@ class TeacherWindow(QWidget):
         self.move(300, 150)
         self.setWindowTitle(f'Управление компьютерным кабинетом, версия {version}')
         self.setFixedWidth(600)
-        self.setFixedHeight(300)
+        # self.setFixedHeight(300)
+        self.setMinimumHeight(300)
 
         self.show()
 
