@@ -43,12 +43,8 @@ class TeacherWindow(QWidget):
 
         grid.setMenuBar(menu_bar)
 
-        self.infoLabel = QLabel('')
-        self.infoLabel.setAlignment(Qt.AlignCenter)
-        grid.addWidget(self.infoLabel, 0, 0, 1, 3)
-
-        self.pbar = QProgressBar(self)
-        self.pbar.setGeometry(200, 10, 200, 20)
+        # self.pbar = QProgressBar(self)
+        # self.pbar.setGeometry(200, 10, 200, 20)
 
         names = [
             'Собрать работы',
@@ -86,6 +82,10 @@ class TeacherWindow(QWidget):
         hosts_from_file = self.hosts.to_list()
         self.hosts_items.addItems(hosts_from_file)
         grid.addWidget(self.hosts_items, 2, 1, 5, 2)
+
+        self.infoLabel = QLabel('')
+        self.infoLabel.setAlignment(Qt.AlignCenter)
+        grid.addWidget(self.infoLabel, 8, 0, 1, 3)
 
         self.move(300, 150)
         self.setWindowTitle(f'Управление компьютерным кабинетом, версия {version}')
@@ -154,8 +154,8 @@ class TeacherWindow(QWidget):
             date = str(datetime.datetime.now().date())
             text, okPressed = QInputDialog.getText(self, "Введите название", "Название папки:", QLineEdit.Normal, "")
             if okPressed and text:
-                self.pbar.setValue(0)
-                self.pbar.show()
+                # self.pbar.setValue(0)
+                # self.pbar.show()
                 for i, comp in enumerate(comps):
                     check_student = run_command(f"ssh root@{comp} file /home/student").strip()
                     if check_student.endswith('directory'):
@@ -167,7 +167,7 @@ class TeacherWindow(QWidget):
                         self.infoLabel.setText(f'Собираем у {comp}')
                     else:
                         self.infoLabel.setText(f'Нет student на {comp}')
-                    self.pbar.setValue((i + 1) * 100 // len(comps))
+                    # self.pbar.setValue((i + 1) * 100 // len(comps))
                 # self.infoLabel.setText('Сбор работ завершён.')
             elif okPressed and not text:
                 dlg = QMessageBox(self)
@@ -182,7 +182,7 @@ class TeacherWindow(QWidget):
     def clean_works(self):
         comps = self.get_selected_items_with_confirm()
         if comps:
-            self.pbar.setValue(0)
+            # self.pbar.setValue(0)
             for i, comp in enumerate(comps):
                 check_student = run_command(f"ssh root@{comp} file /home/student").strip()
                 if check_student.endswith('directory'):
@@ -190,13 +190,13 @@ class TeacherWindow(QWidget):
                     self.infoLabel.setText(f'Очищаем {comp}')
                 else:
                     self.infoLabel.setText(f'Нет student на {comp}')
-                self.pbar.setValue((i + 1) * 100 // len(comps))
+                # self.pbar.setValue((i + 1) * 100 // len(comps))
             self.infoLabel.setText('Очистка завершена.')
 
     def delete_student(self):
         comps = self.get_selected_items_with_confirm()
         if comps:
-            self.pbar.setValue(0)
+            # self.pbar.setValue(0)
             for i, comp in enumerate(comps):
                 check_student = run_command(f"ssh root@{comp} file /home/student").strip()
                 if check_student.endswith('directory'):
@@ -216,12 +216,12 @@ class TeacherWindow(QWidget):
                 else:
                     self.infoLabel.setText(f'Нет student на {comp}')
 
-                self.pbar.setValue((i + 1) * 100 // len(comps))
+                # self.pbar.setValue((i + 1) * 100 // len(comps))
 
     def backup_student(self):
         comps = self.get_selected_items_with_confirm()
         if comps:
-            self.pbar.setValue(0)
+            # self.pbar.setValue(0)
             student_pass, okPressed = QInputDialog.getText(
                 self, "Определите пароль", "Пароль для student:", QLineEdit.Normal, ""
             )
@@ -247,7 +247,7 @@ class TeacherWindow(QWidget):
                         lambda: self.infoLabel.setText(f'Команда пересоздания student отправлена на {comp}.')
                     )
 
-                    self.pbar.setValue((i + 1) * 100 // len(comps))
+                    # self.pbar.setValue((i + 1) * 100 // len(comps))
 
     def open_sftp(self):
         comps = self.get_selected_items_with_confirm()
@@ -264,9 +264,9 @@ class TeacherWindow(QWidget):
             for i, comp in enumerate(comps):
                 run_command_in_xterm(f'nohup kde5 dolphin sftp://root@{comp}:/home')
                 # run_command_in_xterm(f'mc cd sh://root@{comp}:/home')
-                self.pbar.setValue((i + 1) * 100 // len(comps))
+                # self.pbar.setValue((i + 1) * 100 // len(comps))
                 self.infoLabel.setText(f'Открываем {comp}...')
-                self.pbar.setValue((i + 1) * 100 // len(comps))
+                # self.pbar.setValue((i + 1) * 100 // len(comps))
 
     def settings(self):
         logging.info("Открыты настройки")
