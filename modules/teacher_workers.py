@@ -207,7 +207,8 @@ class OpenSFTP(QThread):
         )
         for host in self.hosts_list:
             if test_ssh(host):
-                run_command_in_xterm(f'nohup kde5 dolphin sftp://root@{host}:/home')
+                run_command_in_xterm(f'nohup dolphin sftp://root@{host}:/home')
+                # run_command(f'nohup kde5 dolphin sftp://root@{host}:/home')
                 # run_command_in_xterm(f'mc cd sh://root@{comp}:/home')
                 self.progress_signal.emit(f'{host}: открыт проводник')
                 logging.info(f'{host} открыт sftp')
