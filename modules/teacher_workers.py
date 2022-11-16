@@ -4,7 +4,7 @@ from PyQt5.QtCore import QThread, pyqtSignal
 
 from modules.system import test_ssh, run_command, user, run_command_in_xterm
 
-works_folder = 'install -d -m 0755 -o student -g student \"/home/student/Рабочий стол/Сдать работы\"'
+works_folder = 'install -d -m 0755 -o student -g student \\"/home/student/Рабочий стол/Сдать работы\\"'
 
 
 class GetWorks(QThread):
@@ -92,14 +92,14 @@ class RecreateStudent(QThread):
                           f'sleep 2; ' \
                           f'userdel -rf student; ' \
                           f'useradd student && ' \
-                          f'chpasswd <<<\"student:{self.student_pass}\" && ' \
+                          f'chpasswd <<<\'student:{self.student_pass}\' && ' \
                           f'{works_folder}\'| at now'
                 if check_student.endswith('directory'):
-                    run_command(f'ssh root@{host} \'{command}\'')
+                    run_command(f'ssh root@{host} \"{command}\"')
                     self.progress_signal.emit(f'{host} student удален и создан заново')
                     logging.info(f'{host} student удален и создан заново')
                 else:
-                    run_command(f'ssh root@{host} \'{command}\'')
+                    run_command(f'ssh root@{host} \"{command}\"')
                     self.progress_signal.emit(f'{host} student создан')
                     logging.info(f'{host} student создан')
             else:
@@ -125,7 +125,7 @@ class DeleteStudent(QThread):
                 check_student = run_command(f"ssh root@{host} file /home/student").strip()
                 if check_student.endswith('directory'):
                     command = f'echo \'pkill -u student; sleep 2; userdel -rf student\' | at now'
-                    run_command(f'ssh root@{host} \'{command}\'')
+                    run_command(f'ssh root@{host} \"{command}\"')
                     self.progress_signal.emit(f'{host} student удален')
                     logging.info(f'{host} student удален')
                 else:
