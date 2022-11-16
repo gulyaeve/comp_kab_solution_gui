@@ -1,23 +1,20 @@
-#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 import datetime
 import logging
 
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QFont
-from PyQt5.QtWidgets import (QPushButton, QLineEdit, \
-                             QListWidget, QAbstractItemView, QMenuBar, \
-                             QInputDialog, QProgressBar, QLabel, QMessageBox, QWidget, QGridLayout, QListWidgetItem)
+from PyQt5.QtGui import QFont, QTextCursor
+from PyQt5.QtWidgets import (QPushButton, QLineEdit,
+                             QListWidget, QAbstractItemView, QMenuBar,
+                             QInputDialog, QMessageBox, QWidget, QGridLayout, QListWidgetItem,
+                             QPlainTextEdit)
 
-from modules.command_worker import SSHCommandExec
 from modules.config import version
 from modules.help import HelpWindow
 from modules.hosts import Hosts
 from modules.ping_ssh_worker import PingSSH
-from modules.system import run_command, user, run_command_in_xterm
 from modules.settings_window import SettingsWindow
-
+from modules.teacher_workers import GetWorks, CleanWorks, RecreateStudent, DeleteStudent, OpenSFTP
 
 works_folder = 'install -d -m 0755 -o student -g student \"/home/student/Рабочий стол/Сдать работы\"'
 
@@ -42,9 +39,6 @@ class TeacherWindow(QWidget):
         self.setLayout(grid)
 
         grid.setMenuBar(menu_bar)
-
-        # self.pbar = QProgressBar(self)
-        # self.pbar.setGeometry(200, 10, 200, 20)
 
         names = [
             'Собрать работы',
@@ -83,9 +77,15 @@ class TeacherWindow(QWidget):
         self.hosts_items.addItems(hosts_from_file)
         grid.addWidget(self.hosts_items, 2, 1, 5, 2)
 
-        self.infoLabel = QLabel('')
-        self.infoLabel.setAlignment(Qt.AlignCenter)
-        grid.addWidget(self.infoLabel, 8, 0, 1, 3)
+        self.textfield = QPlainTextEdit()
+        self.textfield.cursor = QTextCursor()
+        self.textfield.setReadOnly(True)
+        self.textfield.setStyleSheet("QPlainTextEdit {background-color: black; color: white;}")
+        font = QFont('Courier New')
+        font.setBold(True)
+        font.setPixelSize(13)
+        self.textfield.setFont(font)
+        grid.addWidget(self.textfield, 8, 0, 1, 3)
 
         self.move(300, 150)
         self.setWindowTitle(f'Управление компьютерным кабинетом, версия {version}')
@@ -148,27 +148,28 @@ class TeacherWindow(QWidget):
     def select_none(self):
         self.hosts_items.clearSelection()
 
+    def update_textfield(self, message):
+        self.textfield.appendPlainText(message)
+
     def get_works(self):
+        self.textfield.clear()
         comps = self.get_selected_items_with_confirm()
         if comps:
             date = str(datetime.datetime.now().date())
             text, okPressed = QInputDialog.getText(self, "Введите название", "Название папки:", QLineEdit.Normal, "")
             if okPressed and text:
-                # self.pbar.setValue(0)
-                # self.pbar.show()
-                for i, comp in enumerate(comps):
-                    check_student = run_command(f"ssh root@{comp} file /home/student").strip()
-                    if check_student.endswith('directory'):
-                        run_command(f'mkdir -p "/home/{user}/Рабочий стол/Работы/"' + date + '/' + text + '/' + comp)
+                self.thread = GetWorks()
+                self.thread.hosts_list = comps
+                self.thread.date = date
+                self.thread.text = text
 
-                        run_command(f'ssh root@{comp} \'{works_folder}\' && \
-                                    scp -r root@{comp}:\'/home/student/Рабочий\ стол/Сдать\ работы/*\' \
-                                    \"/home/{user}/Рабочий стол/Работы/\"{date}/{text}/{comp}')
-                        self.infoLabel.setText(f'Собираем у {comp}')
-                    else:
-                        self.infoLabel.setText(f'Нет student на {comp}')
-                    # self.pbar.setValue((i + 1) * 100 // len(comps))
-                # self.infoLabel.setText('Сбор работ завершён.')
+                self.thread.start_signal.connect(self.update_textfield)
+                self.thread.progress_signal.connect(self.update_textfield)
+                self.thread.finish_signal.connect(self.update_textfield)
+                self.thread.finished.connect(self.thread.deleteLater)
+
+                self.thread.start()
+
             elif okPressed and not text:
                 dlg = QMessageBox(self)
                 dlg.setWindowTitle("Ошибка")
@@ -180,93 +181,74 @@ class TeacherWindow(QWidget):
                 return
 
     def clean_works(self):
+        self.textfield.clear()
         comps = self.get_selected_items_with_confirm()
         if comps:
-            # self.pbar.setValue(0)
-            for i, comp in enumerate(comps):
-                check_student = run_command(f"ssh root@{comp} file /home/student").strip()
-                if check_student.endswith('directory'):
-                    run_command(f'ssh root@{comp} \'rm -rf /home/student/Рабочий\ стол/Сдать\ работы/*\'')
-                    self.infoLabel.setText(f'Очищаем {comp}')
-                else:
-                    self.infoLabel.setText(f'Нет student на {comp}')
-                # self.pbar.setValue((i + 1) * 100 // len(comps))
-            self.infoLabel.setText('Очистка завершена.')
+            self.thread = CleanWorks()
+            self.thread.hosts_list = comps
 
-    def delete_student(self):
-        comps = self.get_selected_items_with_confirm()
-        if comps:
-            # self.pbar.setValue(0)
-            for i, comp in enumerate(comps):
-                check_student = run_command(f"ssh root@{comp} file /home/student").strip()
-                if check_student.endswith('directory'):
-                    self.infoLabel.setText(f'Удаляю student на {comp}...')
-                    command = f'echo \'pkill -u student; sleep 2; userdel -rf student\' | at now'
-                    self.thread = SSHCommandExec()
-                    self.thread.hosts_list = [comp]
-                    self.thread.command = command
+            self.thread.start_signal.connect(self.update_textfield)
+            self.thread.progress_signal.connect(self.update_textfield)
+            self.thread.finish_signal.connect(self.update_textfield)
+            self.thread.finished.connect(self.thread.deleteLater)
 
-                    # self.thread.progress_signal.connect(self.update_textfield)
-                    self.thread.finished.connect(self.thread.deleteLater)
-                    self.thread.start()
-
-                    self.thread.finished.connect(
-                        lambda: self.infoLabel.setText(f'Команда удаления student отправлена на {comp}.')
-                    )
-                else:
-                    self.infoLabel.setText(f'Нет student на {comp}')
-
-                # self.pbar.setValue((i + 1) * 100 // len(comps))
+            self.thread.start()
 
     def backup_student(self):
+        self.textfield.clear()
         comps = self.get_selected_items_with_confirm()
         if comps:
-            # self.pbar.setValue(0)
             student_pass, okPressed = QInputDialog.getText(
-                self, "Определите пароль", "Пароль для student:", QLineEdit.Normal, ""
+                self, "Определите пароль", "Пароль для student:", QLineEdit.Password, ""
             )
             if okPressed and student_pass:
-                for i, comp in enumerate(comps):
-                    self.infoLabel.setText(f'Пересоздаю student на {comp}...')
-                    command = f'echo \'' \
-                              f'pkill -u student; ' \
-                              f'sleep 2; ' \
-                              f'userdel -rf student; ' \
-                              f'useradd student && ' \
-                              f'chpasswd <<<\"student:{student_pass}\" && ' \
-                              f'{works_folder}\'| at now'
-                    self.thread = SSHCommandExec()
-                    self.thread.hosts_list = [comp]
-                    self.thread.command = command
+                self.thread = RecreateStudent()
+                self.thread.hosts_list = comps
+                self.thread.student_pass = student_pass
 
-                    # self.thread.progress_signal.connect(self.update_textfield)
-                    self.thread.finished.connect(self.thread.deleteLater)
-                    self.thread.start()
+                self.thread.start_signal.connect(self.update_textfield)
+                self.thread.progress_signal.connect(self.update_textfield)
+                self.thread.finish_signal.connect(self.update_textfield)
+                self.thread.finished.connect(self.thread.deleteLater)
 
-                    self.thread.finished.connect(
-                        lambda: self.infoLabel.setText(f'Команда пересоздания student отправлена на {comp}.')
-                    )
+                self.thread.start()
+            elif okPressed and not student_pass:
+                dlg = QMessageBox(self)
+                dlg.setWindowTitle("Ошибка")
+                dlg.setText("Необходимо ввести пароль для учётной записи student")
+                button = dlg.exec()
+                if button == QMessageBox.Ok:
+                    return
+            else:
+                return
 
-                    # self.pbar.setValue((i + 1) * 100 // len(comps))
-
-    def open_sftp(self):
+    def delete_student(self):
+        self.textfield.clear()
         comps = self.get_selected_items_with_confirm()
         if comps:
-            # if len(comps) != 1:
-            #     dlg = QMessageBox(self)
-            #     dlg.setWindowTitle("Ошибка")
-            #     dlg.setText("Выберите один компьютер из списка")
-            #     button = dlg.exec()
-            #     if button == QMessageBox.Ok:
-            #         return
-            #
-            # self.pbar.setValue(0)
-            for i, comp in enumerate(comps):
-                run_command_in_xterm(f'nohup kde5 dolphin sftp://root@{comp}:/home')
-                # run_command_in_xterm(f'mc cd sh://root@{comp}:/home')
-                # self.pbar.setValue((i + 1) * 100 // len(comps))
-                self.infoLabel.setText(f'Открываем {comp}...')
-                # self.pbar.setValue((i + 1) * 100 // len(comps))
+            self.thread = DeleteStudent()
+            self.thread.hosts_list = comps
+
+            self.thread.start_signal.connect(self.update_textfield)
+            self.thread.progress_signal.connect(self.update_textfield)
+            self.thread.finish_signal.connect(self.update_textfield)
+            self.thread.finished.connect(self.thread.deleteLater)
+
+            self.thread.start()
+
+    def open_sftp(self):
+        self.textfield.clear()
+        comps = self.get_selected_items_with_confirm()
+        if comps:
+            self.thread = OpenSFTP()
+            self.thread.hosts_list = comps
+
+            self.thread.start_signal.connect(self.update_textfield)
+            self.thread.progress_signal.connect(self.update_textfield)
+            self.thread.finish_signal.connect(self.update_textfield)
+            self.thread.finished.connect(self.thread.deleteLater)
+
+            self.thread.start()
 
     def settings(self):
         logging.info("Открыты настройки")

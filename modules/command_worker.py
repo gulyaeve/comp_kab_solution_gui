@@ -1,13 +1,9 @@
 import logging
 import socket
-import subprocess
 
-import paramiko
 from PyQt5.QtCore import QThread, pyqtSignal
 from paramiko.client import SSHClient
 from paramiko.ssh_exception import AuthenticationException, SSHException
-
-# from system import run_command_in_xterm_hold
 
 
 class SSHCommandExec(QThread):
