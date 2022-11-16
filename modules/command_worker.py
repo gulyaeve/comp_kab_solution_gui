@@ -36,9 +36,9 @@ class SSHCommandExec(QThread):
                 logging.info(f"\nРезультат выполнения на {host}:\n\n{result}")
             except (AuthenticationException, SSHException, socket.gaierror):
                 self.progress_signal.emit(f'Не удалось подключиться ssh root@{host}')
-                logging.info(f"Не удалось подключиться по ssh@root без пароля к {host}")
+                logging.info(f"\nНе удалось подключиться по ssh@root без пароля к {host}")
             except Exception as e:
-                self.progress_signal.emit(f'{host} неизвестная ошибка.')
+                self.progress_signal.emit(f'\n{host} неизвестная ошибка.')
                 logging.info(f"неизвестная ошибка {host}: {e}")
 
     def run_command_on_ssh_from_list(self, commands_list: list):
@@ -55,8 +55,8 @@ class SSHCommandExec(QThread):
                     self.progress_signal.emit(f"\nРезультат выполнения {command} на {host.hostname}:\n\n{result}")
                     logging.info(f"\nРезультат выполнения {command} на {host.hostname}:\n\n{result}")
             except (AuthenticationException, SSHException, socket.gaierror):
-                self.progress_signal.emit(f'Не удалось подключиться ssh root@{host}')
+                self.progress_signal.emit(f'\nНе удалось подключиться ssh root@{host}')
                 logging.info(f"Не удалось подключиться по ssh@root без пароля к {host}")
             except Exception as e:
-                self.progress_signal.emit(f'{host} неизвестная ошибка.')
+                self.progress_signal.emit(f'\n{host} неизвестная ошибка.')
                 logging.info(f"неизвестная ошибка {host}: {e}")
