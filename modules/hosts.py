@@ -1,8 +1,9 @@
 import logging
+import re
 from dataclasses import dataclass
 from json import loads, dumps
 
-from modules.config import hosts_file_path
+from modules.config import hosts_file_path, ip_expression
 from modules.system import test_ping, test_ssh, get_mac_address
 
 
@@ -51,6 +52,8 @@ class Hosts:
         hostname = hostname.replace(' ', '').strip()
         if hostname.endswith('.local'):
             host = Host(hostname=hostname, mac_address=mac_address)
+        elif re.match(ip_expression, hostname):
+            host = Host(hostname=hostname, mac_address=mac_address)
         else:
             host = Host(hostname=f"{hostname}.local", mac_address=mac_address)
         if key.endswith('.local'):
@@ -62,6 +65,8 @@ class Hosts:
     def __add__(self, hostname: str, mac_address: str = ''):
         hostname = hostname.replace(' ', '').strip()
         if hostname.endswith('.local'):
+            host = Host(hostname=hostname, mac_address=mac_address)
+        elif re.match(ip_expression, hostname):
             host = Host(hostname=hostname, mac_address=mac_address)
         else:
             host = Host(hostname=f"{hostname}.local", mac_address=mac_address)

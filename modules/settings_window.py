@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import QWidget, QGridLayout, QPushButton, QPlainTextEdit, Q
 from PyQt5.QtCore import Qt
 
 from modules.command_worker import SSHCommandExec
-from modules.config import hostname_expression, version
+from modules.config import hostname_expression, version, ip_expression
 from modules.hosts import Hosts
 from modules.share_worker import NetworkFolderSetup
 from modules.system import exit_app, user
@@ -115,12 +115,16 @@ class SettingsWindow(QWidget):
         self.hosts_table.blockSignals(True)
         font = QFont()
         font.setUnderline(True)
+        font_ip = QFont()
+        font_ip.setItalic(True)
         self.hosts_table.clear()
         self.hosts_table.setRowCount(len(self.hosts.to_list()))
         for index, host in enumerate(self.hosts.to_list()):
             item = QTableWidgetItem(host)
             if re.match(hostname_expression, host):
                 item.setFont(font)
+            if re.match(ip_expression, host):
+                item.setFont(font_ip)
                 # item.setForeground(QColor("green"))
                 # item.setBackground(QColor("green"))
             # else:
