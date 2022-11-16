@@ -219,7 +219,7 @@ class OpenSFTP(QThread):
                 self.progress_signal.emit(f'{host}: не в сети или не настроен ssh')
                 logging.info(f'{host} не в сети или не настроен ssh')
         command = " ".join(sftp_adresses)
-        run_command(command)
+        run_command_in_xterm(command)
         if success_count == 0:
             self.finish_signal.emit(f"Открытие директорий не выполнено.")
         else:
