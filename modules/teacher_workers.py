@@ -19,7 +19,11 @@ class GetWorks(QThread):
         self.text = None
 
     def run(self):
-        self.start_signal.emit("Сбор работ начинается")
+        hosts_count = len(self.hosts_list)
+        success_count = 0
+        self.start_signal.emit(
+            f"Выбрано компьютеров: {hosts_count}\nСбор работ начинается"
+        )
         for host in self.hosts_list:
             if test_ssh(host):
                 check_student = run_command(f"ssh root@{host} file /home/student").strip()
@@ -36,13 +40,19 @@ class GetWorks(QThread):
 
                     self.progress_signal.emit(f'{host} работы сохранены успешно')
                     logging.info(f'{host} работы сохранены успешно')
+                    success_count += 1
                 else:
                     self.progress_signal.emit(f'{host} отсутствует student')
                     logging.info(f'{host} отсутствует student')
             else:
                 self.progress_signal.emit(f'{host} не в сети или не настроен ssh')
                 logging.info(f'{host} не в сети или не настроен ssh')
-        self.finish_signal.emit("Сбор работ завершился")
+        if success_count == 0:
+            self.finish_signal.emit(f"Сбор работ не выполнен.")
+        else:
+            self.finish_signal.emit(
+                f"Сбор работ завершился успешно на {success_count}/{hosts_count} компьютерах."
+            )
 
 
 class CleanWorks(QThread):
@@ -55,7 +65,11 @@ class CleanWorks(QThread):
         self.hosts_list = None
 
     def run(self):
-        self.start_signal.emit("Очистка директорий для сбора работ начинается")
+        hosts_count = len(self.hosts_list)
+        success_count = 0
+        self.start_signal.emit(
+            f"Выбрано компьютеров: {hosts_count}\nОчистка директорий для сбора работ начинается"
+        )
         for host in self.hosts_list:
             if test_ssh(host):
                 check_student = run_command(f"ssh root@{host} file /home/student").strip()
@@ -63,14 +77,19 @@ class CleanWorks(QThread):
                     run_command(f'ssh root@{host} \'rm -rf /home/student/Рабочий\ стол/Сдать\ работы/*\'')
                     self.progress_signal.emit(f'{host} очистка завершена')
                     logging.info(f'{host} очистка завершена')
+                    success_count += 1
                 else:
                     self.progress_signal.emit(f'{host} отсутствует student')
                     logging.info(f'{host} отсутствует student')
             else:
                 self.progress_signal.emit(f'{host} не в сети или не настроен ssh')
                 logging.info(f'{host} не в сети или не настроен ssh')
-        self.finish_signal.emit("Очистка директорий для сбора работ завершилась")
-
+        if success_count == 0:
+            self.finish_signal.emit(f"Очистка директорий для сбора работ не выполнена.")
+        else:
+            self.finish_signal.emit(
+                f"Очистка директорий для сбора работ завершилась успешно на {success_count}/{hosts_count} компьютерах."
+            )
 
 class RecreateStudent(QThread):
     start_signal = pyqtSignal(str)
@@ -83,7 +102,11 @@ class RecreateStudent(QThread):
         self.student_pass = None
 
     def run(self):
-        self.start_signal.emit("Пересоздание student начинается")
+        hosts_count = len(self.hosts_list)
+        success_count = 0
+        self.start_signal.emit(
+            f"Выбрано компьютеров: {hosts_count}\n Пересоздание student начинается"
+        )
         for host in self.hosts_list:
             if test_ssh(host):
                 check_student = run_command(f"ssh root@{host} file /home/student").strip()
@@ -98,14 +121,21 @@ class RecreateStudent(QThread):
                     run_command(f'ssh root@{host} \"{command}\"')
                     self.progress_signal.emit(f'{host} student удален и создан заново')
                     logging.info(f'{host} student удален и создан заново')
+                    success_count += 1
                 else:
                     run_command(f'ssh root@{host} \"{command}\"')
                     self.progress_signal.emit(f'{host} student создан')
                     logging.info(f'{host} student создан')
+                    success_count += 1
             else:
                 self.progress_signal.emit(f'{host} не в сети или не настроен ssh')
                 logging.info(f'{host} не в сети или не настроен ssh')
-        self.finish_signal.emit("Пересоздание student завершено")
+        if success_count == 0:
+            self.finish_signal.emit(f"Пересоздание student не выполнено.")
+        else:
+            self.finish_signal.emit(
+                f"Пересоздание student завершилось успешно на {success_count}/{hosts_count} компьютерах."
+            )
 
 
 class DeleteStudent(QThread):
@@ -119,7 +149,11 @@ class DeleteStudent(QThread):
         self.student_pass = None
 
     def run(self):
-        self.start_signal.emit("Удаление student начинается")
+        hosts_count = len(self.hosts_list)
+        success_count = 0
+        self.start_signal.emit(
+            f"Выбрано компьютеров: {hosts_count}\nУдаление student начинается"
+        )
         for host in self.hosts_list:
             if test_ssh(host):
                 check_student = run_command(f"ssh root@{host} file /home/student").strip()
@@ -128,13 +162,19 @@ class DeleteStudent(QThread):
                     run_command(f'ssh root@{host} \"{command}\"')
                     self.progress_signal.emit(f'{host} student удален')
                     logging.info(f'{host} student удален')
+                    success_count += 1
                 else:
                     self.progress_signal.emit(f'{host} отсутствует student')
                     logging.info(f'{host} отсутствует student')
             else:
                 self.progress_signal.emit(f'{host} не в сети или не настроен ssh')
                 logging.info(f'{host} не в сети или не настроен ssh')
-        self.finish_signal.emit("Удаление student завершено")
+        if success_count == 0:
+            self.finish_signal.emit(f"Удаление student не выполнено.")
+        else:
+            self.finish_signal.emit(
+                f"Удаление student завершилось успешно на {success_count}/{hosts_count} компьютерах."
+            )
 
 
 class OpenSFTP(QThread):
@@ -147,14 +187,24 @@ class OpenSFTP(QThread):
         self.hosts_list = None
 
     def run(self):
-        self.start_signal.emit("Открываем директории")
+        hosts_count = len(self.hosts_list)
+        success_count = 0
+        self.start_signal.emit(
+            f"Выбрано компьютеров: {hosts_count}\nДиректории открываются"
+        )
         for host in self.hosts_list:
             if test_ssh(host):
                 run_command_in_xterm(f'nohup kde5 dolphin sftp://root@{host}:/home')
                 # run_command_in_xterm(f'mc cd sh://root@{comp}:/home')
                 self.progress_signal.emit(f'{host} открыт sftp')
                 logging.info(f'{host} открыт sftp')
+                success_count += 1
             else:
                 self.progress_signal.emit(f'{host} не в сети или не настроен ssh')
                 logging.info(f'{host} не в сети или не настроен ssh')
-        self.finish_signal.emit("Директории открыты")
+        if success_count == 0:
+            self.finish_signal.emit(f"Открытие директорий не выполнено.")
+        else:
+            self.finish_signal.emit(
+                f"Открытие директорий завершилось успешно на {success_count}/{hosts_count} компьютерах."
+            )
