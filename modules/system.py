@@ -21,7 +21,7 @@ def run_command(command: str) -> str:
     :return: результат работы команды
     """
     print(command)
-    logging.info(f"[{command}]>")
+    # logging.info(f"[{command}]>")
     ret = subprocess.run(command, capture_output=True, shell=True)
     print(ret.stdout.decode())
     logging.info(f"[{command}]>{ret.stdout.decode()}")
