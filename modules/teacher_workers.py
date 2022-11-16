@@ -205,10 +205,10 @@ class OpenSFTP(QThread):
         self.start_signal.emit(
             f"Выбрано компьютеров: {hosts_count}\nДиректории открываются\n"
         )
-        sftp_adresses = ""
+        sftp_adresses = []
         for host in self.hosts_list:
             if test_ssh(host):
-                sftp_adresses += f"sftp://root@{host}:/home "
+                sftp_adresses.append(f"sftp://root@{host}:/home")
                 # run_command_in_xterm(f'nohup dolphin sftp://root@{host}:/home')
                 # run_command(f'nohup kde5 dolphin sftp://root@{host}:/home')
                 # run_command_in_xterm(f'mc cd sh://root@{comp}:/home')
@@ -218,7 +218,7 @@ class OpenSFTP(QThread):
             else:
                 self.progress_signal.emit(f'{host}: не в сети или не настроен ssh')
                 logging.info(f'{host} не в сети или не настроен ssh')
-        run_command("dolphin " + sftp_adresses)
+        run_command("dolphin " + " ".join(sftp_adresses))
         if success_count == 0:
             self.finish_signal.emit(f"Открытие директорий не выполнено.")
         else:
