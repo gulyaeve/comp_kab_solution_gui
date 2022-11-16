@@ -208,7 +208,7 @@ class OpenSFTP(QThread):
         sftp_adresses = ["dolphin"]
         for host in self.hosts_list:
             if test_ssh(host):
-                sftp_adresses.append(f"sftp://root@{host}:/home/")
+                sftp_adresses.append(f"'sftp://root@{host}:/home/'")
                 # run_command_in_xterm(f'nohup dolphin sftp://root@{host}:/home')
                 # run_command(f'nohup kde5 dolphin sftp://root@{host}:/home')
                 # run_command_in_xterm(f'mc cd sh://root@{comp}:/home')
