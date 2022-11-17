@@ -48,7 +48,7 @@ class GetWorks(QThread):
                 self.progress_signal.emit(f'{host}: не в сети или не настроен ssh')
                 logging.info(f'{host} не в сети или не настроен ssh')
         if success_count == 0:
-            self.finish_signal.emit(f"Сбор работ не выполнен.")
+            self.finish_signal.emit(f"\nСбор работ не выполнен.")
         else:
             self.finish_signal.emit(
                 f"\nСбор работ завершился.\n"
@@ -88,7 +88,7 @@ class CleanWorks(QThread):
                 self.progress_signal.emit(f'{host}: не в сети или не настроен ssh')
                 logging.info(f'{host} не в сети или не настроен ssh')
         if success_count == 0:
-            self.finish_signal.emit(f"Очистка директорий для сбора работ не выполнена.")
+            self.finish_signal.emit(f"\nОчистка директорий для сбора работ не выполнена.")
         else:
             self.finish_signal.emit(
                 f"\nОчистка директорий для сбора работ завершилась.\n"
@@ -138,7 +138,7 @@ class RecreateStudent(QThread):
                 self.progress_signal.emit(f'{host}: не в сети или не настроен ssh')
                 logging.info(f'{host} не в сети или не настроен ssh')
         if success_count == 0:
-            self.finish_signal.emit(f"Пересоздание student не выполнено.")
+            self.finish_signal.emit(f"\nПересоздание student не выполнено.")
         else:
             self.finish_signal.emit(
                 f"\nПересоздание student завершилось.\n"
@@ -180,7 +180,7 @@ class DeleteStudent(QThread):
                 self.progress_signal.emit(f'{host}: не в сети или не настроен ssh')
                 logging.info(f'{host} не в сети или не настроен ssh')
         if success_count == 0:
-            self.finish_signal.emit(f"Удаление student не выполнено.")
+            self.finish_signal.emit(f"\nУдаление student не выполнено.")
         else:
             self.finish_signal.emit(
                 f"\nУдаление student завершилось.\n"
@@ -219,10 +219,10 @@ class OpenSFTP(QThread):
                 self.progress_signal.emit(f'{host}: не в сети или не настроен ssh')
                 logging.info(f'{host} не в сети или не настроен ssh')
         command = " ".join(sftp_adresses)
-        run_command_in_xterm(command)
         if success_count == 0:
-            self.finish_signal.emit(f"Открытие директорий не выполнено.")
+            self.finish_signal.emit(f"\nОткрытие директорий не выполнено.")
         else:
+            run_command_in_xterm(command)
             self.finish_signal.emit(
                 f"\nОткрытие директорий завершилось.\n"
                 f"Было выбрано: {hosts_count}\n"
