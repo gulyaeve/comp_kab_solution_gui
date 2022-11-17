@@ -135,6 +135,7 @@ class TeacherWindow(QWidget):
 
         current_selected_items = self.get_selected_items()
         self.hosts_items.clear()
+
         for host in hosts_list:
             self.hosts_items.addItem(host)
             if host.text() in current_selected_items:
