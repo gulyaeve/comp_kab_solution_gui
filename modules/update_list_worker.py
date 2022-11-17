@@ -8,7 +8,7 @@ from modules.hosts import Hosts
 from modules.system import test_ssh
 
 
-class PingSSH(QThread):
+class UpdateList(QThread):
     progress_signal = pyqtSignal(list)
     finish_signal = pyqtSignal()
 
@@ -22,10 +22,10 @@ class PingSSH(QThread):
             for host in hosts.to_list():
                 item = QListWidgetItem()
                 item.setText(host)
-                if test_ssh(host):
-                    item.setBackground(QColor("green"))
-                else:
-                    item.setBackground(QColor("red"))
+                # if test_ssh(host):
+                #     item.setBackground(QColor("green"))
+                # else:
+                #     item.setBackground(QColor("red"))
                 result.append(item)
             self.progress_signal.emit(result)
             time.sleep(1)

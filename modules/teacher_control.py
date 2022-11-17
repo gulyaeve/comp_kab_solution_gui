@@ -12,7 +12,7 @@ from PyQt5.QtWidgets import (QPushButton, QLineEdit,
 from modules.config import version
 from modules.help import HelpWindow
 from modules.hosts import Hosts
-from modules.ping_ssh_worker import PingSSH
+from modules.update_list_worker import UpdateList
 from modules.settings_window import SettingsWindow
 from modules.teacher_workers import GetWorks, CleanWorks, RecreateStudent, DeleteStudent, OpenSFTP
 
@@ -98,7 +98,7 @@ class TeacherWindow(QWidget):
         if not hosts_from_file:
             self.help()
 
-        self.thread = PingSSH()
+        self.thread = UpdateList()
         self.thread.finished.connect(self.thread.deleteLater)
         self.thread.progress_signal.connect(self.update_hosts_list)
         self.thread.start()
