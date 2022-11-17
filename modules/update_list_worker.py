@@ -1,16 +1,13 @@
 import time
 
 from PyQt5.QtCore import QThread, pyqtSignal
-from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import QListWidgetItem
 
 from modules.hosts import Hosts
-from modules.system import test_ssh
 
 
 class UpdateList(QThread):
     progress_signal = pyqtSignal(list)
-    finish_signal = pyqtSignal()
 
     def __init__(self, parent=None):
         QThread.__init__(self, parent)
