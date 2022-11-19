@@ -6,13 +6,10 @@ from PyQt5.QtWidgets import QWidget, QGridLayout, QPushButton, QPlainTextEdit, Q
     QFileDialog, QMessageBox, QTableWidget, QTableWidgetItem
 from PyQt5.QtCore import Qt
 
-from modules.command_worker import SSHCommandExec
 from modules.config import hostname_expression, version, ip_expression
 from modules.hosts import Hosts
-from modules.share_worker import NetworkFolderSetup
 from modules.system import exit_app, user
-from modules.ssh_worker import SSHRootSetup
-from modules.veyon_worker import VeyonSetup
+from modules.settings_workers import SSHRootSetup, NetworkFolderSetup, VeyonSetup, SSHCommandExec
 
 
 class SettingsWindow(QWidget):
@@ -213,8 +210,6 @@ class SettingsWindow(QWidget):
             f"Введите пароль учётной записи суперпользователя root (для устройств учеников): ",
             QLineEdit.Password, "")
         if okPressed:
-            self.textfield.setPlainText("НАЧАЛО НАСТРОЙКИ SSH")
-
             self.thread = SSHRootSetup()
             self.thread.hosts = self.hosts
             self.thread.root_pass = root_pass
@@ -232,8 +227,7 @@ class SettingsWindow(QWidget):
             )
 
     def network_folders(self):
-        self.textfield.setPlainText("НАЧАЛО НАСТРОЙКИ СЕТЕВЫХ ПАПОК")
-
+        # TODO: Create student
         self.thread = NetworkFolderSetup()
         self.thread.hosts = self.hosts
 
@@ -254,8 +248,6 @@ class SettingsWindow(QWidget):
                                               f"Введите номер этого кабинета:",
                                               QLineEdit.Normal, "")
         if okPressed:
-            self.textfield.setPlainText("НАЧАЛО НАСТРОЙКИ VEYON")
-
             self.thread = VeyonSetup()
             self.thread.hosts = self.hosts
             self.thread.kab = kab
@@ -278,8 +270,6 @@ class SettingsWindow(QWidget):
                                                 'Введите команду для выполнения на компьютерах учеников',
                                                 QLineEdit.Normal)
         if pressed:
-            self.textfield.setPlainText(f"НАЧАЛО ВЫПОЛНЕНИЯ КОМАНДЫ:\n{command}")
-
             self.thread = SSHCommandExec()
             self.thread.hosts_list = self.hosts.to_list()
             self.thread.command = command

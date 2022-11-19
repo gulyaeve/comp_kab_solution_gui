@@ -12,9 +12,8 @@ from PyQt5.QtWidgets import (QPushButton, QLineEdit,
 from modules.config import version
 from modules.help import HelpWindow
 from modules.hosts import Hosts
-from modules.update_list_worker import UpdateList
 from modules.settings_window import SettingsWindow
-from modules.teacher_workers import GetWorks, CleanWorks, RecreateStudent, DeleteStudent, OpenSFTP
+from modules.teacher_workers import GetWorks, CleanWorks, RecreateStudent, DeleteStudent, OpenSFTP, UpdateList
 
 works_folder = 'install -d -m 0755 -o student -g student \"/home/student/Рабочий стол/Сдать работы\"'
 
