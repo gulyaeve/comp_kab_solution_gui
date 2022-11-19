@@ -4,12 +4,13 @@ import re
 from PyQt5.QtGui import QTextCursor, QFont
 from PyQt5.QtWidgets import QWidget, QGridLayout, QPushButton, QPlainTextEdit, QLabel, QLineEdit, QInputDialog, \
     QFileDialog, QMessageBox, QTableWidget, QTableWidgetItem
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QThreadPool
 
 from modules.config import hostname_expression, version, ip_expression
 from modules.hosts import Hosts
 from modules.system import exit_app, user
-from modules.settings_workers import SSHRootSetup, NetworkFolderSetup, VeyonSetup, SSHCommandExec
+from modules.settings_workers import SSHRootSetup, NetworkFolderSetup, VeyonSetup, \
+    SSHCommandInThreads
 
 
 class SettingsWindow(QWidget):
@@ -283,8 +284,9 @@ class SettingsWindow(QWidget):
                 lambda: self.set_buttons_enabled(True)
             )
             self.thread.finished.connect(
-                lambda: self.textfield.appendPlainText("\nКОМАНДЫ ДЛЯ НАСТРОЙКИ VEYON ОТПРАВЛЕНЫ\n"
-                                                       "ДОЖДИТЕСЬ ПЕРЕЗАГРУЗКИ УСТРОЙСТВ")
+                lambda: self.textfield.appendPlainText(
+                    "\nКОМАНДЫ ДЛЯ НАСТРОЙКИ VEYON ОТПРАВЛЕНЫ НА КОМПЬЮТЕРЫ УЧЕНИКОВ\n"
+                    "ДОЖДИТЕСЬ ПЕРЕЗАГРУЗКИ УСТРОЙСТВ И НЕ ЗАКРЫВАЙТЕ ЭТО ОКНО!")
             )
 
     def run_command_on_ssh(self):
@@ -292,17 +294,23 @@ class SettingsWindow(QWidget):
                                                 'Введите команду для выполнения на компьютерах учеников',
                                                 QLineEdit.Normal)
         if pressed:
-            self.thread = SSHCommandExec()
-            self.thread.hosts_list = self.hosts.to_list()
-            self.thread.command = command
-
-            self.thread.progress_signal.connect(self.update_textfield)
-            self.set_buttons_enabled(False)
-            self.thread.start()
-            self.thread.finished.connect(
-                lambda: self.textfield.appendPlainText(f"\nЗАВЕРШЕНИЕ ВЫПОЛНЕНИЯ КОМАНДЫ:\n{command}")
-            )
-            self.thread.finished.connect(
-                lambda: self.set_buttons_enabled(True)
-            )
-            self.thread.finished.connect(self.thread.deleteLater)
+            self.update_textfield(f"НАЧАЛО ВЫПОЛНЕНИЯ КОМАНДЫ:\n{command}")
+            pool = QThreadPool.globalInstance()
+            for host in self.hosts.items_to_list():
+                runnable = SSHCommandInThreads(host, command)
+                runnable.progress_signal.signal.connect(self.update_textfield)
+                pool.start(runnable)
+            # self.thread = SSHCommandExec()
+            # self.thread.hosts_list = self.hosts.to_list()
+            # self.thread.command = command
+            #
+            # self.thread.progress_signal.connect(self.update_textfield)
+            # self.set_buttons_enabled(False)
+            # self.thread.start()
+            # self.thread.finished.connect(
+            #     lambda: self.textfield.appendPlainText(f"\nЗАВЕРШЕНИЕ ВЫПОЛНЕНИЯ КОМАНДЫ:\n{command}")
+            # )
+            # self.thread.finished.connect(
+            #     lambda: self.set_buttons_enabled(True)
+            # )
+            # self.thread.finished.connect(self.thread.deleteLater)
