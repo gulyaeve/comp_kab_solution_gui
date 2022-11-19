@@ -205,14 +205,53 @@ class SettingsWindow(QWidget):
         self.textfield.appendPlainText(message)
 
     def setup_ssh(self):
-        root_pass, okPressed = QInputDialog.getText(
-            self, "Введите пароль root",
-            f"Введите пароль учётной записи суперпользователя root (для устройств учеников): ",
-            QLineEdit.Password, "")
-        if okPressed:
-            self.thread = SSHRootSetup()
+        messageBox = QMessageBox.information(
+            self,
+            "Важная информация!",
+            f"Вы запустили настройку ssh для пользователей teacher и root на компьютерах, указанных в таблице.\n\n"
+            f"Во время первичной настройки будет осуществляться подключение к компьютерам "
+            f"и сохранение ключей аутентификации для пользователя teacher.\n"
+            f"Для копирования ключей пользователю root потребуется ввести пароль (предполагается что он единый "
+            f"на всех устройствах)\n\n"
+            f"При сохренении ключей будет необходимо подтвердить действие "
+            f"вводом слова Yes и вводом пароля от teacher на каждом устройстве.",
+            QMessageBox.Ok | QMessageBox.Cancel,
+        )
+        if messageBox == QMessageBox.Ok:
+            root_pass, okPressed = QInputDialog.getText(
+                self, "Введите пароль root",
+                f"Введите пароль учётной записи суперпользователя root (для устройств учеников): ",
+                QLineEdit.Password, "")
+            if okPressed:
+                self.thread = SSHRootSetup()
+                self.thread.hosts = self.hosts
+                self.thread.root_pass = root_pass
+
+                self.thread.progress_signal.connect(self.update_textfield)
+                self.thread.finished.connect(self.thread.deleteLater)
+                self.thread.start()
+
+                self.set_buttons_enabled(False)
+                self.thread.finished.connect(
+                    lambda: self.set_buttons_enabled(True)
+                )
+                self.thread.finished.connect(
+                    lambda: self.textfield.appendPlainText("\nЗАВЕРШЕНИЕ НАСТРОЙКИ SSH")
+                )
+
+    def network_folders(self):
+        messageBox = QMessageBox.information(
+            self,
+            "Важная информация!",
+            f"Вы запустили настройку сетевой папки.\n\n"
+            f"На компьютере учителя будет создана папка /home/share "
+            f"к которой будет настроен доступ по протоколу sftp.\nДля доступа к этой папке с компьютеров учеников, "
+            f"убедитесь что на данном компьютере есть учётная запись student.",
+            QMessageBox.Ok | QMessageBox.Cancel,
+        )
+        if messageBox == QMessageBox.Ok:
+            self.thread = NetworkFolderSetup()
             self.thread.hosts = self.hosts
-            self.thread.root_pass = root_pass
 
             self.thread.progress_signal.connect(self.update_textfield)
             self.thread.finished.connect(self.thread.deleteLater)
@@ -223,25 +262,8 @@ class SettingsWindow(QWidget):
                 lambda: self.set_buttons_enabled(True)
             )
             self.thread.finished.connect(
-                lambda: self.textfield.appendPlainText("\nЗАВЕРШЕНИЕ НАСТРОЙКИ SSH")
+                lambda: self.textfield.appendPlainText("\nЗАВЕРШЕНИЕ НАСТРОЙКИ СЕТЕВЫХ ПАПОК")
             )
-
-    def network_folders(self):
-        # TODO: Create student
-        self.thread = NetworkFolderSetup()
-        self.thread.hosts = self.hosts
-
-        self.thread.progress_signal.connect(self.update_textfield)
-        self.thread.finished.connect(self.thread.deleteLater)
-        self.thread.start()
-
-        self.set_buttons_enabled(False)
-        self.thread.finished.connect(
-            lambda: self.set_buttons_enabled(True)
-        )
-        self.thread.finished.connect(
-            lambda: self.textfield.appendPlainText("\nЗАВЕРШЕНИЕ НАСТРОЙКИ СЕТЕВЫХ ПАПОК")
-        )
 
     def install_veyon(self):
         kab, okPressed = QInputDialog.getText(self, "Номер кабинета",
