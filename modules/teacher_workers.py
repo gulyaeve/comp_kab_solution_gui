@@ -247,10 +247,10 @@ class OpenSFTP(QThread):
         if success_count == 0:
             self.finish_signal.emit(f"\nОткрытие директорий не выполнено.")
         else:
-            run_command_in_xterm(command)
             self.finish_signal.emit(
                 f"\nОткрытие директорий завершилось.\n"
                 f"Было выбрано: {hosts_count}\n"
                 f"Завершено успешно: {success_count}\n"
                 f"Ошибок: {hosts_count - success_count}"
             )
+            run_command_in_xterm(command)
