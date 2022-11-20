@@ -117,10 +117,6 @@ class SettingsWindow(QWidget):
                 item.setFont(font)
             if re.match(ip_expression, host):
                 item.setFont(font_ip)
-                # item.setForeground(QColor("green"))
-                # item.setBackground(QColor("green"))
-            # else:
-            #     item.setBackground(QColor("red"))
             self.hosts_table.setItem(index, 0, item)
         self.hosts_table.blockSignals(False)
 
