@@ -68,22 +68,23 @@ class TeacherWindow(QWidget):
 
         self.hosts_items = QListWidget()
         self.hosts_items.setSelectionMode(QAbstractItemView.ExtendedSelection)
-        font = QFont("Courier")
-        font.setPixelSize(16)
-        font.setBold(True)
-        self.hosts_items.setFont(font)
+        # font = QFont("Courier")
+        # font.setPixelSize(16)
+        # font.setBold(True)
+        # self.hosts_items.setFont(font)
         hosts_from_file = self.hosts.to_list()
         self.hosts_items.addItems(hosts_from_file)
+        self.hosts_items.setFixedHeight(300)
         grid.addWidget(self.hosts_items, 2, 1, 5, 2)
 
         self.textfield = QPlainTextEdit()
         self.textfield.cursor = QTextCursor()
         self.textfield.setReadOnly(True)
-        self.textfield.setStyleSheet("QPlainTextEdit {background-color: black; color: white;}")
-        font = QFont('Courier New')
-        font.setBold(True)
-        font.setPixelSize(13)
-        self.textfield.setFont(font)
+        # self.textfield.setStyleSheet("")
+        # font = QFont('Courier New')
+        # font.setBold(True)
+        # font.setPixelSize(13)
+        # self.textfield.setFont(font)
         grid.addWidget(self.textfield, 8, 0, 1, 3)
 
         self.move(300, 150)
@@ -139,6 +140,7 @@ class TeacherWindow(QWidget):
             self.hosts_items.addItem(host)
             if host.text() in current_selected_items:
                 host.setSelected(True)
+            self.hosts_items.repaint()
 
         self.hosts_items.blockSignals(False)
 
