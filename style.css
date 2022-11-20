@@ -23,3 +23,9 @@ QPushButton {
     /*background-color: #524273;*/
     /*color: #D5D0E8;*/
 }
+QTableWidget {
+    /*background: red;*/
+    /*border: 2px outset red;*/
+    /*border: 4px solid;*/
+    /*border-color: fuchsia;*/
+}
