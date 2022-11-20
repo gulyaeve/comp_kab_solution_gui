@@ -5,9 +5,9 @@ QWidget {
 }
 QPlainTextEdit {
     background-color: #282828;
-    color: white;
+    color: #e7e7e7;
     font-family: "Courier New";
-    font-weight: bold;
+    /*font-weight: bold;*/
 }
 QListWidget {
     /*color: #524273;*/
