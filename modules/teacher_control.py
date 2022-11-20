@@ -3,7 +3,7 @@
 import datetime
 import logging
 
-from PyQt5.QtGui import QFont, QTextCursor
+from PyQt5.QtGui import QTextCursor
 from PyQt5.QtWidgets import (QPushButton, QLineEdit,
                              QListWidget, QAbstractItemView, QMenuBar,
                              QInputDialog, QMessageBox, QWidget, QGridLayout, QListWidgetItem,
