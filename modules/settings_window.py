@@ -23,16 +23,10 @@ class SettingsWindow(QWidget):
         self.setLayout(grid)
         self.setWindowTitle(f'Настройка компьютерного кабинета, версия {version}')
         self.setFixedWidth(700)
-        # self.setFixedHeight(400)
 
         self.textfield = QPlainTextEdit()
         self.textfield.cursor = QTextCursor()
         self.textfield.setReadOnly(True)
-        # self.textfield.setStyleSheet("QPlainTextEdit {background-color: black; color: white;}")
-        # font = QFont('Courier New')
-        # font.setBold(True)
-        # font.setPixelSize(13)
-        # self.textfield.setFont(font)
         grid.addWidget(self.textfield, 4, 0, 4, 1)
 
         hostslabel = QLabel('Список устройств:')
@@ -103,7 +97,7 @@ class SettingsWindow(QWidget):
             self.command_exec.clicked.connect(self.run_command_on_ssh)
             grid.addWidget(self.command_exec, 3, 0)
 
-    def set_buttons_enabled(self, status: bool):
+    def set_buttons_status(self, status: bool):
         self.button_ssh.setEnabled(status)
         self.button_share.setEnabled(status)
         self.button_veyon.setEnabled(status)
@@ -232,9 +226,9 @@ class SettingsWindow(QWidget):
                 self.thread.finished.connect(self.thread.deleteLater)
                 self.thread.start()
 
-                self.set_buttons_enabled(False)
+                self.set_buttons_status(False)
                 self.thread.finished.connect(
-                    lambda: self.set_buttons_enabled(True)
+                    lambda: self.set_buttons_status(True)
                 )
                 self.thread.finished.connect(
                     lambda: self.textfield.appendPlainText("\nЗАВЕРШЕНИЕ НАСТРОЙКИ SSH")
@@ -258,9 +252,9 @@ class SettingsWindow(QWidget):
             self.thread.finished.connect(self.thread.deleteLater)
             self.thread.start()
 
-            self.set_buttons_enabled(False)
+            self.set_buttons_status(False)
             self.thread.finished.connect(
-                lambda: self.set_buttons_enabled(True)
+                lambda: self.set_buttons_status(True)
             )
             self.thread.finished.connect(
                 lambda: self.textfield.appendPlainText("\nЗАВЕРШЕНИЕ НАСТРОЙКИ СЕТЕВЫХ ПАПОК")
@@ -279,9 +273,9 @@ class SettingsWindow(QWidget):
             self.thread.finished.connect(self.thread.deleteLater)
             self.thread.start()
 
-            self.set_buttons_enabled(False)
+            self.set_buttons_status(False)
             self.thread.finished.connect(
-                lambda: self.set_buttons_enabled(True)
+                lambda: self.set_buttons_status(True)
             )
             self.thread.finished.connect(
                 lambda: self.textfield.appendPlainText(

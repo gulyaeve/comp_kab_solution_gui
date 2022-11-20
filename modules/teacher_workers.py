@@ -2,7 +2,6 @@ import logging
 import time
 
 from PyQt5.QtCore import QThread, pyqtSignal
-from PyQt5.QtWidgets import QListWidgetItem
 
 from modules.hosts import Hosts
 from modules.system import test_ssh, run_command, user, run_command_in_xterm
@@ -12,24 +11,22 @@ works_folder = 'install -d -m 0755 -o student -g student \\"/home/student/Раб
 
 class UpdateList(QThread):
     progress_signal = pyqtSignal(list)
+    hosts = None
 
     def __init__(self, parent=None):
         QThread.__init__(self, parent)
+        self.continue_run = True
 
     def run(self):
-        while True:
+        while self.continue_run:
             hosts = Hosts()
-            result = []
-            for host in hosts.to_list():
-                item = QListWidgetItem()
-                item.setText(host)
-                # if test_ssh(host):
-                #     item.setBackground(QColor("green"))
-                # else:
-                #     item.setBackground(QColor("red"))
-                result.append(item)
-            self.progress_signal.emit(result)
+            if self.hosts.to_list() != hosts.to_list():
+                self.progress_signal.emit(hosts.to_list())
+                self.hosts = Hosts()
             time.sleep(1)
+
+    def isFinished(self):
+        self.continue_run = False
 
 
 class GetWorks(QThread):

@@ -7,13 +7,16 @@ QPlainTextEdit {
     background-color: #282828;
     color: #e7e7e7;
     font-family: "Courier New";
+    font-size: 13px;
     /*font-weight: bold;*/
 }
 QListWidget {
+    min-height: 336px;
+    max-height: 336px;
     /*color: #524273;*/
-    /*font-family: "Bebas Neue Pro";*/
-    /*font-style: italic;*/
-    /*font-size: 16px;*/
+    font-family: "Courier New";
+    font-weight: bold;
+    font-size: 16px;
 }
 QPushButton {
     /*background-color: #524273;*/

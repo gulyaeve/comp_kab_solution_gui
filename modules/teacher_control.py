@@ -68,29 +68,18 @@ class TeacherWindow(QWidget):
 
         self.hosts_items = QListWidget()
         self.hosts_items.setSelectionMode(QAbstractItemView.ExtendedSelection)
-        # font = QFont("Courier")
-        # font.setPixelSize(16)
-        # font.setBold(True)
-        # self.hosts_items.setFont(font)
         hosts_from_file = self.hosts.to_list()
         self.hosts_items.addItems(hosts_from_file)
-        self.hosts_items.setFixedHeight(300)
         grid.addWidget(self.hosts_items, 2, 1, 5, 2)
 
         self.textfield = QPlainTextEdit()
         self.textfield.cursor = QTextCursor()
         self.textfield.setReadOnly(True)
-        # self.textfield.setStyleSheet("")
-        # font = QFont('Courier New')
-        # font.setBold(True)
-        # font.setPixelSize(13)
-        # self.textfield.setFont(font)
         grid.addWidget(self.textfield, 8, 0, 1, 3)
 
         self.move(300, 150)
         self.setWindowTitle(f'Управление компьютерным кабинетом, версия {version}')
         self.setFixedWidth(600)
-        # self.setFixedHeight(300)
         self.setMinimumHeight(300)
 
         self.show()
@@ -101,6 +90,7 @@ class TeacherWindow(QWidget):
         self.thread = UpdateList()
         self.thread.finished.connect(self.thread.deleteLater)
         self.thread.progress_signal.connect(self.update_hosts_list)
+        self.thread.hosts = self.hosts
         self.thread.start()
 
     # def get_all_items(self):
@@ -108,13 +98,6 @@ class TeacherWindow(QWidget):
     #     for item_index in range(self.hosts_items.count()):
     #         items.append(self.hosts_items.item(item_index))
     #     return items
-
-    def get_selected_items(self):
-        selected_items = self.hosts_items.selectedItems()
-        items = []
-        for item in selected_items:
-            items.append(item.text())
-        return items
 
     def get_selected_items_with_confirm(self):
         selected_items = self.hosts_items.selectedItems()
@@ -130,17 +113,12 @@ class TeacherWindow(QWidget):
                 return None
         return items
 
-    def update_hosts_list(self, hosts_list: list[QListWidgetItem]):
+    def update_hosts_list(self, hosts_list: list[str]):
         self.hosts_items.blockSignals(True)
 
-        current_selected_items = self.get_selected_items()
         self.hosts_items.clear()
-
-        for host in hosts_list:
-            self.hosts_items.addItem(host)
-            if host.text() in current_selected_items:
-                host.setSelected(True)
-            self.hosts_items.repaint()
+        self.hosts_items.addItems(hosts_list)
+        logging.info("Обновлен список устройств в QTListWidget")
 
         self.hosts_items.blockSignals(False)
 
