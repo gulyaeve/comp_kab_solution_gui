@@ -80,7 +80,7 @@ class TeacherWindow(QWidget):
         self.move(300, 150)
         self.setWindowTitle(f'Управление компьютерным кабинетом, версия {version}')
         self.setFixedWidth(600)
-        self.setMinimumHeight(300)
+        self.setMinimumHeight(500)
 
         self.show()
 

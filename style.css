@@ -19,6 +19,7 @@ QListWidget {
     font-size: 16px;
 }
 QPushButton {
+    /*min-height: 30px;*/
     /*background-color: #524273;*/
     /*color: #D5D0E8;*/
 }
