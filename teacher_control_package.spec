@@ -25,7 +25,7 @@ Scripts for computer auditory
 - открывать в проводнике содержимое компьютера ученика для просмотра и редактирования.
 
 %build
-pyinstaller -n "teacher_control" --onefile %{_sourcedir}/app.py --add-data %{_sourcedir}/style.css
+pyinstaller -n "teacher_control" --onefile %{_sourcedir}/app.py --add-data %{_sourcedir}/style.css:.
 
 %install
 mkdir -p %{buildroot}%{_bindir}
