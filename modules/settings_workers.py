@@ -382,7 +382,7 @@ class WorkerSignals(QObject):
 
 
 class SSHCommandInThreads(QRunnable):
-    def __init__(self, host: Host, command: str | list):
+    def __init__(self, host: Host, command):
         super().__init__()
         self.progress_signal = WorkerSignals()
         self.host = host
