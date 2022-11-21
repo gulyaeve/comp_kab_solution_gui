@@ -32,6 +32,7 @@ if __name__ == '__main__':
     logging.info(f'Приложение запущено: {this_host=} {user=}')
     app = QApplication(sys.argv)
     app.setWindowIcon(QIcon(os.path.join(basedir, 'teacher_control.svg')))
+    app.setStyleSheet(open("style.css").read())
     ex = TeacherWindow()
     logging.info('Приложение завершило работу')
     sys.exit(app.exec_())
