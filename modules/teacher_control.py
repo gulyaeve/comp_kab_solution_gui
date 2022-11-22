@@ -2,27 +2,30 @@
 
 import datetime
 import logging
+import sys
 
-from PyQt5.QtGui import QTextCursor
+from PyQt5.QtGui import QTextCursor, QCloseEvent
 from PyQt5.QtWidgets import (QPushButton, QLineEdit,
                              QListWidget, QAbstractItemView, QMenuBar,
                              QInputDialog, QMessageBox, QWidget, QGridLayout, QListWidgetItem,
-                             QPlainTextEdit)
+                             QPlainTextEdit, QApplication)
 
 from modules.config import version
 from modules.help import HelpWindow
 from modules.hosts import Hosts
 from modules.settings_window import SettingsWindow
+from modules.system import MyWindow
 from modules.teacher_workers import GetWorks, CleanWorks, RecreateStudent, DeleteStudent, OpenSFTP, UpdateList
 
 works_folder = 'install -d -m 0755 -o student -g student \"/home/student/Рабочий стол/Сдать работы\"'
 
 
-class TeacherWindow(QWidget):
-    def __init__(self):
+class TeacherWindow(MyWindow):
+    def __init__(self, app: QApplication):
         super().__init__()
         self.windows = []
         self.hosts = Hosts()
+        self.app = app
 
         menu_bar = QMenuBar()
         menu_file = menu_bar.addMenu('Меню')
@@ -241,3 +244,11 @@ class TeacherWindow(QWidget):
         new_window = HelpWindow()
         self.windows.append(new_window)
         new_window.show()
+
+    def close(self):
+        self.app.exit(0)
+
+    def closeEvent(self, event):
+        event.accept()
+        self.app.exit(0)
+

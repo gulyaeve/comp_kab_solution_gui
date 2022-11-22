@@ -6,11 +6,9 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication
 
 from modules.config import hosts_file_path, config_path, icon_file, style
-from modules.system import this_host, user, run_command, exit_app
+from modules.system import this_host, user, run_command
 from modules.teacher_control import TeacherWindow
 
-if user == 'root':
-    sys.exit(exit_app())
 
 # Создание папки с конфигом
 run_command(f'mkdir -p {config_path}')
@@ -30,9 +28,10 @@ logging.basicConfig(
 
 if __name__ == '__main__':
     logging.info(f'Приложение запущено: {this_host=} {user=}')
+    if user == 'root':
+        sys.exit(0)
     app = QApplication(sys.argv)
     app.setWindowIcon(QIcon(os.path.join(basedir, icon_file)))
     app.setStyleSheet(open(os.path.join(basedir, style), 'r').read())
-    ex = TeacherWindow()
-    logging.info('Приложение завершило работу')
+    ex = TeacherWindow(app)
     sys.exit(app.exec_())

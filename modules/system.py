@@ -3,15 +3,8 @@ import subprocess
 import sys
 
 import paramiko
+from PyQt5.QtWidgets import QWidget
 
-
-def exit_app():
-    """
-    Выход из приложения
-    """
-    logging.info("Выход из программы")
-    print('Выход из программы...')
-    sys.exit(0)
 
 
 def run_command(command: str) -> str:
@@ -84,3 +77,7 @@ def test_ssh(host) -> bool:
 # Получение имени компьютера и текущего пользователя
 this_host = run_command('hostname').strip()
 user = run_command('whoami').strip()
+
+
+class MyWindow(QWidget):
+    pass

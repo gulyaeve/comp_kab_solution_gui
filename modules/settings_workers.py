@@ -299,13 +299,12 @@ class VeyonSetup(QThread):
         self.progress_signal.emit("Ключ скопирован")
         self.progress_signal.emit("Отправка команд на установку")
 
+        command_to_hosts = f"echo \"{'; '.join(install_on_hosts)}\" | at now"
+
         pool = QThreadPool.globalInstance()
         for host in self.hosts.items_to_list():
-            runnable = SSHCommandInThreads(host, install_on_hosts)
-            # TODO: check signals?
-            # runnable.progress_signal.signal.connect(self.progress_signal.emit)
+            runnable = SSHCommandInThreads(host, command_to_hosts)
             pool.start(runnable)
-        # self.progress_signal.emit(f"")
         # self.thread = SSHCommandExec()
         # self.thread.hosts_list = self.hosts.items_to_list()
         # self.thread.command = install_on_hosts

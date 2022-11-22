@@ -8,12 +8,12 @@ from PyQt5.QtCore import Qt, QThreadPool
 
 from modules.config import hostname_expression, version, ip_expression
 from modules.hosts import Hosts
-from modules.system import exit_app, user
+from modules.system import user, MyWindow
 from modules.settings_workers import SSHRootSetup, NetworkFolderSetup, VeyonSetup, \
     SSHCommandInThreads
 
 
-class SettingsWindow(QWidget):
+class SettingsWindow(MyWindow):
     def __init__(self):
         super().__init__()
 

@@ -2,6 +2,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QWidget, QGridLayout, QLabel
 
 from modules.config import version
+from modules.system import MyWindow
 
 help_body = f"""<b>Инструменты организации работы в компьютерном классе</b>
 <br>
@@ -38,7 +39,7 @@ help_body = f"""<b>Инструменты организации работы в
 """
 
 
-class HelpWindow(QWidget):
+class HelpWindow(MyWindow):
     def __init__(self):
         super().__init__()
 
