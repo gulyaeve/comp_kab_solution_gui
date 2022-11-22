@@ -270,9 +270,9 @@ class VeyonSetup(QThread):
         logging.info(f'Установка вейон на комьютере учеников')
         setup_wol = 'nmcli c modify \\"Проводное соединение 1\\" ethernet.wake-on-lan magic'
         install_on_hosts = [
+            f"{setup_wol}",
             f"apt-get update",
             f"apt-get -y install veyon",
-            f"{setup_wol}",
             f"veyon-cli config clear",
             f"veyon-cli authkeys delete {user}/public",
             f"veyon-cli authkeys import {user}/public /tmp/veyon_{user}_public_key.pem",
@@ -289,14 +289,14 @@ class VeyonSetup(QThread):
             file_link.write(veyon_link)
             self.progress_signal.emit("Ярлык создан")
 
-        run_command_in_xterm(
+        run_command(
             f"ssh-add"
         )
 
-        self.progress_signal.emit("Копирование ключа")
+        self.progress_signal.emit("Копирование публичного ключа")
         for host in self.hosts.items_to_list():
-            run_command_in_xterm(f"scp {config_path}/veyon_{user}_public_key.pem root@{host.hostname}:/tmp/")
-        self.progress_signal.emit("Ключ скопирован")
+            run_command(f"scp {config_path}/veyon_{user}_public_key.pem root@{host.hostname}:/tmp/")
+            self.progress_signal.emit(f"{host.hostname}: ключ скопирован")
         self.progress_signal.emit("Отправка команд на установку")
 
         command_to_hosts = f"echo \"{'; '.join(install_on_hosts)}\" | at now"
@@ -305,75 +305,9 @@ class VeyonSetup(QThread):
         for host in self.hosts.items_to_list():
             runnable = SSHCommandInThreads(host, command_to_hosts)
             pool.start(runnable)
-        # self.thread = SSHCommandExec()
-        # self.thread.hosts_list = self.hosts.items_to_list()
-        # self.thread.command = install_on_hosts
-        # self.thread.finished.connect(self.thread.deleteLater)
-        # self.thread.start()
-        # self.thread.finished.connect(lambda: self.progress_signal.emit("Перезагрузка устройства"))
-        logging.info(f'Установка вейон на компьютере учеников отправка команд УСПЕШНО')
+            logging.info(f"Отправка на {host}\nкоманды:\n{command_to_hosts}")
+            self.progress_signal.emit(f"Команда установки veyon отправлена на {host.hostname}")
         logging.info('Завершение установки Veyon')
-
-
-# class SSHCommandExec(QThread):
-#     progress_signal = pyqtSignal(str)
-#     finish_signal = pyqtSignal()
-#
-#     def __init__(self, parent=None):
-#         QThread.__init__(self, parent)
-#         self.hosts_list = None
-#         self.command = None
-#
-#     def run(self):
-#         if type(self.command) is str:
-#             self.run_command_on_ssh_from_str()
-#         elif type(self.command) is list:
-#             self.run_command_on_ssh_from_list(self.command)
-#
-#     def run_command_on_ssh_from_str(self):
-#         self.progress_signal.emit(f"НАЧАЛО ВЫПОЛНЕНИЯ КОМАНДЫ:\n{self.command}")
-#         logging.info(f"Выполнение команды {self.command} на {self.hosts_list}")
-#         client = SSHClient()
-#         client.load_system_host_keys()
-#         for host in self.hosts_list:
-#             try:
-#                 client.connect(hostname=host, username="root")
-#                 stdin, stdout, stderr = client.exec_command(self.command)
-#                 # print(f"{stdout.read().decode().strip()=}")
-#                 result = stdout.read().decode().strip()
-#                 self.progress_signal.emit(f"\nРезультат выполнения на {host}:\n{result}")
-#                 # self.progress_signal.emit(f"{result}")
-#                 logging.info(f"\nРезультат выполнения на {host}:\n\n{result}")
-#             except (AuthenticationException, SSHException, socket.gaierror):
-#                 self.progress_signal.emit(f'Не удалось подключиться ssh root@{host}')
-#                 logging.info(f"\nНе удалось подключиться по ssh@root без пароля к {host}")
-#             except Exception as e:
-#                 self.progress_signal.emit(f'\n{host} неизвестная ошибка.')
-#                 logging.info(f"неизвестная ошибка {host}: {e}")
-#         client.close()
-#
-#
-#     def run_command_on_ssh_from_list(self, commands_list: list):
-#         # self.progress_signal.emit(f"НАЧАЛО ВЫПОЛНЕНИЯ КОМАНД:\n{self.command}")
-#         logging.info(f"Выполнение команды {commands_list} на {self.hosts_list}")
-#         client = SSHClient()
-#         client.load_system_host_keys()
-#         for host in self.hosts_list:
-#             try:
-#                 client.connect(hostname=host.hostname, username="root")
-#                 for command in commands_list:
-#                     stdin, stdout, stderr = client.exec_command(command)
-#                     # print(f"{stdout.read().decode().strip()=}")
-#                     result = stdout.read().decode().strip()
-#                     self.progress_signal.emit(f"\nРезультат выполнения {command} на {host.hostname}:\n\n{result}")
-#                     logging.info(f"\nРезультат выполнения {command} на {host.hostname}:\n\n{result}")
-#             except (AuthenticationException, SSHException, socket.gaierror):
-#                 self.progress_signal.emit(f'\nНе удалось подключиться ssh root@{host}')
-#                 logging.info(f"Не удалось подключиться по ssh@root без пароля к {host}")
-#             except Exception as e:
-#                 self.progress_signal.emit(f'\n{host} неизвестная ошибка.')
-#                 logging.info(f"неизвестная ошибка {host}: {e}")
-#         client.close()
 
 
 class WorkerSignals(QObject):
@@ -398,7 +332,7 @@ class SSHCommandInThreads(QRunnable):
         client = SSHClient()
         client.load_system_host_keys()
         try:
-            client.connect(hostname=self.host.hostname, username="root")
+            client.connect(hostname=self.host.hostname, username="root", timeout=2)
             stdin, stdout, stderr = client.exec_command(self.command)
             result = stdout.read().decode().strip()
             self.progress_signal.signal.emit(f"\nРезультат выполнения на {self.host.hostname}:\n{result}")
@@ -407,19 +341,17 @@ class SSHCommandInThreads(QRunnable):
             self.progress_signal.signal.emit(f'Не удалось подключиться ssh root@{self.host.hostname}')
             logging.info(f"\nНе удалось подключиться по ssh@root без пароля к {self.host.hostname}")
         except Exception as e:
-            self.progress_signal.signal.emit(f'\n{self.host.hostname} неизвестная ошибка.')
+            self.progress_signal.signal.emit(f'{self.host.hostname} неизвестная ошибка.')
             logging.info(f"неизвестная ошибка {self.host.hostname}: {e}")
         finally:
             client.close()
 
     def run_command_on_ssh_from_list(self, commands_list: list):
-        # self.progress_signal.emit(f"НАЧАЛО ВЫПОЛНЕНИЯ КОМАНД:\n{self.command}")
         logging.info(f"Выполнение команды {commands_list} на {self.host.hostname}")
         client = SSHClient()
         client.load_system_host_keys()
-        # for host in self.hosts_list:
         try:
-            client.connect(hostname=self.host.hostname, username="root")
+            client.connect(hostname=self.host.hostname, username="root", timeout=2)
             for command in commands_list:
                 stdin, stdout, stderr = client.exec_command(command)
                 result = stdout.read().decode().strip()

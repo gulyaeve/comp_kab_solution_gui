@@ -12,6 +12,9 @@ from modules.teacher_control import TeacherWindow
 # Директория приложения
 basedir = os.path.dirname(__file__)
 
+# Создание папки с конфигом
+run_command(f'mkdir -p {config_path}')
+
 # Настройка логирования
 for handler in logging.root.handlers[:]:
     logging.root.removeHandler(handler)
@@ -29,8 +32,7 @@ if __name__ == '__main__':
         logging.info("Выход для root")
         sys.exit(0)
 
-    # Создание папки с конфигом
-    run_command(f'mkdir -p {config_path}')
+    # Создание файла для хранения
     run_command(f'touch {hosts_file_path}')
 
     # Запуск приложения
