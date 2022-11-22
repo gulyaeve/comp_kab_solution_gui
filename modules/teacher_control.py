@@ -22,9 +22,12 @@ works_folder = 'install -d -m 0755 -o student -g student \"/home/student/Раб�
 class TeacherWindow(CompKabSolutionWindow):
     def __init__(self, app: QApplication):
         super().__init__()
-        self.windows = []
+        # self.windows = []
         self.hosts = Hosts()
         self.app = app
+
+        self.settings_window = SettingsWindow()
+        self.help_window = HelpWindow()
 
         menu_bar = QMenuBar()
         menu_file = menu_bar.addMenu('Меню')
@@ -233,16 +236,20 @@ class TeacherWindow(CompKabSolutionWindow):
             self.thread.start()
 
     def settings(self):
-        logging.info("Открыты настройки")
-        new_window = SettingsWindow()
-        self.windows.append(new_window)
-        new_window.show()
+        if self.settings_window.isVisible():
+            logging.info("Закрыты настройки")
+            self.settings_window.hide()
+        else:
+            logging.info("Открыты настройки")
+            self.settings_window.show()
 
     def help(self):
-        logging.info("Открыта справка")
-        new_window = HelpWindow()
-        self.windows.append(new_window)
-        new_window.show()
+        if self.settings_window.isVisible():
+            logging.info("Закрыта справка")
+            self.help_window.hide()
+        else:
+            logging.info("Открыта справка")
+            self.help_window.show()
 
     def close(self):
         logging.info("Приложение завершило работу")
