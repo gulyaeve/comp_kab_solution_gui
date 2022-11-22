@@ -1,10 +1,8 @@
 import logging
 import subprocess
-import sys
 
 import paramiko
 from PyQt5.QtWidgets import QWidget
-
 
 
 def run_command(command: str) -> str:
@@ -13,27 +11,22 @@ def run_command(command: str) -> str:
     :param command: команда shell
     :return: результат работы команды
     """
-    print(command)
-    # logging.info(f"[{command}]>")
     ret = subprocess.run(command, capture_output=True, shell=True)
-    print(ret.stdout.decode())
     logging.info(f"[{command}]>{ret.stdout.decode()}")
+    print(f"[{command}]>{ret.stdout.decode()}")
     return ret.stdout.decode()
 
 
 def run_command_in_xterm(command: str):
     run_command(f'xterm -e "{command}"')
-    # run_command(f'xterm -hold -e "{command}"')
 
 
-def run_command_in_xterm_hold(command: str):
-    run_command(f'xterm -hold -e "{command}"')
-    # run_command(f'xterm -hold -e "{command}"')
+# def run_command_in_xterm_hold(command: str):
+#     run_command(f'xterm -hold -e "{command}"')
 
 
 def run_command_by_root(command: str):
     run_command(f'xterm -e \'echo "Введите пароль суперпользователя" && su - root -c "{command}"\'')
-    # run_command(f'xterm -hold -e \'echo "Введите пароль суперпользователя" && su - root -c "{command}"\'')
 
 
 def get_mac_address(hostname):
@@ -49,15 +42,6 @@ def get_mac_address(hostname):
         if ip_address in s:
             return mac_address
     return mac_address
-
-
-def test_ping(host) -> bool:
-    result = subprocess.run(['ping', '-c1', host], stdout=subprocess.PIPE)
-    if result.returncode == 0:
-        logging.info(f"ping: {host}: УСПЕШНОЕ СОЕДИНЕНИЕ {result=} {result.returncode=}")
-        return True
-    else:
-        return False
 
 
 def test_ssh(host) -> bool:
@@ -79,5 +63,5 @@ this_host = run_command('hostname').strip()
 user = run_command('whoami').strip()
 
 
-class MyWindow(QWidget):
+class CompKabSolutionWindow(QWidget):
     pass

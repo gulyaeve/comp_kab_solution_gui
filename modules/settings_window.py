@@ -2,18 +2,18 @@ import logging
 import re
 
 from PyQt5.QtGui import QTextCursor, QFont
-from PyQt5.QtWidgets import QWidget, QGridLayout, QPushButton, QPlainTextEdit, QLabel, QLineEdit, QInputDialog, \
+from PyQt5.QtWidgets import QGridLayout, QPushButton, QPlainTextEdit, QLabel, QLineEdit, QInputDialog, \
     QFileDialog, QMessageBox, QTableWidget, QTableWidgetItem
 from PyQt5.QtCore import Qt, QThreadPool
 
 from modules.config import hostname_expression, version, ip_expression
 from modules.hosts import Hosts
-from modules.system import user, MyWindow
+from modules.system import user, CompKabSolutionWindow
 from modules.settings_workers import SSHRootSetup, NetworkFolderSetup, VeyonSetup, \
     SSHCommandInThreads
 
 
-class SettingsWindow(MyWindow):
+class SettingsWindow(CompKabSolutionWindow):
     def __init__(self):
         super().__init__()
 

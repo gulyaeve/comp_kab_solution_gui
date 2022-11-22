@@ -9,10 +9,7 @@ from modules.config import hosts_file_path, config_path, icon_file, style
 from modules.system import this_host, user, run_command
 from modules.teacher_control import TeacherWindow
 
-
-# Создание папки с конфигом
-run_command(f'mkdir -p {config_path}')
-run_command(f'touch {hosts_file_path}')
+# Директория приложения
 basedir = os.path.dirname(__file__)
 
 # Настройка логирования
@@ -28,10 +25,18 @@ logging.basicConfig(
 
 if __name__ == '__main__':
     logging.info(f'Приложение запущено: {this_host=} {user=}')
+
     if user == 'root':
+        logging.info("Выход для root")
         sys.exit(0)
+
+    # Создание папки с конфигом
+    run_command(f'mkdir -p {config_path}')
+    run_command(f'touch {hosts_file_path}')
+
+    # Запуск приложения
     app = QApplication(sys.argv)
     app.setWindowIcon(QIcon(os.path.join(basedir, icon_file)))
     app.setStyleSheet(open(os.path.join(basedir, style), 'r').read())
     ex = TeacherWindow(app)
-    sys.exit(app.exec_())
+    app.exec()

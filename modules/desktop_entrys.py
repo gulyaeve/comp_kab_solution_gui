@@ -30,14 +30,6 @@ Categories=Qt;Education;Network;RemoteAccess;
 Keywords=classroom,control,computer,room,lab,monitoring,teacher,student
 """
 
-# # Ярлык приложения "Собрать работы"
-# teacher_sh_link = f"""[Desktop Entry]
-# Icon=/usr/share/icons/breeze-dark/apps/48/rocs.svg
-# Name=Собрать работы
-# Type=Application
-# Exec=sh /home/teacher/teacher_control/teacher_control.sh
-# """
-
 # Ярлык на ssh-add для автозагрузки
 ssh_add_link = """[Desktop Entry]
 Exec=ssh-add

@@ -1,8 +1,8 @@
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QWidget, QGridLayout, QLabel
+from PyQt5.QtWidgets import QGridLayout, QLabel
 
 from modules.config import version
-from modules.system import MyWindow
+from modules.system import CompKabSolutionWindow
 
 help_body = f"""<b>Инструменты организации работы в компьютерном классе</b>
 <br>
@@ -39,7 +39,7 @@ help_body = f"""<b>Инструменты организации работы в
 """
 
 
-class HelpWindow(MyWindow):
+class HelpWindow(CompKabSolutionWindow):
     def __init__(self):
         super().__init__()
 

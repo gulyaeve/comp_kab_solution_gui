@@ -4,15 +4,12 @@ from dataclasses import dataclass
 from json import loads, dumps
 
 from modules.config import hosts_file_path, ip_expression
-from modules.system import test_ping, test_ssh, get_mac_address
 
 
 @dataclass
 class Host:
     hostname: str
     mac_address: str = ""
-    ping: bool = False
-    ssh: bool = False
 
     def name(self) -> str:
         return self.hostname.split('.local')[0]
@@ -118,23 +115,6 @@ class Hosts:
             result.append(Host(hostname=self.hosts[host]['hostname'], mac_address=self.hosts[host]['mac_address']))
         return result
 
-    def items_with_status(self) -> [Host]:
-        result = []
-        for host in self.hosts:
-            hostname = self.hosts[host]['hostname']
-            host_ping = test_ping(hostname)
-            host_ssh = False if host_ping is False else test_ssh(hostname)
-            host_mac_address = '' if host_ssh is False else get_mac_address(hostname)
-            result.append(
-                Host(
-                    hostname=hostname,
-                    mac_address=host_mac_address,
-                    ping=host_ping,
-                    ssh=host_ssh
-                )
-            )
-        return result
-
     def clean(self):
         value = {}
         try:
@@ -144,11 +124,3 @@ class Hosts:
         except KeyError:
             logging.info('[error] Ключ не найден')
             return None
-
-    # def update(self, new_hosts: str):
-    #     new_hosts = new_hosts.split('\n')
-    #     self.clean()
-    #     for new_host in new_hosts:
-    #         self.hosts[new_host.split('.')[0]] = Host(hostname=new_host, mac_address='').to_dict()
-    #     self._write(self.hosts)
-    #     return self

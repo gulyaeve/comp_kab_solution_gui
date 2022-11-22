@@ -2,25 +2,24 @@
 
 import datetime
 import logging
-import sys
 
-from PyQt5.QtGui import QTextCursor, QCloseEvent
+from PyQt5.QtGui import QTextCursor
 from PyQt5.QtWidgets import (QPushButton, QLineEdit,
                              QListWidget, QAbstractItemView, QMenuBar,
-                             QInputDialog, QMessageBox, QWidget, QGridLayout, QListWidgetItem,
+                             QInputDialog, QMessageBox, QGridLayout,
                              QPlainTextEdit, QApplication)
 
 from modules.config import version
 from modules.help import HelpWindow
 from modules.hosts import Hosts
 from modules.settings_window import SettingsWindow
-from modules.system import MyWindow
+from modules.system import CompKabSolutionWindow
 from modules.teacher_workers import GetWorks, CleanWorks, RecreateStudent, DeleteStudent, OpenSFTP, UpdateList
 
 works_folder = 'install -d -m 0755 -o student -g student \"/home/student/Рабочий стол/Сдать работы\"'
 
 
-class TeacherWindow(MyWindow):
+class TeacherWindow(CompKabSolutionWindow):
     def __init__(self, app: QApplication):
         super().__init__()
         self.windows = []
@@ -246,9 +245,9 @@ class TeacherWindow(MyWindow):
         new_window.show()
 
     def close(self):
+        logging.info("Приложение завершило работу")
         self.app.exit(0)
 
     def closeEvent(self, event):
         event.accept()
-        self.app.exit(0)
-
+        self.close()
