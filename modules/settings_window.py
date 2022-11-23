@@ -279,7 +279,7 @@ class SettingsWindow(CompKabSolutionWindow):
             self.thread.finished.connect(
                 lambda: self.textfield.appendPlainText(
                     "\nКОМАНДЫ ДЛЯ НАСТРОЙКИ VEYON ОТПРАВЛЕНЫ НА КОМПЬЮТЕРЫ УЧЕНИКОВ\n"
-                    "ДОЖДИТЕСЬ ПЕРЕЗАГРУЗКИ УСТРОЙСТВ И НЕ ЗАКРЫВАЙТЕ ЭТО ОКНО!")
+                    "ДОЖДИТЕСЬ ПЕРЕЗАГРУЗКИ УСТРОЙСТВ")
             )
 
     def run_command_on_ssh(self):
