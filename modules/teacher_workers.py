@@ -4,7 +4,7 @@ import time
 from PyQt5.QtCore import QThread, pyqtSignal
 
 from modules.hosts import Hosts
-from modules.system import test_ssh, run_command, user
+from modules.system import test_ssh, run_command, user, run_command_in_xterm
 
 works_folder = 'install -d -m 0755 -o student -g student \\"/home/student/Рабочий стол/Сдать работы\\"'
 
@@ -250,4 +250,4 @@ class OpenSFTP(QThread):
                 f"Завершено успешно: {success_count}\n"
                 f"Ошибок: {hosts_count - success_count}"
             )
-            run_command(command)
+            run_command_in_xterm(command)
