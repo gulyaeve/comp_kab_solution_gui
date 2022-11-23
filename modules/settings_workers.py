@@ -81,14 +81,14 @@ class SSHRootSetup(QThread):
             logging.info(f"Ключ создан")
             self.progress_signal.emit(f"\nКлюч ssh создан")
             time.sleep(1)
-            run_command_in_xterm(f'mkdir -p /home/{user}/.config/autostart')
+            run_command(f'mkdir -p /home/{user}/.config/autostart')
             with open(f'/home/{user}/.config/autostart/ssh-add.desktop', 'w') as file_link:
                 file_link.write(ssh_add_link)
             logging.info(f"Ярлык в автозапуск ssh-add создан")
             self.progress_signal.emit(f"Ярлык в автозапуск ssh-add создан")
             logging.info(f"Начало копирования ключей")
             self.progress_signal.emit('\nКопирую ключ на все компьютеры:')
-            run_command_in_xterm(f"ssh-add")
+            run_command(f"ssh-add")
             for host in self.hosts.items_to_list():
                 run_command_in_xterm(
                     f"ssh-copy-id -f -i /home/{user}/.ssh/id_ed25519.pub teacher@{host.hostname} -o IdentitiesOnly=yes"
@@ -188,7 +188,7 @@ class NetworkFolderSetup(QThread):
             if test_ssh(host):
                 check_student = run_command(f"ssh root@{host} file /home/student").strip()
                 if check_student.endswith('directory'):
-                    run_command_in_xterm(
+                    run_command(
                         f"scp {config_path}/share.desktop root@{host.hostname}:'/home/student/Рабочий\ стол'"
                     )
                     self.progress_signal.emit(
