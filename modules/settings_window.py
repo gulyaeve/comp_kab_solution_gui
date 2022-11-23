@@ -69,7 +69,7 @@ class SettingsWindow(CompKabSolutionWindow):
                 QMessageBox.Ok,
             )
             if messageBox == QMessageBox.Ok:
-                exit_app()
+                self.close()
         elif user == 'student':
             logging.info("Попытка запустить от студента")
             messageBox = QMessageBox.warning(
@@ -79,7 +79,7 @@ class SettingsWindow(CompKabSolutionWindow):
                 QMessageBox.Ok,
             )
             if messageBox == QMessageBox.Ok:
-                exit_app()
+                self.close()
         else:
             self.button_ssh = QPushButton('Настроить доступ по ssh')
             self.button_ssh.clicked.connect(self.setup_ssh)
@@ -196,6 +196,7 @@ class SettingsWindow(CompKabSolutionWindow):
         self.textfield.appendPlainText(message)
 
     def setup_ssh(self):
+        self.textfield.clear()
         messageBox = QMessageBox.information(
             self,
             "Важная информация!",
@@ -231,6 +232,7 @@ class SettingsWindow(CompKabSolutionWindow):
                 )
 
     def network_folders(self):
+        self.textfield.clear()
         messageBox = QMessageBox.information(
             self,
             "Важная информация!",
@@ -257,6 +259,7 @@ class SettingsWindow(CompKabSolutionWindow):
             )
 
     def install_veyon(self):
+        self.textfield.clear()
         kab, okPressed = QInputDialog.getText(self, "Номер кабинета",
                                               f"Введите номер этого кабинета:",
                                               QLineEdit.Normal, "")
@@ -280,6 +283,7 @@ class SettingsWindow(CompKabSolutionWindow):
             )
 
     def run_command_on_ssh(self):
+        self.textfield.clear()
         command, pressed = QInputDialog.getText(self, 'Команда',
                                                 'Введите команду для выполнения на компьютерах учеников',
                                                 QLineEdit.Normal)
