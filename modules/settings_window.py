@@ -194,7 +194,7 @@ class SettingsWindow(CompKabSolutionWindow):
                 if len(lines) > 1000:
                     QMessageBox('Слишком большой файл!').show()
                 else:
-                    self.hosts_table.setRowCount(len(lines))
+                    # self.hosts_table.setRowCount(len(lines))
                     for index, host in enumerate(lines):
                         self.hosts_table.setItem(index, 0, QTableWidgetItem(host.strip()))
         except FileNotFoundError:
