@@ -45,20 +45,20 @@ class SettingsWindow(CompKabSolutionWindow):
             self.hosts_table.setItem(0, 0, QTableWidgetItem('Введите сетевые имена устройств'))
         else:
             self.update_data()
-        grid.addWidget(self.hosts_table, 1, 1, 6, 3)
+        grid.addWidget(self.hosts_table, 1, 1, 7, 3)
         self.hosts_table.itemChanged.connect(self.change_data)
 
         button = QPushButton('+')
         button.clicked.connect(self.add_row)
-        grid.addWidget(button, 7, 1)
+        grid.addWidget(button, 8, 1)
 
         button = QPushButton('-')
         button.clicked.connect(self.delete_row)
-        grid.addWidget(button, 7, 2)
+        grid.addWidget(button, 8, 2)
 
         button = QPushButton('Очистить...')
         button.clicked.connect(self.delete_all)
-        grid.addWidget(button, 7, 3)
+        grid.addWidget(button, 8, 3)
 
         if user == 'root':
             logging.info("Попытка запустить от рута")
