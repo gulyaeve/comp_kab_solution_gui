@@ -3,6 +3,7 @@ import subprocess
 
 import paramiko
 from PyQt5.QtWidgets import QWidget
+from paramiko.ssh_exception import AuthenticationException
 
 
 def run_command(command: str) -> str:
@@ -50,6 +51,23 @@ def test_ssh(host) -> bool:
     ssh.load_system_host_keys()
     try:
         ssh.connect(hostname=host, port=22, timeout=1, username='root')
+        return True
+    except Exception as e:
+        logging.info(f"Не удалось подключиться по ssh@root без пароля к {host}: {e}")
+        return False
+    finally:
+        ssh.close()
+
+
+def test_ping(host) -> bool:
+    ssh = paramiko.SSHClient()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    ssh.load_system_host_keys()
+    try:
+        ssh.connect(hostname=host, port=22, timeout=1, username='root')
+        return True
+    except AuthenticationException as e:
+        logging.info(f"Не удалось подключиться по ssh@root без пароля к {host}: {e}")
         return True
     except Exception as e:
         logging.info(f"Не удалось подключиться по ssh@root без пароля к {host}: {e}")

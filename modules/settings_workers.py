@@ -14,7 +14,7 @@ from modules.config import config_path
 from modules.desktop_entrys import ssh_add_link, network_share_for_teacher, network_share, veyon_link
 from modules.hosts import Host
 from modules.system import run_command_in_xterm, user, run_command_by_root, this_host, run_command, get_mac_address, \
-    test_ssh
+    test_ssh, test_ping
 
 
 class PingTest(QThread):
@@ -26,9 +26,9 @@ class PingTest(QThread):
         self.hosts = None
 
     def run(self):
-        self.progress_signal.emit("НАЧАЛО ПРОВЕРКИ PING")
+        self.progress_signal.emit("НАЧАЛО ПРОВЕРКИ PING\n")
         for host in self.hosts.to_list():
-            if test_ssh(host):
+            if test_ping(host):
                 self.progress_signal.emit(
                     f"{host}: проверка ping успешно"
                 )
