@@ -3,7 +3,7 @@ import re
 
 from PyQt5.QtGui import QTextCursor, QFont
 from PyQt5.QtWidgets import QGridLayout, QPushButton, QPlainTextEdit, QLabel, QLineEdit, QInputDialog, \
-    QFileDialog, QMessageBox, QTableWidget, QTableWidgetItem
+    QFileDialog, QMessageBox, QTableWidget, QTableWidgetItem, QHeaderView
 from PyQt5.QtCore import Qt, QThreadPool
 
 from modules.config import hostname_expression, version, ip_expression
@@ -39,12 +39,14 @@ class SettingsWindow(CompKabSolutionWindow):
 
         self.hosts_table = QTableWidget()
         self.hosts_table.setColumnCount(1)
-        self.hosts_table.setColumnWidth(0, 238)
+        # self.hosts_table.setColumnWidth(0, 238)
         if not self.hosts:
             self.hosts_table.setRowCount(1)
             self.hosts_table.setItem(0, 0, QTableWidgetItem('Введите сетевые имена устройств'))
         else:
             self.update_data()
+        self.hosts_table.setHorizontalHeaderLabels([""])
+        self.hosts_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         grid.addWidget(self.hosts_table, 1, 1, 7, 3)
         self.hosts_table.itemChanged.connect(self.change_data)
 
