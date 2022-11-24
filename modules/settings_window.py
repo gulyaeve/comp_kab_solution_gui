@@ -23,6 +23,7 @@ class SettingsWindow(CompKabSolutionWindow):
         self.setLayout(grid)
         self.setWindowTitle(f'Настройка компьютерного кабинета, версия {version}')
         # self.setFixedWidth(700)
+        self.setMinimumWidth(600)
 
         self.textfield = QPlainTextEdit()
         self.textfield.cursor = QTextCursor()
