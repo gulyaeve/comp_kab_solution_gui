@@ -227,7 +227,7 @@ class OpenSFTP(QThread):
         self.start_signal.emit(
             f"Выбрано компьютеров: {hosts_count}\nДиректории открываются\n"
         )
-        sftp_adresses = ["dolphin"]
+        sftp_adresses = ["dolphin --new-window"]
         for host in self.hosts_list:
             if test_ssh(host):
                 sftp_adresses.append(f"'fish://root@{host}:/home/'")
