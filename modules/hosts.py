@@ -3,7 +3,8 @@ import re
 from dataclasses import dataclass
 from json import loads, dumps
 
-from modules.config import hosts_file_path, ip_expression
+from modules.config import hosts_file_path, ip_expression, config_path
+from modules.system import run_command
 
 
 @dataclass
@@ -29,7 +30,7 @@ class Hosts:
                 self.clean()
         self.hosts: dict = self._read()
 
-    def __str__(self):
+    def __str__(self) -> str:
         result = ''
         for host in self.hosts:
             result += self.hosts[host]['hostname'] + '\n'
@@ -38,10 +39,10 @@ class Hosts:
     def __len__(self) -> int:
         return len(self.hosts)
 
-    def __getitem__(self, item: str):
+    def __getitem__(self, item_key: str) -> Host:
         return Host(
-            hostname=self.hosts[item]['hostname'],
-            mac_address=self.hosts[item]['mac_address']
+            hostname=self.hosts[item_key]['hostname'],
+            mac_address=self.hosts[item_key]['mac_address']
         )
 
     def __setitem__(self, key: str, hostname: str, mac_address: str = ''):
@@ -103,7 +104,7 @@ class Hosts:
             logging.info('[error] Ключ не найден')
             return None
 
-    def to_list(self):
+    def to_list(self) -> list:
         result = []
         for host in self.hosts:
             result.append(self.hosts[host]['hostname'])
