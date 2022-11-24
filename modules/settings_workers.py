@@ -17,6 +17,27 @@ from modules.system import run_command_in_xterm, user, run_command_by_root, this
     test_ssh
 
 
+class PingTest(QThread):
+    progress_signal = pyqtSignal(str)
+    finish_signal = pyqtSignal()
+
+    def __init__(self, parent=None):
+        QThread.__init__(self, parent)
+        self.hosts = None
+
+    def run(self):
+        self.progress_signal.emit("НАЧАЛО ПРОВЕРКИ PING")
+        for host in self.hosts.to_list():
+            if test_ssh(host):
+                self.progress_signal.emit(
+                    f"{host}: проверка ping успешно"
+                )
+            else:
+                self.progress_signal.emit(
+                    f"{host}: недоступен"
+                )
+
+
 class SSHRootSetup(QThread):
     progress_signal = pyqtSignal(str)
     finish_signal = pyqtSignal()

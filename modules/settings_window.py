@@ -10,7 +10,7 @@ from modules.config import hostname_expression, version, ip_expression
 from modules.hosts import Hosts
 from modules.system import user, CompKabSolutionWindow
 from modules.settings_workers import SSHRootSetup, NetworkFolderSetup, VeyonSetup, \
-    SSHCommandInThreads
+    SSHCommandInThreads, PingTest
 
 
 class SettingsWindow(CompKabSolutionWindow):
@@ -27,7 +27,7 @@ class SettingsWindow(CompKabSolutionWindow):
         self.textfield = QPlainTextEdit()
         self.textfield.cursor = QTextCursor()
         self.textfield.setReadOnly(True)
-        grid.addWidget(self.textfield, 4, 0, 4, 1)
+        grid.addWidget(self.textfield, 5, 0, 4, 1)
 
         hostslabel = QLabel('Список устройств:')
         hostslabel.setAlignment(Qt.AlignCenter)
@@ -81,23 +81,28 @@ class SettingsWindow(CompKabSolutionWindow):
             if messageBox == QMessageBox.Ok:
                 self.close()
         else:
+            self.button_ping = QPushButton('Проверить ping')
+            self.button_ping.clicked.connect(self.test_ping)
+            grid.addWidget(self.button_ping, 0, 0)
+
             self.button_ssh = QPushButton('Настроить доступ по ssh')
             self.button_ssh.clicked.connect(self.setup_ssh)
-            grid.addWidget(self.button_ssh, 0, 0)
+            grid.addWidget(self.button_ssh, 1, 0)
 
             self.button_share = QPushButton('Создать сетевую папку')
             self.button_share.clicked.connect(self.network_folders)
-            grid.addWidget(self.button_share, 1, 0)
+            grid.addWidget(self.button_share, 2, 0)
 
             self.button_veyon = QPushButton('Установить Veyon')
             self.button_veyon.clicked.connect(self.install_veyon)
-            grid.addWidget(self.button_veyon, 2, 0)
+            grid.addWidget(self.button_veyon, 3, 0)
 
             self.command_exec = QPushButton('Выполнить команду')
             self.command_exec.clicked.connect(self.run_command_on_ssh)
-            grid.addWidget(self.command_exec, 3, 0)
+            grid.addWidget(self.command_exec, 4, 0)
 
     def set_buttons_status(self, status: bool):
+        self.button_ping.setEnabled(status)
         self.button_ssh.setEnabled(status)
         self.button_share.setEnabled(status)
         self.button_veyon.setEnabled(status)
@@ -194,6 +199,24 @@ class SettingsWindow(CompKabSolutionWindow):
 
     def update_textfield(self, message):
         self.textfield.appendPlainText(message)
+
+    def test_ping(self):
+        self.textfield.clear()
+
+        self.thread = PingTest()
+        self.thread.hosts = self.hosts
+
+        self.thread.progress_signal.connect(self.update_textfield)
+        self.thread.finished.connect(self.thread.deleteLater)
+        self.thread.start()
+
+        self.set_buttons_status(False)
+        self.thread.finished.connect(
+            lambda: self.set_buttons_status(True)
+        )
+        self.thread.finished.connect(
+            lambda: self.textfield.appendPlainText("\nЗАВЕРШЕНИЕ ПРОВЕРКИ PING")
+        )
 
     def setup_ssh(self):
         self.textfield.clear()
