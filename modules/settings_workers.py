@@ -184,17 +184,18 @@ class NetworkFolderSetup(QThread):
             file_link_2.write(network_share_for_teacher)
         with open(f'{config_path}/share.desktop', 'w') as file_link:
             file_link.write(network_share.format(teacher_host=this_host))
-        for host in self.hosts.items_to_list():
+        for host in self.hosts.to_list():
             if test_ssh(host):
                 check_student = run_command(f"ssh root@{host} file /home/student").strip()
                 if check_student.endswith('directory'):
                     run_command(
-                        f"scp {config_path}/share.desktop root@{host.hostname}:'/home/student/Рабочий\ стол'"
+                        f"scp {config_path}/share.desktop root@{host}:'/home/student/Рабочий\ стол'"
                     )
                     self.progress_signal.emit(
                         f"{host}: ярлык на сетевую папку скопирован"
                     )
                     success_count += 1
+                    logging.info(f'{host} ярлык на сетевую папку скопирован')
                 else:
                     self.progress_signal.emit(f'{host}: отсутствует student')
                     logging.info(f'{host} отсутствует student')
