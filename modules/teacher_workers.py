@@ -4,7 +4,7 @@ import time
 from PyQt5.QtCore import QThread, pyqtSignal
 
 from modules.hosts import Hosts
-from modules.system import test_ssh, run_command, user, run_command_in_xterm
+from modules.system import test_ssh, run_command, user, run_command_in_xterm, check_student_on_host
 
 works_folder = 'install -d -m 0755 -o student -g student \\"/home/student/Рабочий стол/Сдать работы\\"'
 
@@ -48,8 +48,7 @@ class GetWorks(QThread):
         )
         for host in self.hosts_list:
             if test_ssh(host):
-                check_student = run_command(f"ssh root@{host} file /home/student").strip()
-                if check_student.endswith('directory'):
+                if check_student_on_host(host):
                     run_command(
                         f'mkdir -p "/home/{user}/Рабочий стол/Работы/"' + self.date + '/' + self.text + '/' + host
                     )
@@ -97,8 +96,7 @@ class CleanWorks(QThread):
         )
         for host in self.hosts_list:
             if test_ssh(host):
-                check_student = run_command(f"ssh root@{host} file /home/student").strip()
-                if check_student.endswith('directory'):
+                if check_student_on_host(host):
                     run_command(f'ssh root@{host} \'rm -rf /home/student/Рабочий\ стол/Сдать\ работы/*\'')
                     self.progress_signal.emit(f'{host}: очистка завершена')
                     logging.info(f'{host} очистка завершена')
@@ -138,7 +136,6 @@ class RecreateStudent(QThread):
         )
         for host in self.hosts_list:
             if test_ssh(host):
-                check_student = run_command(f"ssh root@{host} file /home/student").strip()
                 command = f'echo \'' \
                           f'pkill -u student; ' \
                           f'sleep 2; ' \
@@ -146,7 +143,7 @@ class RecreateStudent(QThread):
                           f'useradd student && ' \
                           f'chpasswd <<<\'student:{self.student_pass}\' && ' \
                           f'{works_folder}\'| at now'
-                if check_student.endswith('directory'):
+                if check_student_on_host(host):
                     run_command(f'ssh root@{host} \"{command}\"')
                     self.progress_signal.emit(f'{host}: student удален и создан заново')
                     logging.info(f'{host} student удален и создан заново')
@@ -188,8 +185,7 @@ class DeleteStudent(QThread):
         )
         for host in self.hosts_list:
             if test_ssh(host):
-                check_student = run_command(f"ssh root@{host} file /home/student").strip()
-                if check_student.endswith('directory'):
+                if check_student_on_host(host):
                     command = f'echo \'pkill -u student; sleep 2; userdel -rf student\' | at now'
                     run_command(f'ssh root@{host} \"{command}\"')
                     self.progress_signal.emit(f'{host}: student удален')

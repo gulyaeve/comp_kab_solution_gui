@@ -14,7 +14,7 @@ from modules.config import config_path
 from modules.desktop_entrys import ssh_add_link, network_share_for_teacher, network_share, veyon_link
 from modules.hosts import Host
 from modules.system import run_command_in_xterm, user, run_command_by_root, this_host, run_command, get_mac_address, \
-    test_ssh, test_ping
+    test_ssh, test_ping, check_student_on_host
 
 
 class PingTest(QThread):
@@ -207,8 +207,7 @@ class NetworkFolderSetup(QThread):
             file_link.write(network_share.format(teacher_host=this_host))
         for host in self.hosts.to_list():
             if test_ssh(host):
-                check_student = run_command(f"ssh root@{host} file /home/student").strip()
-                if check_student.endswith('directory'):
+                if check_student_on_host(host):
                     run_command(
                         f"scp {config_path}/share.desktop root@{host}:'/home/student/Рабочий\ стол'"
                     )

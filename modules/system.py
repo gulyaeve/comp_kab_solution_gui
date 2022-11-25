@@ -76,6 +76,11 @@ def test_ping(host) -> bool:
         ssh.close()
 
 
+def check_student_on_host(host: str) -> bool:
+    check = run_command(f"ssh root@{host} file /home/student").strip()
+    return True if check.endswith('directory') else False
+
+
 # Получение имени компьютера и текущего пользователя
 this_host = run_command('hostname').strip()
 user = run_command('whoami').strip()
