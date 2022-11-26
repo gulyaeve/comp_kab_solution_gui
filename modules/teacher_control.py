@@ -123,7 +123,7 @@ class TeacherWindow(CompKabSolutionWindow):
 
         self.hosts_items.clear()
         self.hosts_items.addItems(hosts_list)
-        logging.info("Обновлен список устройств в QTListWidget")
+        logging.info("Обновлен список устройств в QListWidget")
 
         self.hosts_items.blockSignals(False)
 
