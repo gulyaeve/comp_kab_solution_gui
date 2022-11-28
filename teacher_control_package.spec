@@ -1,7 +1,7 @@
 Name: teacher_control
 Group: Education
-Version: 1
-Release: 1
+Version: 1.0
+Release: 1.0
 
 Summary: Setup computer auditory
 Summary(ru_RU.UTF-8): Инструменты организации работы в компьютерном классе
