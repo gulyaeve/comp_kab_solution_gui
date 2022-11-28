@@ -46,7 +46,7 @@ class SettingsWindow(CompKabSolutionWindow):
             self.hosts_table.setItem(0, 0, QTableWidgetItem('Введите сетевые имена устройств'))
         else:
             self.update_data()
-        self.hosts_table.setHorizontalHeaderLabels([""])
+
         self.hosts_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         grid.addWidget(self.hosts_table, 1, 1, 7, 3)
         self.hosts_table.itemChanged.connect(self.change_data)
@@ -118,6 +118,7 @@ class SettingsWindow(CompKabSolutionWindow):
         font_ip = QFont()
         font_ip.setItalic(True)
         self.hosts_table.clear()
+        self.hosts_table.setHorizontalHeaderLabels([""])
         self.hosts_table.setRowCount(len(self.hosts.to_list()))
         for index, host in enumerate(self.hosts.to_list()):
             item = QTableWidgetItem(host)
@@ -185,7 +186,7 @@ class SettingsWindow(CompKabSolutionWindow):
             self,
             directory=f"/home/{user}",
             caption='Импорт из текстового файла',
-            filter='.txt'
+            filter='*.txt'
         )
         # file_name = QFileDialog.getOpenFileName(self)
         try:
@@ -194,9 +195,10 @@ class SettingsWindow(CompKabSolutionWindow):
                 if len(lines) > 1000:
                     QMessageBox('Слишком большой файл!').show()
                 else:
-                    # self.hosts_table.setRowCount(len(lines))
-                    for index, host in enumerate(lines):
-                        self.hosts_table.setItem(index, 0, QTableWidgetItem(host.strip()))
+                    for host in lines:
+                        new_index = self.hosts_table.rowCount() + 1
+                        self.hosts_table.setRowCount(new_index)
+                        self.hosts_table.setItem(new_index - 1, 0, QTableWidgetItem(host.strip()))
         except FileNotFoundError:
             pass
 
