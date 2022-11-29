@@ -261,6 +261,7 @@ class OpenSFTP(QThread):
                 logging.info(f'{host} открыт sftp')
                 success_count += 1
                 run_command_in_xterm(f'mc $HOME/Рабочий\ стол sh://root@{host}:/home')
+                # run_command_in_xterm(f'dolphin --new-window sftp://root@{host}:/home')
             else:
                 self.progress_signal.emit(f'{host}: не в сети или не настроен ssh')
                 logging.info(f'{host} не в сети или не настроен ssh')
