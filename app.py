@@ -36,7 +36,7 @@ if __name__ == '__main__':
     run_command(f'touch {hosts_file_path}')
 
     # Запуск приложения
-    app = QApplication([])
+    app = QApplication(sys.argv)
     app.setWindowIcon(QIcon(os.path.join(basedir, icon_file)))
     app.setStyleSheet(open(os.path.join(basedir, style), 'r').read())
     ex = TeacherWindow(app)

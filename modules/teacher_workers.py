@@ -217,34 +217,61 @@ class OpenSFTP(QThread):
         QThread.__init__(self, parent)
         self.hosts_list = None
 
+    # def run(self):
+    #     hosts_count = len(self.hosts_list)
+    #     success_count = 0
+    #     self.start_signal.emit(
+    #         f"Выбрано компьютеров: {hosts_count}\nДиректории открываются\n"
+    #     )
+    #     sftp_adresses = ["kde5 dolphin --new-window"]
+    #     for host in self.hosts_list:
+    #         if test_ssh(host):
+    #             # sftp_adresses.append(f'"sftp://root@{host}:/home/"')
+    #             sftp_adresses.append(f'fish://root@{host}:/home')
+    #             # run_command_in_xterm(f'mc cd sh://root@{comp}:/home')
+    #             self.progress_signal.emit(f'{host}: открыт проводник')
+    #             logging.info(f'{host} открыт sftp')
+    #             success_count += 1
+    #         else:
+    #             self.progress_signal.emit(f'{host}: не в сети или не настроен ssh')
+    #             logging.info(f'{host} не в сети или не настроен ssh')
+    #     command = " ".join(sftp_adresses)
+    #     if success_count == 0:
+    #         self.finish_signal.emit(f"\nОткрытие директорий не выполнено.")
+    #     else:
+    #         self.finish_signal.emit(
+    #             f"\nОткрытие директорий завершилось.\n"
+    #             f"Было выбрано: {hosts_count}\n"
+    #             f"Завершено успешно: {success_count}\n"
+    #             f"Ошибок: {hosts_count - success_count}"
+    #         )
+    #         run_command_in_xterm(command)
     def run(self):
         hosts_count = len(self.hosts_list)
         success_count = 0
         self.start_signal.emit(
             f"Выбрано компьютеров: {hosts_count}\nДиректории открываются\n"
         )
-        sftp_adresses = ["dolphin --new-window"]
+        # sftp_adresses = ["xdg-open"]
         for host in self.hosts_list:
             if test_ssh(host):
-                sftp_adresses.append(f"'fish://root@{host}:/home/'")
-                # sftp_adresses.append(f"'sftp://root@{host}:/home/'")
-                # run_command_in_xterm(f'nohup dolphin sftp://root@{host}:/home')
-                # run_command(f'nohup kde5 dolphin sftp://root@{host}:/home')
-                # run_command_in_xterm(f'mc cd sh://root@{comp}:/home')
+                # sftp_adresses.append(f'"sftp://root@{host}:/home/"')
+                # sftp_adresses.append(f'sftp://root@{host}:/home/')
                 self.progress_signal.emit(f'{host}: открыт проводник')
                 logging.info(f'{host} открыт sftp')
                 success_count += 1
             else:
                 self.progress_signal.emit(f'{host}: не в сети или не настроен ssh')
                 logging.info(f'{host} не в сети или не настроен ssh')
-        command = " ".join(sftp_adresses)
+        # command = " ".join(sftp_adresses)
         if success_count == 0:
             self.finish_signal.emit(f"\nОткрытие директорий не выполнено.")
         else:
+            run_command_in_xterm(f'mc $HOME/Рабочий\ стол sh://root@{host}:/home')
             self.finish_signal.emit(
                 f"\nОткрытие директорий завершилось.\n"
-                f"Было выбрано: {hosts_count}\n"
-                f"Завершено успешно: {success_count}\n"
-                f"Ошибок: {hosts_count - success_count}"
+                # f"Было выбрано: {hosts_count}\n"
+                # f"Завершено успешно: {success_count}\n"
+                # f"Ошибок: {hosts_count - success_count}"
             )
-            run_command_in_xterm(command)
+            # run_command_in_xterm(command)
