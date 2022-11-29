@@ -260,6 +260,7 @@ class OpenSFTP(QThread):
                 self.progress_signal.emit(f'{host}: открыт проводник')
                 logging.info(f'{host} открыт sftp')
                 success_count += 1
+                run_command_in_xterm(f'mc $HOME/Рабочий\ стол sh://root@{host}:/home')
             else:
                 self.progress_signal.emit(f'{host}: не в сети или не настроен ssh')
                 logging.info(f'{host} не в сети или не настроен ssh')
@@ -267,7 +268,6 @@ class OpenSFTP(QThread):
         if success_count == 0:
             self.finish_signal.emit(f"\nОткрытие директорий не выполнено.")
         else:
-            run_command_in_xterm(f'mc $HOME/Рабочий\ стол sh://root@{host}:/home')
             self.finish_signal.emit(
                 f"\nОткрытие директорий завершилось.\n"
                 # f"Было выбрано: {hosts_count}\n"
