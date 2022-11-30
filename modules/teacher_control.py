@@ -225,23 +225,24 @@ class TeacherWindow(CompKabSolutionWindow):
     def open_sftp(self):
         self.textfield.clear()
         comps = self.get_selected_items_with_confirm()
-        if len(comps) == 1:
-            self.thread = OpenSFTP()
-            self.thread.hosts_list = comps
+        if comps:
+            if len(comps) == 1:
+                self.thread = OpenSFTP()
+                self.thread.hosts_list = comps
 
-            self.thread.start_signal.connect(self.update_textfield)
-            self.thread.progress_signal.connect(self.update_textfield)
-            self.thread.finish_signal.connect(self.update_textfield)
-            self.thread.finished.connect(self.thread.deleteLater)
+                self.thread.start_signal.connect(self.update_textfield)
+                self.thread.progress_signal.connect(self.update_textfield)
+                self.thread.finish_signal.connect(self.update_textfield)
+                self.thread.finished.connect(self.thread.deleteLater)
 
-            self.thread.start()
-        else:
-            dlg = QMessageBox(self)
-            dlg.setWindowTitle("Ошибка")
-            dlg.setText("Выберите один компьютер из списка")
-            button = dlg.exec()
-            if button == QMessageBox.Ok:
-                return None
+                self.thread.start()
+            else:
+                dlg = QMessageBox(self)
+                dlg.setWindowTitle("Ошибка")
+                dlg.setText("Выберите один компьютер из списка")
+                button = dlg.exec()
+                if button == QMessageBox.Ok:
+                    return
 
     def settings(self):
         if self.settings_window.isVisible():
