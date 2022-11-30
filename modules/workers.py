@@ -258,11 +258,11 @@ class VeyonSetup(QThread):
         self.progress_signal.emit("НАЧАЛО НАСТРОЙКИ VEYON")
 
         self.progress_signal.emit("Проверка мак-адресов проводных сетевых плат")
-        for host in self.hosts.hosts:
-            self.hosts.save_mac_address(
-                host,
-                get_mac_address(self.hosts.hosts[host]['hostname'])
-            )
+        for host in self.hosts.items_to_list():
+            self.hosts.set_item(
+                key=host.name,
+                hostname=host.hostname,
+                mac_address=get_mac_address(host.hostname))
         self.progress_signal.emit("Мак-адреса проверены")
 
         self.progress_signal.emit("Установка veyon на компьютере учителя")
@@ -270,8 +270,9 @@ class VeyonSetup(QThread):
         network_objects = ''
         for host in self.hosts.items_to_list():
             mac_address = "aa:bb:cc:dd:ee:ff" if not host.mac_address else host.mac_address
-            network_objects += f"veyon-cli networkobjects add " \
-                               f"computer \"{host.name()}\" \"{host.hostname}\" \"{mac_address}\" \"{self.kab}\"; "
+            name = host.name.replace(' ', '_')
+            network_objects += f'veyon-cli networkobjects add ' \
+                               f'computer "{name}" "{host.hostname}" "{mac_address}" "{self.kab}"; '
         run_command_by_root(
             f"apt-get update -y; "
             f"apt-get install veyon -y; "
@@ -331,7 +332,7 @@ class VeyonSetup(QThread):
         for host in self.hosts.items_to_list():
             runnable = SSHCommandInThreads(host, command_to_hosts)
             pool.start(runnable)
-            logging.info(f"Отправка на {host}\nкоманды:\n{command_to_hosts}")
+            logging.info(f"Отправка на {host.hostname}\nкоманды:\n{command_to_hosts}")
             self.progress_signal.emit(f"Команда установки veyon отправлена на {host.hostname}")
         logging.info('Завершение установки Veyon')
 

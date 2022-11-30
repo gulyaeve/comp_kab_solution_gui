@@ -31,18 +31,18 @@ def run_command_by_root(command: str):
 
 
 def get_mac_address(hostname):
-    ip_address = run_command(f"ping {hostname} -c1").split('(')[1].split(')')[0]
-    ifconfig_output = run_command(f'ssh root@{hostname} "ifconfig"')
-    mac_address = ''
-    for s in ifconfig_output.split('\n'):
-        if s.startswith('e'):
-            mac_address = s.split('HWaddr ')[1].rstrip()
-        if s.strip() == '':
-            logging.info(f'Компьютер {hostname} не подключён к проводной сети')
-            return ''
-        if ip_address in s:
-            return mac_address
-    return mac_address
+    get_nmcli = run_command(
+        f'ssh root@{hostname} nmcli c show | grep \"Проводное соединение 1\"'
+    )
+    if get_nmcli:
+        device_name = get_nmcli.split()[-1]
+        if device_name and device_name != "--":
+            hwaddr = run_command(
+                f'ssh root@{hostname} nmcli dev show {device_name} | grep \"GENERAL.HWADDR\"'
+            ).split()[-1]
+            logging.info(f"Получен мак-адрес {hwaddr} для {hostname}")
+            return hwaddr
+    return ""
 
 
 def test_ssh(host) -> bool:

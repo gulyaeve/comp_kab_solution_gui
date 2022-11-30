@@ -31,11 +31,11 @@ class Hosts:
                 self.clean()
         self.hosts: dict = self._read()
 
-    def __str__(self) -> str:
-        result = ''
-        for host in self.hosts:
-            result += self.hosts[host]['hostname'] + '\n'
-        return result
+    # def __str__(self) -> str:
+    #     result = ''
+    #     for host in self.hosts:
+    #         result += self.hosts[host]['hostname'] + '\n'
+    #     return result
 
     def __len__(self) -> int:
         return len(self.hosts)
@@ -78,16 +78,16 @@ class Hosts:
         self._write(self.hosts)
         return self
 
-    def save_hostname(self, key, hostname):
-        if hostname.endswith('.local'):
-            host = Host(hostname=hostname, name=key)
-        elif re.match(ip_expression, hostname):
-            host = Host(hostname=hostname, name=key)
-        else:
-            host = Host(hostname=f"{hostname}.local", name=key)
-        self.hosts[key] = host.to_dict()
-        self._write(self.hosts)
-        return self
+    # def save_hostname(self, key, hostname):
+    #     if hostname.endswith('.local'):
+    #         host = Host(hostname=hostname, name=key)
+    #     elif re.match(ip_expression, hostname):
+    #         host = Host(hostname=hostname, name=key)
+    #     else:
+    #         host = Host(hostname=f"{hostname}.local", name=key)
+    #     self.hosts[key] = host.to_dict()
+    #     self._write(self.hosts)
+    #     return self
 
     def _read(self):
         try:
