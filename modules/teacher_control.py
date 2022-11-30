@@ -13,8 +13,8 @@ from modules.config import version
 from modules.help import HelpWindow
 from modules.hosts import Hosts
 from modules.settings_window import SettingsWindow
-from modules.system import CompKabSolutionWindow
-from modules.teacher_workers import GetWorks, CleanWorks, RecreateStudent, DeleteStudent, OpenSFTP, UpdateList
+from modules.system import CompKabSolutionWindow, run_command
+from modules.workers import GetWorks, CleanWorks, RecreateStudent, DeleteStudent, OpenSFTP, UpdateList
 
 works_folder = 'install -d -m 0755 -o student -g student \"/home/student/Рабочий стол/Сдать работы\"'
 
@@ -108,7 +108,7 @@ class TeacherWindow(CompKabSolutionWindow):
         selected_items = self.hosts_items.selectedItems()
         items = []
         for item in selected_items:
-            items.append(item.text())
+            items.append(self.hosts[item.text()].hostname)
         if not items:
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Ошибка")
@@ -121,6 +121,7 @@ class TeacherWindow(CompKabSolutionWindow):
     def update_hosts_list(self, hosts_list: list[str]):
         self.hosts_items.blockSignals(True)
 
+        self.hosts = Hosts()
         self.hosts_items.clear()
         self.hosts_items.addItems(hosts_list)
         logging.info("Обновлен список устройств в QListWidget")
@@ -247,8 +248,19 @@ class TeacherWindow(CompKabSolutionWindow):
             logging.info("Закрыты настройки")
             self.settings_window.hide()
         else:
-            logging.info("Открыты настройки")
-            self.settings_window.show()
+            # self.settings_window.show()
+            root = run_command("pkexec pwd")
+            if "root" in root:
+                logging.info("Открыты настройки")
+                self.settings_window.show()
+            else:
+                logging.info("Введен неправильный пароль при открытии настроек")
+                dlg = QMessageBox(self)
+                dlg.setWindowTitle("Ошибка")
+                dlg.setText("Недостаточно прав")
+                button = dlg.exec()
+                if button == QMessageBox.Ok:
+                    return None
 
     def help(self):
         if self.settings_window.isVisible():

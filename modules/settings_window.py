@@ -9,7 +9,7 @@ from PyQt5.QtCore import Qt, QThreadPool
 from modules.config import hostname_expression, version, ip_expression
 from modules.hosts import Hosts
 from modules.system import user, CompKabSolutionWindow
-from modules.settings_workers import SSHRootSetup, NetworkFolderSetup, VeyonSetup, \
+from modules.workers import SSHRootSetup, NetworkFolderSetup, VeyonSetup, \
     SSHCommandInThreads, PingTest
 
 
@@ -39,13 +39,9 @@ class SettingsWindow(CompKabSolutionWindow):
         grid.addWidget(open_filebtn, 0, 3)
 
         self.hosts_table = QTableWidget()
-        self.hosts_table.setColumnCount(1)
-        # self.hosts_table.setColumnWidth(0, 238)
-        if not self.hosts:
-            self.hosts_table.setRowCount(1)
-            self.hosts_table.setItem(0, 0, QTableWidgetItem('Введите сетевые имена устройств'))
-        else:
-            self.update_data()
+        self.hosts_table.setColumnCount(2)
+        self.hosts_table.setHorizontalHeaderLabels(["Название", "Адрес"])
+        self.update_data()
 
         self.hosts_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         grid.addWidget(self.hosts_table, 1, 1, 7, 3)
@@ -118,15 +114,17 @@ class SettingsWindow(CompKabSolutionWindow):
         font_ip = QFont()
         font_ip.setItalic(True)
         self.hosts_table.clear()
-        self.hosts_table.setHorizontalHeaderLabels([""])
-        self.hosts_table.setRowCount(len(self.hosts.to_list()))
-        for index, host in enumerate(self.hosts.to_list()):
-            item = QTableWidgetItem(host)
-            if re.match(hostname_expression, host):
-                item.setFont(font)
-            if re.match(ip_expression, host):
-                item.setFont(font_ip)
-            self.hosts_table.setItem(index, 0, item)
+        self.hosts_table.setHorizontalHeaderLabels(["Название", "Адрес"])
+        self.hosts_table.setRowCount(len(self.hosts))
+        for index, host in enumerate(self.hosts.items_to_list()):
+            item_name = QTableWidgetItem(host.name)
+            item_hostname = QTableWidgetItem(host.hostname)
+            if re.match(hostname_expression, host.hostname):
+                item_hostname.setFont(font)
+            if re.match(ip_expression, host.hostname):
+                item_hostname.setFont(font_ip)
+            self.hosts_table.setItem(index, 0, item_name)
+            self.hosts_table.setItem(index, 1, item_hostname)
         self.hosts_table.blockSignals(False)
 
     def change_data(self, item: QTableWidgetItem):
@@ -135,17 +133,21 @@ class SettingsWindow(CompKabSolutionWindow):
         :param item: элемент таблицы
         """
         item_index = item.row()
-        host = str(item.text())
+        key = self.hosts_table.item(item_index, 0).text()
+        hostname = self.hosts_table.item(item_index, 1).text() if self.hosts_table.item(item_index, 1) else ""
         if len(self.hosts.to_list()) > item_index:
             del self.hosts[self.hosts.to_list()[item_index]]
-        self.hosts[host] = host
+        self.hosts.set_item(key, hostname)
         self.update_data()
 
     def add_row(self):
         """
         Добавление пустой строки
         """
-        self.hosts_table.setRowCount(self.hosts_table.rowCount() + 1)
+        number = self.hosts_table.rowCount()
+        item_name = QTableWidgetItem(f"Компьютер {number + 1}")
+        self.hosts_table.setRowCount(number + 1)
+        self.hosts_table.setItem(number, 0, item_name)
 
     def delete_row(self):
         """
@@ -154,30 +156,32 @@ class SettingsWindow(CompKabSolutionWindow):
         row = self.hosts_table.currentRow()
         if row < 0:
             return
-        item_text = str(self.hosts_table.currentItem().text())
-        messageBox = QMessageBox.warning(
-            self,
-            "Подтверждение удаления!",
-            f"Вы действительно хотите удалить компьютер {item_text}?",
-            QMessageBox.Ok | QMessageBox.Cancel,
-        )
-        if messageBox == QMessageBox.Ok:
-            # print(f"{self.hosts.hosts=} {item_text=}")
-            if item_text.split('.local')[0] in self.hosts.hosts:
-                del self.hosts[item_text]
-            self.update_data()
+        if not self.hosts_table.currentItem():
+            self.hosts_table.removeRow(row)
+        else:
+            key = self.hosts_table.item(row, 0).text()
+            messageBox = QMessageBox.warning(
+                self,
+                "Подтверждение удаления!",
+                f"Вы действительно хотите удалить {key}?",
+                QMessageBox.Ok | QMessageBox.Cancel,
+            )
+            if messageBox == QMessageBox.Ok:
+                if key in self.hosts.hosts:
+                    del self.hosts[key]
+                self.update_data()
 
     def delete_all(self):
         """
         Очистка таблицы и удаление из файла
         """
-        messageBox = QMessageBox.warning(
+        message_box = QMessageBox.warning(
             self,
             "Подтверждение удаления!",
             f"Вы действительно хотите очистить список устройств?",
             QMessageBox.Ok | QMessageBox.Cancel,
         )
-        if messageBox == QMessageBox.Ok:
+        if message_box == QMessageBox.Ok:
             self.hosts.clean()
             self.update_data()
 
@@ -195,10 +199,11 @@ class SettingsWindow(CompKabSolutionWindow):
                 if len(lines) > 1000:
                     QMessageBox('Слишком большой файл!').show()
                 else:
-                    for host in lines:
+                    for index, host in enumerate(lines):
                         new_index = self.hosts_table.rowCount() + 1
                         self.hosts_table.setRowCount(new_index)
-                        self.hosts_table.setItem(new_index - 1, 0, QTableWidgetItem(host.strip()))
+                        self.hosts_table.setItem(new_index - 1, 0, QTableWidgetItem(f"Host {index + 1}"))
+                        self.hosts_table.setItem(new_index - 1, 1, QTableWidgetItem(host.strip()))
         except FileNotFoundError:
             pass
 
