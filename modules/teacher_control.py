@@ -3,18 +3,20 @@
 import datetime
 import logging
 
+from PyQt5.QtCore import QThreadPool
 from PyQt5.QtGui import QTextCursor
 from PyQt5.QtWidgets import (QPushButton, QLineEdit,
                              QListWidget, QAbstractItemView, QMenuBar,
                              QInputDialog, QMessageBox, QGridLayout,
-                             QPlainTextEdit, QApplication)
+                             QPlainTextEdit, QApplication, QLabel)
 
 from modules.config import version
 from modules.help import HelpWindow
 from modules.hosts import Hosts
 from modules.settings_window import SettingsWindow
 from modules.system import CompKabSolutionWindow, run_command
-from modules.workers import GetWorks, CleanWorks, RecreateStudent, DeleteStudent, OpenSFTP, UpdateList
+from modules.workers import GetWorks, CleanWorks, RecreateStudent, DeleteStudent, OpenSFTP, UpdateList, \
+    SSHCommandInThreads
 
 works_folder = 'install -d -m 0755 -o student -g student \"/home/student/Рабочий стол/Сдать работы\"'
 
@@ -50,6 +52,7 @@ class TeacherWindow(CompKabSolutionWindow):
             'Пересоздать student',
             'Удалить student',
             'Открыть проводник',
+            'Отобразить номер',
         ]
         functions = [
             self.get_works,
@@ -57,6 +60,7 @@ class TeacherWindow(CompKabSolutionWindow):
             self.backup_student,
             self.delete_student,
             self.open_sftp,
+            self.display_name,
         ]
 
         for i in range(len(names)):
@@ -243,6 +247,19 @@ class TeacherWindow(CompKabSolutionWindow):
                 button = dlg.exec()
                 if button == QMessageBox.Ok:
                     return
+
+    def display_name(self):
+        self.textfield.clear()
+        pool = QThreadPool.globalInstance()
+        for index, host in enumerate(self.hosts.items_to_list()):
+            number_string = f"<font style='\''font-size:200px'\''>{index + 1}</font>"
+            command = f"for user in $(users); " \
+                      f"do su - $user -c 'DISPLAY=:0 kdialog --passivepopup \"{number_string}\" 100';" \
+                      f"done"
+            runnable = SSHCommandInThreads(host, command)
+            # runnable.progress_signal.signal.connect(self.update_textfield)
+            pool.start(runnable)
+        self.update_textfield("Команда отправлена на устройства")
 
     def settings(self):
         if self.settings_window.isVisible():

@@ -12,8 +12,8 @@ QPlainTextEdit {
     font-weight: bold;
 }
 QListWidget {
-    min-height: 336px;
-    max-height: 336px;
+    /*min-height: 336px;*/
+    /*max-height: 336px;*/
     /*color: #524273;*/
     font-family: "Courier New";
     font-weight: bold;
