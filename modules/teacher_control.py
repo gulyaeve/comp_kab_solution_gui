@@ -8,7 +8,7 @@ from PyQt5.QtGui import QTextCursor
 from PyQt5.QtWidgets import (QPushButton, QLineEdit,
                              QListWidget, QAbstractItemView, QMenuBar,
                              QInputDialog, QMessageBox, QGridLayout,
-                             QPlainTextEdit, QApplication, QLabel)
+                             QPlainTextEdit, QApplication)
 
 from modules.config import version
 from modules.help import HelpWindow
