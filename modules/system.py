@@ -22,6 +22,10 @@ def run_command_in_xterm(command: str):
     run_command(f'xterm -e "{command}"')
 
 
+def run_command_in_konsole(command: str):
+    run_command(f'konsole -e "{command}"')
+
+
 # def run_command_in_xterm_hold(command: str):
 #     run_command(f'xterm -hold -e "{command}"')
 

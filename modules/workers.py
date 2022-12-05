@@ -13,7 +13,7 @@ from paramiko.ssh_exception import AuthenticationException, SSHException
 from modules.config import config_path
 from modules.desktop_entrys import ssh_add_link, network_share_for_teacher, network_share, veyon_link
 from modules.hosts import Host, Hosts
-from modules.system import run_command_in_xterm, user, run_command_by_root, this_host, run_command, get_mac_address, \
+from modules.system import run_command_in_xterm, run_command_in_konsole, user, run_command_by_root, this_host, run_command, get_mac_address, \
     test_ssh, test_ping, check_student_on_host
 
 
@@ -228,9 +228,9 @@ class NetworkFolderSetup(QThread):
                 self.progress_signal.emit(f'{host.hostname}: не в сети или не настроен ssh')
                 logging.info(f'{host.hostname} не в сети или не настроен ssh')
         if success_count == 0:
-            self.finish_signal.emit(f"\nКопирование ярлыка на сетевую папку не выполнено.")
+            self.progress_signal.emit(f"\nКопирование ярлыка на сетевую папку не выполнено.")
         else:
-            self.finish_signal.emit(
+            self.progress_signal.emit(
                 f"\nКопирование ярлыка на сетевую папку завершилось.\n"
                 f"Всего устройств: {hosts_count}\n"
                 f"Завершено успешно: {success_count}\n"
@@ -649,7 +649,7 @@ class OpenSFTP(QThread):
                 self.progress_signal.emit(f'{host}: открыт проводник')
                 logging.info(f'{host} открыт sftp')
                 success_count += 1
-                run_command_in_xterm(f'mc $HOME/Рабочий\ стол sh://root@{host}:/home')
+                run_command_in_konsole(f'mc $HOME/Рабочий\ стол sh://root@{host}:/home')
                 # run_command_in_xterm(f'dolphin --new-window sftp://root@{host}:/home')
             else:
                 self.progress_signal.emit(f'{host}: не в сети или не настроен ssh')
