@@ -327,17 +327,3 @@ class SettingsWindow(CompKabSolutionWindow):
                 runnable = SSHCommandInThreads(host, command)
                 runnable.progress_signal.signal.connect(self.update_textfield)
                 pool.start(runnable)
-            # self.thread = SSHCommandExec()
-            # self.thread.hosts_list = self.hosts.to_list()
-            # self.thread.command = command
-            #
-            # self.thread.progress_signal.connect(self.update_textfield)
-            # self.set_buttons_enabled(False)
-            # self.thread.start()
-            # self.thread.finished.connect(
-            #     lambda: self.textfield.appendPlainText(f"\nЗАВЕРШЕНИЕ ВЫПОЛНЕНИЯ КОМАНДЫ:\n{command}")
-            # )
-            # self.thread.finished.connect(
-            #     lambda: self.set_buttons_enabled(True)
-            # )
-            # self.thread.finished.connect(self.thread.deleteLater)
