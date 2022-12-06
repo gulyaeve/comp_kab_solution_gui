@@ -19,22 +19,35 @@ def run_command(command: str) -> str:
 
 
 def run_command_in_xterm(command: str):
+    """
+    Выполнение команды в xterm
+    :param command: команда для выполнения
+    """
     run_command(f'xterm -e "{command}"')
 
 
 def run_command_in_konsole(command: str):
+    """
+    Выполнение команды в новом окне терминала
+    :param command: команда для выполнения
+    """
     run_command(f'konsole -e "{command}"')
 
 
-# def run_command_in_xterm_hold(command: str):
-#     run_command(f'xterm -hold -e "{command}"')
-
-
 def run_command_by_root(command: str):
+    """
+    Выполнение команды с правами root в xterm
+    :param command: команда для выполнения
+    """
     run_command(f'xterm -e \'echo "Введите пароль суперпользователя" && su - root -c "{command}"\'')
 
 
 def get_mac_address(hostname):
+    """
+    Получение мак-адреса удаленного хоста
+    :param hostname: адрес хоста
+    :return: мак-адрес хоста
+    """
     get_nmcli = run_command(
         f'ssh root@{hostname} nmcli c show | grep \"Проводное соединение 1\"'
     )
@@ -50,6 +63,11 @@ def get_mac_address(hostname):
 
 
 def test_ssh(host) -> bool:
+    """
+    Проверка ssh для пользователя root на удаленном хосте
+    :param host: адрес хоста
+    :return: bool, в зависимости от подключения
+    """
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     ssh.load_system_host_keys()
@@ -64,6 +82,11 @@ def test_ssh(host) -> bool:
 
 
 def test_ping(host) -> bool:
+    """
+    Проверка подключения к удаленному хосту
+    :param host: адрес хоста
+    :return: bool, в зависимости от подключения
+    """
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     ssh.load_system_host_keys()
@@ -81,6 +104,11 @@ def test_ping(host) -> bool:
 
 
 def check_student_on_host(host: str) -> bool:
+    """
+    Проверка наличия директории пользователя student на удаленном хосте
+    :param host: адрес хоста
+    :return: bool в зависимости от наличия
+    """
     check = run_command(f"ssh root@{host} file /home/student").strip()
     return True if check.endswith('directory') else False
 
