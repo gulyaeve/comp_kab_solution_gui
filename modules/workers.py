@@ -13,8 +13,8 @@ from paramiko.ssh_exception import AuthenticationException, SSHException
 from modules.config import config_path
 from modules.desktop_entrys import ssh_add_link, network_share_for_teacher, network_share, veyon_link
 from modules.hosts import Host, Hosts
-from modules.system import run_command_in_xterm, run_command_in_konsole, user, run_command_by_root, this_host, run_command, get_mac_address, \
-    test_ssh, test_ping, check_student_on_host
+from modules.system import run_command_in_xterm, run_command_in_konsole, user, run_command_by_root, this_host, \
+    run_command, get_mac_address, test_ssh, test_ping, check_student_on_host
 
 
 works_folder = 'install -d -m 0755 -o student -g student \\"/home/student/Рабочий стол/Сдать работы\\"'
