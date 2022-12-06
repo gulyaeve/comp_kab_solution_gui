@@ -12,8 +12,16 @@ from modules.teacher_control import TeacherWindow
 # Директория приложения
 basedir = os.path.dirname(__file__)
 
+if user == 'root':
+    # Выход для root
+    print("Данное приложение не работает с пользователем root")
+    sys.exit(0)
+
 # Создание папки с конфигом
 run_command(f'mkdir -p {config_path}')
+
+# Создание файла для хранения
+run_command(f'touch {hosts_file_path}')
 
 # Настройка логирования
 for handler in logging.root.handlers[:]:
@@ -26,16 +34,8 @@ logging.basicConfig(
 
 
 if __name__ == '__main__':
-    logging.info(f'Приложение запущено: {this_host=} {user=}')
-
-    if user == 'root':
-        logging.info("Выход для root")
-        sys.exit(0)
-
-    # Создание файла для хранения
-    run_command(f'touch {hosts_file_path}')
-
     # Запуск приложения
+    logging.info(f'Приложение запущено: {this_host=} {user=}')
     app = QApplication(sys.argv)
     app.setWindowIcon(QIcon(os.path.join(basedir, icon_file)))
     app.setStyleSheet(open(os.path.join(basedir, style), 'r').read())
