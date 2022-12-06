@@ -114,7 +114,7 @@ class Hosts:
         self._write(self.hosts)
         return self
 
-    def to_list(self) -> list:
+    def to_list(self) -> [str]:
         """
         Получение имён хостов в виде списка
         :return: list
