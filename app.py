@@ -14,6 +14,7 @@ basedir = os.path.dirname(__file__)
 
 if user == 'root':
     # Выход для root
+    logging.info("Запуск от root, выход из приложения")
     print("Данное приложение не работает с пользователем root")
     sys.exit(0)
 
