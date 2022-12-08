@@ -85,13 +85,8 @@ class Hosts:
         Очистка файла и словаря
         """
         value = {}
-        try:
-            with open(self.filename, 'w', encoding='utf-8') as file:
-                file.write(dumps(value))
-            self.hosts: dict = self._read()
-        except KeyError:
-            logging.info('[error] Ключ не найден')
-            return None
+        self._write(value)
+        self.hosts: dict = self._read()
 
     def set_item(self, key: str, hostname: str = '', mac_address: str = ''):
         """
