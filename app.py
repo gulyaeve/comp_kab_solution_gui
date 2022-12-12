@@ -45,5 +45,5 @@ if __name__ == '__main__':
         ex = TeacherWindow(app)
         app.exec_()
     except Exception as e:
-        error_box = QMessageBox.warning(ex, "Ошибка", f"{e}")
+        error_box = QMessageBox.critical(ex, "Ошибка", f"{e}")
         logging.info(f"Root exception: {e}")
