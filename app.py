@@ -44,4 +44,4 @@ if __name__ == '__main__':
         ex = TeacherWindow(app)
         app.exec_()
     except Exception as e:
-        logging.info(f"Exception: {e}")
+        logging.info(f"Root exception: {e}")
