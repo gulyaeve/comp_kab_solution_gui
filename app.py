@@ -3,7 +3,7 @@ import os
 import sys
 
 from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QApplication
+from PyQt5.QtWidgets import QApplication, QMessageBox
 
 from modules.config import hosts_file_path, config_path, icon_file, style
 from modules.system import this_host, user, run_command
@@ -40,5 +40,8 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     app.setWindowIcon(QIcon(os.path.join(basedir, icon_file)))
     app.setStyleSheet(open(os.path.join(basedir, style), 'r').read())
-    ex = TeacherWindow(app)
-    app.exec_()
+    try:
+        ex = TeacherWindow(app)
+        app.exec_()
+    except Exception as e:
+        logging.info(f"Exception: {e}")
