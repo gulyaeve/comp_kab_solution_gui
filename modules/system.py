@@ -87,20 +87,16 @@ def test_ping(host) -> bool:
     :param host: адрес хоста
     :return: bool, в зависимости от подключения
     """
-    ssh = paramiko.SSHClient()
-    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    ssh.load_system_host_keys()
-    try:
-        ssh.connect(hostname=host, port=22, timeout=1, username='root')
+    result = subprocess.run(['ping', '-c1', host], stdout=subprocess.PIPE)
+    if result.returncode == 0:
+        logging.info(f"ping: {host}: УСПЕШНОЕ СОЕДИНЕНИЕ {result=} {result.returncode=}")
         return True
-    except AuthenticationException as e:
-        logging.info(f"Не удалось подключиться по ssh@root без пароля к {host}: {e}")
-        return True
-    except Exception as e:
-        logging.info(f"Не удалось подключиться по ssh@root без пароля к {host}: {e}")
+    elif result.returncode == 2:
+        logging.info(f"ping: {host}: {result=} {result.returncode=}")
         return False
-    finally:
-        ssh.close()
+    else:
+        logging.info(host + f" неизвестная ошибка {result=} {result.returncode=}")
+        return False
 
 
 def check_student_on_host(host: str) -> bool:
