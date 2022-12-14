@@ -130,12 +130,13 @@ class SSHRootSetup(QThread):
                     if "[root@" not in result:
                         self.progress_signal.emit(f"Пароль root неверный для {host}")
                         logging.info(f"Пароль root неверный для {host}")
+                    else:
+                        self.progress_signal.emit(f"На {host} ssh для root настроен успешно")
+                        logging.info(f"На {host} ssh для root настроен успешно")
                 except Exception as e:
                     logging.info(f"{e}  ---  Не удалось подключиться к {host}")
                     self.progress_signal.emit(f"Не удалось подключиться к {host}")
                     break
-                self.progress_signal.emit(f"На {host} ssh для root настроен успешно")
-                logging.info(f"На {host} ssh для root настроен успешно")
 
     def ssh_copy_to_root(self, host, root_pass):
         """
