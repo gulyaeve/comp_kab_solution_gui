@@ -11,7 +11,7 @@ from paramiko.client import SSHClient
 from paramiko.ssh_exception import AuthenticationException, SSHException
 
 from modules.config import config_path
-from modules.desktop_entrys import ssh_add_link, network_share_for_teacher, network_share, veyon_link
+from modules.desktop_entrys import ssh_add_link, network_share_for_teacher, network_share, veyon_link, smb_conf
 from modules.hosts import Host, Hosts
 from modules.system import run_command_in_xterm, run_command_in_konsole, user, run_command_by_root, this_host, \
     run_command, get_mac_address, test_ssh, test_ping, check_student_on_host
@@ -206,7 +206,31 @@ class NetworkFolderSetup(QThread):
         self.progress_signal.emit(
             'Создание сетевой папки share (/home/share) и отправка ссылки на компьютеры учеников'
         )
-        run_command_by_root(f'mkdir -p /home/share && chmod 755 /home/share && chown {user} /home/share')
+        if smb_conf not in run_command("cat /etc/samba/smb.conf"):
+            logging.info("Установка samba с конфигом")
+            run_command_by_root(
+                f'apt-get update && '
+                f'apt-get install -y samba && '
+                f'mkdir -p /home/share && '
+                f'chmod 777 /home/share && '
+                f'echo -e \\"{smb_conf}\\" >> /etc/samba/smb.conf && '
+                f'service smb restart; '
+                f'service nmb restart; '
+                f'systemctl enable smb.service; '
+                f'systemctl enable nmb.service'
+            )
+        else:
+            logging.info("Установка samba без конфига")
+            run_command_by_root(
+                f'apt-get update && '
+                f'apt-get install -y samba && '
+                f'mkdir -p /home/share && '
+                f'chmod 777 /home/share && '
+                f'service smb restart; '
+                f'service nmb restart; '
+                f'systemctl enable smb.service; '
+                f'systemctl enable nmb.service'
+            )
         with open(f'/home/{user}/Рабочий стол/share.desktop', 'w') as file_link_2:
             file_link_2.write(network_share_for_teacher)
         with open(f'{config_path}/share.desktop', 'w') as file_link:
