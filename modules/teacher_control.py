@@ -2,6 +2,7 @@
 
 import datetime
 import logging
+import subprocess
 
 from PyQt5.QtCore import QThreadPool
 from PyQt5.QtGui import QTextCursor
@@ -267,12 +268,12 @@ class TeacherWindow(CompKabSolutionWindow):
             self.settings_window.hide()
         else:
             # self.settings_window.show()
-            root = run_command("pkexec pwd")
-            if "root" in root:
+            current_user_groups = subprocess.run(["groups"], shell=True, capture_output=True).stdout.decode()
+            if "wheel" in current_user_groups.split():
                 logging.info("Открыты настройки")
                 self.settings_window.show()
             else:
-                logging.info("Введен неправильный пароль при открытии настроек")
+                logging.info("Пользователь не в группе wheel")
                 dlg = QMessageBox(self)
                 dlg.setWindowTitle("Ошибка")
                 dlg.setText("Недостаточно прав")
