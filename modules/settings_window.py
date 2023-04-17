@@ -134,10 +134,22 @@ class SettingsWindow(CompKabSolutionWindow):
         """
         item_index = item.row()
         key = self.hosts_table.item(item_index, 0).text()
+        old_key = "Введите название" if item_index >= len(self.hosts.to_list()) else self.hosts.to_list()[item_index]
+        other_keys = []
+        for row in range(self.hosts_table.rowCount()):
+            if row != item_index:
+                other_keys.append(self.hosts_table.item(row, 0).text())
+        done = True
+        while key in other_keys:
+            key, done = QInputDialog.getText(
+                self, 'Внимание', f'Компьютер {key} уже есть в списке.\nВведите новое имя: ')
+        if not done:
+            key = old_key
         hostname = self.hosts_table.item(item_index, 1).text() if self.hosts_table.item(item_index, 1) else ""
         if len(self.hosts.to_list()) > item_index:
             del self.hosts[self.hosts.to_list()[item_index]]
-        self.hosts.set_item(key, hostname)
+        if key != '':
+            self.hosts.set_item(key, hostname)
         self.update_data()
 
     def add_row(self):
@@ -145,7 +157,7 @@ class SettingsWindow(CompKabSolutionWindow):
         Добавление пустой строки
         """
         number = self.hosts_table.rowCount()
-        item_name = QTableWidgetItem(f"Компьютер {number + 1}")
+        item_name = QTableWidgetItem("Введите название")
         self.hosts_table.setRowCount(number + 1)
         self.hosts_table.setItem(number, 0, item_name)
 

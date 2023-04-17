@@ -122,7 +122,7 @@ class TeacherWindow(CompKabSolutionWindow):
                 return None
         return items
 
-    def update_hosts_list(self, hosts_list: list[str]):
+    def update_hosts_list(self, hosts_list):
         self.hosts_items.blockSignals(True)
 
         self.hosts = Hosts()
