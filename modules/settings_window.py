@@ -145,6 +145,8 @@ class SettingsWindow(CompKabSolutionWindow):
                 self, 'Внимание', f'Компьютер {key} уже есть в списке.\nВведите новое имя: ')
         if not done:
             key = old_key
+            if key == "Введите название":
+                key = ""
         hostname = self.hosts_table.item(item_index, 1).text() if self.hosts_table.item(item_index, 1) else ""
         if len(self.hosts.to_list()) > item_index:
             del self.hosts[self.hosts.to_list()[item_index]]
