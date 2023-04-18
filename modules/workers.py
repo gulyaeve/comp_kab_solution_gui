@@ -117,7 +117,7 @@ class SSHRootSetup(QThread):
             run_command(f"ssh-add")
             for host in self.hosts.items_to_list():
                 run_command_in_xterm(
-                    f"ssh-copy-id -f -i /home/{user}/.ssh/id_ed25519.pub teacher@{host.hostname} -o IdentitiesOnly=yes"
+                    f"ssh-copy-id -i /home/{user}/.ssh/id_ed25519.pub teacher@{host.hostname}"
                 )
             logging.info(f"Ключи скопированы")
             self.progress_signal.emit("Настройка ssh для суперпользователя root на всех устройствах")
